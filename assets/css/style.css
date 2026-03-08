@@ -1,0 +1,281 @@
+/* =============================================================
+   assets/css/style.css
+   LazyDrip — Custom Stylesheet
+   Stack: Bootstrap 5 + this file
+   ============================================================= */
+
+/* --- CSS Variables (Brand tokens) -------------------------- */
+:root {
+    --ld-blue:        #A8D8EA;   /* Primary brand baby blue      */
+    --ld-blue-dark:   #7EC8E3;   /* Hover state                  */
+    --ld-blue-light:  #E8F6FB;   /* Backgrounds / cards          */
+    --ld-charcoal:    #2D2D2D;   /* Primary text                 */
+    --ld-muted:       #6C757D;   /* Secondary text               */
+    --ld-white:       #FAFAFA;   /* Page background              */
+    --ld-radius:      12px;      /* Standard border radius       */
+    --ld-shadow:      0 4px 20px rgba(0,0,0,0.07);
+    --font-head:      'Poppins', sans-serif;
+    --font-body:      'Inter', sans-serif;
+}
+
+/* --- Base --------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--ld-white);
+    color: var(--ld-charcoal);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-head);
+    font-weight: 600;
+    color: var(--ld-charcoal);
+}
+
+a {
+    color: #5bb5d5;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
+
+/* --- Navbar ------------------------------------------------- */
+.ld-navbar {
+    background-color: var(--ld-white);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    box-shadow: var(--ld-shadow);
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.ld-brand {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ld-charcoal) !important;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ld-logo-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--ld-blue-dark);
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--ld-charcoal);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    background-color: var(--ld-blue-light);
+    color: #3a9abf;
+}
+
+/* Cart badge */
+.ld-badge {
+    background-color: var(--ld-blue-dark);
+    color: #fff;
+    font-size: 0.65rem;
+}
+
+/* --- Buttons ------------------------------------------------ */
+.ld-btn-primary {
+    background-color: var(--ld-blue-dark);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    border-radius: var(--ld-radius);
+    padding: 0.5rem 1.4rem;
+    transition: background 0.2s, transform 0.1s;
+    display: inline-block;
+}
+.ld-btn-primary:hover {
+    background-color: #5bb5d5;
+    color: #fff;
+    text-decoration: none;
+    transform: translateY(-1px);
+}
+
+.ld-btn-outline {
+    border: 2px solid var(--ld-blue-dark);
+    color: var(--ld-blue-dark);
+    font-weight: 600;
+    border-radius: var(--ld-radius);
+    padding: 0.5rem 1.4rem;
+    transition: all 0.2s;
+    display: inline-block;
+    background: transparent;
+}
+.ld-btn-outline:hover {
+    background-color: var(--ld-blue-dark);
+    color: #fff;
+    text-decoration: none;
+}
+
+/* --- Cards -------------------------------------------------- */
+.ld-card {
+    background: #fff;
+    border: none;
+    border-radius: var(--ld-radius);
+    box-shadow: var(--ld-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
+    overflow: hidden;
+}
+.ld-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+}
+
+.ld-card .card-img-top {
+    height: 200px;
+    object-fit: cover;
+    background-color: var(--ld-blue-light);
+}
+
+/* --- Section helpers --------------------------------------- */
+.ld-section { padding: 4rem 0; }
+.ld-section-sm { padding: 2rem 0; }
+
+.ld-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+.ld-section-subtitle {
+    color: var(--ld-muted);
+    font-size: 1rem;
+    margin-bottom: 2rem;
+}
+
+/* Decorative underline accent */
+.ld-underline {
+    display: inline-block;
+    border-bottom: 3px solid var(--ld-blue-dark);
+    padding-bottom: 2px;
+}
+
+/* --- Hero --------------------------------------------------- */
+.ld-hero {
+    background: linear-gradient(135deg, var(--ld-blue-light) 0%, #fff 60%);
+    padding: 6rem 0 4rem;
+}
+.ld-hero-title {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 700;
+    line-height: 1.2;
+}
+.ld-hero-subtitle {
+    font-size: 1.1rem;
+    color: var(--ld-muted);
+    max-width: 480px;
+}
+
+/* --- Forms -------------------------------------------------- */
+.ld-form-card {
+    background: #fff;
+    border-radius: var(--ld-radius);
+    box-shadow: var(--ld-shadow);
+    padding: 2.5rem;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--ld-blue-dark);
+    box-shadow: 0 0 0 0.2rem rgba(126,200,227,0.35);
+}
+
+/* --- Badges & Chips ---------------------------------------- */
+.ld-chip {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background-color: var(--ld-blue-light);
+    color: #3a9abf;
+}
+
+/* Order status chips */
+.status-submitted       { background:#fff3cd; color:#856404; }
+.status-preparing       { background:#cff4fc; color:#0c5460; }
+.status-ready_for_pickup{ background:#d1e7dd; color:#0a3622; }
+.status-completed       { background:#d1e7dd; color:#0a3622; }
+.status-cancelled       { background:#f8d7da; color:#842029; }
+
+/* --- Footer ------------------------------------------------- */
+.ld-footer {
+    background-color: var(--ld-charcoal);
+    color: #ccc;
+}
+.ld-footer a {
+    color: #aaa;
+}
+.ld-footer a:hover { color: var(--ld-blue); }
+
+.ld-footer-brand {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ld-white);
+}
+.ld-footer-heading {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ld-white);
+    margin-bottom: 0.75rem;
+}
+
+.ld-footer .ld-btn-outline {
+    border-color: var(--ld-blue);
+    color: var(--ld-blue);
+}
+.ld-footer .ld-btn-outline:hover {
+    background-color: var(--ld-blue);
+    color: var(--ld-charcoal);
+}
+
+/* --- Responsive tweaks ------------------------------------- */
+@media (max-width: 576px) {
+    .ld-form-card { padding: 1.5rem; }
+    .ld-hero { padding: 3rem 0 2rem; }
+}
+
+/* --- Accessibility ----------------------------------------- */
+/* Visible focus ring for keyboard users */
+:focus-visible {
+    outline: 3px solid var(--ld-blue-dark);
+    outline-offset: 2px;
+}
+/* Skip to content link (hidden until focused) */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 0;
+    background: var(--ld-blue-dark);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    z-index: 9999;
+    font-weight: 600;
+}
+.skip-link:focus { top: 0; }
