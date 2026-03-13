@@ -73,6 +73,7 @@ try {
     $_SESSION['user_id']   = $new_user_id;
     $_SESSION['full_name'] = $full_name;
     $_SESSION['role']      = 'customer';
+    $_SESSION['points']    = POINTS_SIGNUP_BONUS;
 
     set_flash('success', 'Welcome to LazyDrip, ' . e($full_name) . '! You\'ve earned ' . POINTS_SIGNUP_BONUS . ' bonus points.');
     redirect(APP_URL . '/customer/dashboard.php');
