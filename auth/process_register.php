@@ -64,7 +64,7 @@ try {
     // Log the signup bonus in points_transactions
     $txn = $pdo->prepare(
         "INSERT INTO points_transactions (user_id, order_id, txn_type, points_delta, note)
-         VALUES (?, NULL, 'signup_bonus', ?, 'Welcome bonus for creating an account')"
+         VALUES (?, NULL, 'bonus', ?, 'Welcome bonus for creating an account')"
     );
     $txn->execute([$new_user_id, POINTS_SIGNUP_BONUS]);
 
