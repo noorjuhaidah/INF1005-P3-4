@@ -61,6 +61,13 @@ try {
 
     $new_user_id = $pdo->lastInsertId();
 
+    // Log the signup bonus in points_transactions
+    $txn = $pdo->prepare(
+        "INSERT INTO points_transactions (user_id, order_id, txn_type, points_delta, note)
+         VALUES (?, NULL, 'signup_bonus', ?, 'Welcome bonus for creating an account')"
+    );
+    $txn->execute([$new_user_id, POINTS_SIGNUP_BONUS]);
+
     // Log the new user in immediately
     session_regenerate_id(true);
     $_SESSION['user_id']   = $new_user_id;
