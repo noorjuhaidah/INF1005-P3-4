@@ -12,7 +12,15 @@ if (!is_logged_in() || !is_admin()) {
 $products = [];
 
 try {
-    $stmt = $pdo->query("SELECT * FROM products ORDER BY product_id DESC");
+    $stmt = $pdo->query("
+    SELECT m.item_id,
+           m.item_name,
+           m.price,
+           m.is_available,
+           c.category_name
+    FROM menu_items m
+    JOIN categories c ON m.category_id = c.category_id
+    ORDER BY m.item_id DESC");
     $products = $stmt->fetchAll();
 } catch (PDOException $e) {
     $products = [];
@@ -50,14 +58,14 @@ try {
                     <?php else: ?>
                         <?php foreach ($products as $product): ?>
                             <tr>
-                                <td><?= e((string)$product['product_id']) ?></td>
-                                <td><?= e($product['name']) ?></td>
-                                <td><?= e($product['category']) ?></td>
+                                <td><?= e((string)$product['item_id']) ?></td>
+                                <td><?= e($product['item_name']) ?></td>
+                                <td><?= e($product['category_name']) ?></td>
                                 <td>$<?= number_format((float)$product['price'], 2) ?></td>
                                 <td><?= $product['is_available'] ? 'Yes' : 'No' ?></td>
                                 <td>
-                                    <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string)$product['product_id']) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string)$product['product_id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this product?');">Delete</a>
+                                    <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                    <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this product?');">Delete</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

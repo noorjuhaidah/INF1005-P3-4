@@ -14,7 +14,7 @@ $totalOrders = 0;
 $totalRevenue = 0;
 
 try {
-    $stmt = $pdo->query("SELECT COUNT(*) FROM products");
+    $stmt = $pdo->query("SELECT COUNT(*) FROM menu_items");
     $totalProducts = (int)$stmt->fetchColumn();
 
     $stmt = $pdo->query("SELECT COUNT(*) FROM orders");
