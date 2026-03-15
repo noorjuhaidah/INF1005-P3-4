@@ -17,7 +17,7 @@ $is_available = 1;
 $errorMsg = '';
 $success = true;
 
-/* Fetch categories for dropdown */
+/* Fetch categories */
 $categories = [];
 
 try {
@@ -27,7 +27,6 @@ try {
     $categories = [];
 }
 
-/* Handle form submission */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $name = trim($_POST['name'] ?? '');
@@ -51,13 +50,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $success = false;
     }
 
+    /* Image upload */
+    $image_path = '';
+
+    if (!empty($_FILES['image']['name'])) {
+
+        $uploadDir = __DIR__ . '/../uploads/';
+        $filename = time() . '_' . basename($_FILES['image']['name']);
+        $targetFile = $uploadDir . $filename;
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
+            $image_path = $filename;
+        }
+    }
+
     if ($success) {
+
         try {
 
             $stmt = $pdo->prepare("
                 INSERT INTO menu_items
-                (item_name, description, price, category_id, is_available)
-                VALUES (?, ?, ?, ?, ?)
+                (item_name, description, price, category_id, image_path, is_available)
+                VALUES (?, ?, ?, ?, ?, ?)
             ");
 
             $stmt->execute([
@@ -65,6 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $description,
                 $price,
                 $category_id,
+                $image_path,
                 $is_available
             ]);
 
@@ -90,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="alert alert-danger"><?= $errorMsg ?></div>
 <?php endif; ?>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
 
 <div class="mb-3">
 <label class="form-label">Product Name</label>
@@ -99,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="mb-3">
 <label class="form-label">Description</label>
-<textarea class="form-control" name="description" rows="3"><?= e($description) ?></textarea>
+<textarea class="form-control" name="description"><?= e($description) ?></textarea>
 </div>
 
 <div class="mb-3">
@@ -122,6 +137,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endforeach; ?>
 
 </select>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Product Image</label>
+<input type="file" class="form-control" name="image">
 </div>
 
 <div class="form-check mb-3">

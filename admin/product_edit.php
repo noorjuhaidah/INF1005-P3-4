@@ -16,8 +16,9 @@ if ($id === '' || !is_numeric($id)) {
     exit;
 }
 
-/* Fetch categories for dropdown */
+/* Fetch categories */
 $categories = [];
+
 try {
     $stmt = $pdo->query("SELECT category_id, category_name FROM categories ORDER BY category_name");
     $categories = $stmt->fetchAll();
@@ -27,9 +28,9 @@ try {
 
 /* Fetch product */
 $stmt = $pdo->prepare("
-    SELECT item_name, description, price, category_id, is_available
-    FROM menu_items
-    WHERE item_id = ?
+SELECT item_name, description, price, category_id, image_path, is_available
+FROM menu_items
+WHERE item_id = ?
 ");
 $stmt->execute([$id]);
 $product = $stmt->fetch();
@@ -43,31 +44,43 @@ $name = $product['item_name'];
 $description = $product['description'];
 $price = $product['price'];
 $category_id = $product['category_id'];
+$image_path = $product['image_path'];
 $is_available = $product['is_available'];
 
 $errorMsg = '';
 $success = true;
 
-/* Handle form submission */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $name = trim($_POST['name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $price = trim($_POST['price'] ?? '');
-    $category_id = $_POST['category_id'] ?? '';
+    $name = trim($_POST['name']);
+    $description = trim($_POST['description']);
+    $price = trim($_POST['price']);
+    $category_id = $_POST['category_id'];
     $is_available = isset($_POST['is_available']) ? 1 : 0;
 
     if ($name === '' || $category_id === '' || $price === '' || !is_numeric($price)) {
-        $errorMsg = "Please fill in all required fields properly.";
+        $errorMsg = "Please fill all required fields.";
         $success = false;
+    }
+
+    /* Handle image upload */
+    if (!empty($_FILES['image']['name'])) {
+
+        $uploadDir = __DIR__ . '/../uploads/';
+        $filename = time() . '_' . basename($_FILES['image']['name']);
+        $targetFile = $uploadDir . $filename;
+
+        if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
+            $image_path = $filename;
+        }
     }
 
     if ($success) {
 
         $stmt = $pdo->prepare("
-            UPDATE menu_items
-            SET item_name = ?, description = ?, price = ?, category_id = ?, is_available = ?
-            WHERE item_id = ?
+        UPDATE menu_items
+        SET item_name=?, description=?, price=?, category_id=?, image_path=?, is_available=?
+        WHERE item_id=?
         ");
 
         $stmt->execute([
@@ -75,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $description,
             $price,
             $category_id,
+            $image_path,
             $is_available,
             $id
         ]);
@@ -96,7 +110,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="alert alert-danger"><?= $errorMsg ?></div>
 <?php endif; ?>
 
-<form method="post">
+<form method="post" enctype="multipart/form-data">
+
+<?php if (!empty($image_path)): ?>
+
+<img src="<?= APP_URL ?>/uploads/<?= e($image_path) ?>" style="max-width:120px;margin-bottom:10px;">
+
+<?php endif; ?>
 
 <div class="mb-3">
 <label class="form-label">Product Name</label>
@@ -105,12 +125,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="mb-3">
 <label class="form-label">Description</label>
-<textarea class="form-control" name="description" rows="3"><?= e($description) ?></textarea>
+<textarea class="form-control" name="description"><?= e($description) ?></textarea>
 </div>
 
 <div class="mb-3">
 <label class="form-label">Price</label>
-<input type="number" step="0.01" class="form-control" name="price" value="<?= e((string)$price) ?>">
+<input type="number" step="0.01" class="form-control" name="price" value="<?= e($price) ?>">
 </div>
 
 <div class="mb-3">
@@ -128,6 +148,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php endforeach; ?>
 
 </select>
+</div>
+
+<div class="mb-3">
+<label class="form-label">Change Image</label>
+<input type="file" class="form-control" name="image">
 </div>
 
 <div class="form-check mb-3">
