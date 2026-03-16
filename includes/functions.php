@@ -83,19 +83,37 @@ function get_cart(): array {
 
 function cart_total(): float {
     $total = 0.0;
+
     foreach (get_cart() as $item) {
-        $total += $item['price'] * $item['qty'];
+        $rawPrice = $item['price'] ?? 0;
+        $rawQty   = $item['qty'] ?? 0;
+
+        // Handle values like "$6.00" safely
+        if (is_string($rawPrice)) {
+            $rawPrice = preg_replace('/[^0-9.\-]/', '', $rawPrice);
+        }
+
+        $price = is_numeric($rawPrice) ? (float)$rawPrice : 0.0;
+        $qty   = is_numeric($rawQty)   ? (int)$rawQty     : 0;
+
+        if ($qty > 0) {
+            $total += $price * $qty;
+        }
     }
+
     return $total;
 }
 
 function cart_count(): int {
     $count = 0;
     foreach (get_cart() as $item) {
-        $count += $item['qty'];
+        $rawQty = $item['qty'] ?? 0;
+        $qty = is_numeric($rawQty) ? (int)$rawQty : 0;
+        if ($qty > 0) $count += $qty;
     }
     return $count;
 }
+
 
 // -------------------------------------------------------------
 // FORMATTING HELPERS

@@ -76,7 +76,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php foreach ($cart as $item): ?>
                     <div class="d-flex justify-content-between mb-2">
                         <span><?= e($item['name']) ?> x <?= (int)$item['qty'] ?></span>
-                        <span><?= format_price((float)$item['price'] * (int)$item['qty']) ?></span>
+                        <?php
+                        $rawPrice = $item['price'] ?? 0;
+                        if (is_string($rawPrice)) $rawPrice = preg_replace('/[^0-9.\-]/', '', $rawPrice);
+                        $price = is_numeric($rawPrice) ? (float)$rawPrice : 0.0;
+                        $qty = is_numeric($item['qty'] ?? 0) ? (int)$item['qty'] : 0;
+                        ?>
+                        <span><?= format_price($price * $qty) ?></span>
+
                     </div>
                 <?php endforeach; ?>
 
