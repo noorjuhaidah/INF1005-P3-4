@@ -5,7 +5,13 @@
 // Responds with JSON (AJAX) or redirects (plain POST fallback).
 // =============================================================
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 function json_response(bool $success, string $message, array $extra = []): void {
     header('Content-Type: application/json');

@@ -8,7 +8,12 @@
 //   menu_items : item_id, item_name, price, is_available
 // =============================================================
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // -------------------------------------------------------------
 // Helper: send JSON response (used by AJAX calls from menu.php)
