@@ -16,14 +16,15 @@ require_login();
 // -------------------------------------------------------------
 $points = 0;
 try {
-    $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
+    // Changed 'user_id' back to 'id' to match database schema
+    $stmt = $pdo->prepare("SELECT points FROM users WHERE id = ? LIMIT 1");
     $stmt->execute([$_SESSION['user_id']]);
     $row = $stmt->fetch();
     if ($row) {
         $points = (int)$row['points'];
     }
 } catch (PDOException $e) {
-    // If query fails, points default to 0
+    echo "";
     $points = 0;
 }
 
