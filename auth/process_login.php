@@ -21,8 +21,7 @@ try {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password_hash'])) {
-        // Changed $user['user_id'] to $user['id'] to match the database column
-        $_SESSION['user_id'] = $user['id']; 
+        $_SESSION['user_id'] = $user['user_id']; 
         $_SESSION['full_name'] = $user['full_name'];
         $_SESSION['role'] = $user['role'];
 

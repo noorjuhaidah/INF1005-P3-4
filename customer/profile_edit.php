@@ -18,7 +18,7 @@ $csrf = $_SESSION['csrf_token'];
 
 // Helper to fetch current user data
 function fetchUserData(PDO $pdo, int $userId): array {
-    $stmt = $pdo->prepare("SELECT email, phone, full_name FROM users WHERE id = ? LIMIT 1");
+    $stmt = $pdo->prepare("SELECT email, phone, full_name FROM users WHERE user_id = ? LIMIT 1");
     $stmt->execute([$userId]);
     return (array)$stmt->fetch();
 }
@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare(
             "UPDATE users
                 SET email = ?, phone = ?, full_name = ?
-              WHERE id = ?"
+              WHERE user_id = ?"
         );
         $stmt->execute([$email, $phone, $fullName, $_SESSION['user_id']]);
 
