@@ -12,24 +12,19 @@ require_once __DIR__ . '/../includes/header.php';
 require_login();
 
 // -------------------------------------------------------------
-// Loyalty points (try a few common column names to be resilient)
+// Loyalty points 
 // -------------------------------------------------------------
 $points = 0;
-$pointColumns = ['loyalty_points', 'points', 'points_balance', 'reward_points'];
-foreach ($pointColumns as $col) {
-    try {
-        $stmt = $pdo->prepare("SELECT {$col} FROM users WHERE id = ? LIMIT 1");
-        $stmt->execute([$_SESSION['user_id']]);
-        $row = $stmt->fetch();
-
-        if ($row !== false && isset($row[$col])) {
-            $points = (int)$row[$col];
-            break;
-        }
-    } catch (PDOException $e) {
-        // Column might not exist — try the next one
-        continue;
+try {
+    $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
+    $stmt->execute([$_SESSION['user_id']]);
+    $row = $stmt->fetch();
+    if ($row) {
+        $points = (int)$row['points'];
     }
+} catch (PDOException $e) {
+    // If query fails, points default to 0
+    $points = 0;
 }
 
 // -------------------------------------------------------------
