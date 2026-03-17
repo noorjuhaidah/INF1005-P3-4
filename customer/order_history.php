@@ -63,7 +63,7 @@ function pickField(array $row, array $keys) {
                         <?php foreach ($orders as $order):
                             $dateRaw = pickField($order, ['created_at', 'created', 'order_date', 'date']);
                             $date = $dateRaw ? format_date($dateRaw) : '—';
-                            $totalRaw = pickField($order, ['total_price', 'total', 'amount']);
+                            $totalRaw = pickField($order, ['total_amount', 'total_price', 'total', 'amount']);
                             $total = $totalRaw !== null ? format_price((float)$totalRaw) : '—';
                             $status = pickField($order, ['status', 'order_status', 'status_label']) ?? 'Unknown';
                             $statusSlug = strtolower(str_replace(' ', '_', $status));
