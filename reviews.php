@@ -2,25 +2,18 @@
 // =============================================================
 // reviews.php — Public reviews page
 // Allows logged-in users to leave a review, and shows existing reviews.
+// Uses the shared CSRF helpers from includes/functions.php.
 // =============================================================
 
 $page_title   = 'Reviews';
 $current_page = 'reviews';
 require_once __DIR__ . '/includes/header.php';
 
-// Ensure CSRF exists for posting reviews
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrf = $_SESSION['csrf_token'];
-
 // Handle new review submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
-    $submittedToken = $_POST['csrf_token'] ?? '';
-    if (!hash_equals($_SESSION['csrf_token'] ?? '', $submittedToken)) {
-        set_flash('danger', 'Invalid request. Please refresh and try again.');
-        redirect(APP_URL . '/reviews.php');
-    }
+
+    // Use the shared CSRF helper — falls back to reviews.php on failure
+    verify_csrf(APP_URL . '/reviews.php');
 
     $reviewText = clean_input($_POST['review'] ?? '');
     if (empty($reviewText)) {
@@ -48,16 +41,16 @@ try {
     $stmt = $pdo->query(
         "SELECT r.review_text, r.created_at, u.full_name
            FROM reviews r
-           LEFT JOIN users u ON u.id = r.user_id
+           LEFT JOIN users u ON u.user_id = r.user_id
           ORDER BY r.created_at DESC"
     );
     $reviews = $stmt->fetchAll();
 } catch (PDOException $e) {
-    // fallback: try querying reviews without join
+    // fallback: query reviews without join
     try {
         $stmt = $pdo->query("SELECT review_text, created_at FROM reviews ORDER BY created_at DESC");
         $reviews = $stmt->fetchAll();
-    } catch (PDOException $e) {
+    } catch (PDOException $e2) {
         $reviews = [];
     }
 }
@@ -76,7 +69,7 @@ try {
                         <div class="card-body">
                             <h2 class="h5 mb-3">Leave a review</h2>
                             <form method="POST" action="<?= APP_URL ?>/reviews.php">
-                                <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+                                <?php csrf_field(); ?>
                                 <div class="mb-3">
                                     <label class="form-label" for="review">Your review</label>
                                     <textarea id="review" name="review" class="form-control" rows="4" required></textarea>

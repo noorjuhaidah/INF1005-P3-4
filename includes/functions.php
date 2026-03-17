@@ -17,7 +17,7 @@ function e(string $value): string {
 // -------------------------------------------------------------
 // FLASH MESSAGES
 // Usage (set):    set_flash('success', 'Account created!');
-// Usage (show):   show_flash();   ← call inside the page body
+// Usage (show):   show_flash();   <- call inside the page body
 // Messages are stored in $_SESSION and shown once, then cleared.
 // -------------------------------------------------------------
 function set_flash(string $type, string $message): void {
@@ -132,4 +132,43 @@ function format_date(string $datetime): string {
 // -------------------------------------------------------------
 function clean_input(string $value): string {
     return strip_tags(trim($value));
+}
+
+// =============================================================
+// CSRF PROTECTION HELPERS
+// =============================================================
+
+/**
+ * Returns the current session CSRF token, creating one if needed.
+ * Usage:  $token = csrf_token();
+ */
+function csrf_token(): string {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+/**
+ * Echoes a hidden <input> containing the CSRF token.
+ * Drop  <?php csrf_field(); ?>  inside any POST <form>.
+ */
+function csrf_field(): void {
+    echo '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
+}
+
+/**
+ * Validates the CSRF token submitted with a POST request.
+ * Call at the top of every POST handler, before touching any data.
+ * On failure: sets a danger flash and redirects to $fallback_url.
+ *
+ * Usage: verify_csrf(APP_URL . '/contact.php');
+ */
+function verify_csrf(string $fallback_url = ''): void {
+    $submitted = $_POST['csrf_token'] ?? '';
+    if (!hash_equals(csrf_token(), $submitted)) {
+        set_flash('danger', 'Invalid request. Please refresh the page and try again.');
+        $redirect = $fallback_url !== '' ? $fallback_url : (APP_URL . '/index.php');
+        redirect($redirect);
+    }
 }

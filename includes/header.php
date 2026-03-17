@@ -38,6 +38,9 @@ if (session_status() === PHP_SESSION_NONE) {
 </head>
 <body>
 
+<!-- Skip link: visible only on keyboard focus (styled in style.css .skip-link) -->
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
 <!-- ============================================================
      NAVBAR
      Active link detection: set $current_page before including
@@ -171,5 +174,5 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php show_flash(); ?>
 </div>
 
-<!-- Page content starts here -->
-<main>
+<!-- Page content starts here. id="main-content" is the skip-link target. -->
+<main id="main-content">
