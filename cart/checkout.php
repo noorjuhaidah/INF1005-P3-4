@@ -3,9 +3,12 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 error_reporting(E_ALL);
 
-$page_title = 'Checkout';
-$current_page = 'cart';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_login();
 
@@ -25,8 +28,7 @@ try {
     redirect(APP_URL . '/cart/cart.php');
 }
 
-
-// Handle place order
+// Handle place order BEFORE any HTML output
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submitted = $_POST['csrf_token'] ?? '';
 
@@ -43,7 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo->beginTransaction();
 
-        // orders table (based on your admin/orders.php)
         $stmt = $pdo->prepare("
             INSERT INTO orders (user_id, total_amount, status)
             VALUES (?, ?, 'submitted')
@@ -52,10 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $order_id = (int)$pdo->lastInsertId();
 
-        // Optional: insert order_items only if table exists and fits your schema
-        // (Skip for now to avoid breaking checkout on schema mismatch)
-
-        // Clear cart
         $_SESSION['cart'] = [];
 
         $pdo->commit();
@@ -71,7 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect(APP_URL . '/cart/cart.php');
     }
 }
+
+$page_title = 'Checkout';
+$current_page = 'cart';
+require_once __DIR__ . '/../includes/header.php';
 ?>
+
 
 <section class="ld-section-sm">
     <div class="container" style="max-width: 760px;">
