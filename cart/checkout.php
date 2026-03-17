@@ -62,12 +62,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $stmt->execute([
     $_SESSION['user_id'],
     'submitted',
-    'pending',
+    'pending_verification',
     $total,
     0,
     0.00,
     $total,
-    ''
+    null
 ]);
 
 
