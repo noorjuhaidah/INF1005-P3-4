@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+
 $page_title = 'Checkout';
 $current_page = 'cart';
 require_once __DIR__ . '/../includes/header.php';
@@ -11,7 +15,16 @@ if (empty($_SESSION['csrf_token'])) {
 $csrf = $_SESSION['csrf_token'];
 
 $cart = get_cart();
-$total = cart_total();
+
+try {
+    $total = cart_total();
+} catch (Throwable $e) {
+    error_log('Checkout cart_total error: ' . $e->getMessage());
+    set_flash('danger', 'Cart data is invalid. Please re-add your items.');
+    $_SESSION['cart'] = [];
+    redirect(APP_URL . '/cart/cart.php');
+}
+
 
 // Handle place order
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
