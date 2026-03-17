@@ -46,10 +46,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->beginTransaction();
 
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, total_amount, status)
-            VALUES (?, ?, 'submitted')
-        ");
-        $stmt->execute([$_SESSION['user_id'], $total]);
+    INSERT INTO orders (
+        user_id,
+        status,
+        payment_status,
+        subtotal,
+        points_redeemed,
+        discount_applied,
+        total_amount,
+        special_requests
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+");
+
+$stmt->execute([
+    $_SESSION['user_id'],
+    'submitted',
+    'pending',
+    $total,
+    0,
+    0.00,
+    $total,
+    ''
+]);
+
+
+    
 
         $order_id = (int)$pdo->lastInsertId();
 
