@@ -172,3 +172,93 @@ function verify_csrf(string $fallback_url = ''): void {
         redirect($redirect);
     }
 }
+
+// =============================================================
+// REWARDS / POINTS HELPERS
+// =============================================================
+
+/**
+ * Award earned points to a user after a successful order.
+ *
+ * Calculates floor(order_total * POINTS_PER_DOLLAR), adds it to
+ * users.points, and logs a row in points_transactions.
+ *
+ * Wrapped in its own try/catch so a transaction-logging failure
+ * never rolls back the order itself — the order is already
+ * committed when this is called.
+ *
+ * Usage: award_points($pdo, $userId, $orderId, $finalAmount);
+ *
+ * @param PDO   $pdo         Active PDO connection
+ * @param int   $userId      Authenticated user's ID
+ * @param int   $orderId     Newly created order ID
+ * @param float $orderTotal  Post-discount amount paid
+ */
+function award_points(PDO $pdo, int $userId, int $orderId, float $orderTotal): void {
+    $earned = (int)floor($orderTotal * POINTS_PER_DOLLAR);
+    if ($earned <= 0) {
+        return; // Nothing to award (e.g. 100% discount edge case)
+    }
+    try {
+        // Atomic increment — avoids race conditions
+        $stmt = $pdo->prepare(
+            "UPDATE users SET points = points + ? WHERE user_id = ?"
+        );
+        $stmt->execute([$earned, $userId]);
+
+        $log = $pdo->prepare("
+            INSERT INTO points_transactions
+                (user_id, order_id, txn_type, points_delta, note)
+            VALUES (?, ?, 'earn', ?, ?)
+        ");
+        $log->execute([
+            $userId,
+            $orderId,
+            $earned,
+            'Earned on order #' . $orderId,
+        ]);
+    } catch (PDOException $e) {
+        // Non-fatal: log the error but do not surface it to the user
+        error_log('award_points failed (user=' . $userId . ', order=' . $orderId . '): ' . $e->getMessage());
+    }
+}
+
+/**
+ * Deduct POINTS_REDEEM_AMOUNT points from a user and log the redemption.
+ *
+ * The UPDATE uses a WHERE clause that prevents the balance going
+ * negative — if the user somehow does not have enough points
+ * the update affects 0 rows and the function returns false.
+ *
+ * Call this INSIDE the same DB transaction as the order INSERT,
+ * before commit, so it rolls back automatically on failure.
+ *
+ * @return bool  true on success, false if points were insufficient
+ */
+function redeem_points(PDO $pdo, int $userId, int $orderId): bool {
+    $stmt = $pdo->prepare("
+        UPDATE users
+        SET    points = points - ?
+        WHERE  user_id = ?
+        AND    points  >= ?
+    ");
+    $stmt->execute([POINTS_REDEEM_AMOUNT, $userId, POINTS_REDEEM_AMOUNT]);
+
+    if ($stmt->rowCount() === 0) {
+        return false; // Not enough points — rollback will happen in caller
+    }
+
+    $log = $pdo->prepare("
+        INSERT INTO points_transactions
+            (user_id, order_id, txn_type, points_delta, note)
+        VALUES (?, ?, 'redeem', ?, ?)
+    ");
+    $log->execute([
+        $userId,
+        $orderId,
+        -POINTS_REDEEM_AMOUNT,
+        'Redeemed on order #' . $orderId,
+    ]);
+
+    return true;
+}

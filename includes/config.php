@@ -15,7 +15,9 @@ define('DB_CHARSET', 'utf8mb4');
 
 // --- Application constants ----------------------------------
 define('APP_NAME',        'LazyDrip');
-define('APP_URL',         'http://35.212.212.202'); // No trailing slash
+$appScheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$appHost   = $_SERVER['HTTP_HOST'] ?? 'localhost:8080';
+define('APP_URL',         $appScheme . '://' . $appHost); // No trailing slash
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('UPLOAD_URL', APP_URL . '/uploads/');
 define('DEFAULT_IMG',     APP_URL . '/assets/images/placeholder.png');
