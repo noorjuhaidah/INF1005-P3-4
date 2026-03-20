@@ -37,9 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
         set_flash('success', 'Thanks for your review!');
         redirect(APP_URL . '/reviews.php');
     } catch (PDOException $e) {
-        error_log('Review submit error: ' . $e->getMessage());
-        set_flash('danger', 'Unable to save your review. Please try again later.');
-        redirect(APP_URL . '/reviews.php');
+        die('Review submit error: ' . $e->getMessage());
     }
 }
 
