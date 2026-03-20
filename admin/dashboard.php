@@ -15,13 +15,13 @@ $totalRevenue = 0;
 
 try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM menu_items");
-    $totalProducts = (int)$stmt->fetchColumn();
+    $totalProducts = (int) $stmt->fetchColumn();
 
     $stmt = $pdo->query("SELECT COUNT(*) FROM orders");
-    $totalOrders = (int)$stmt->fetchColumn();
+    $totalOrders = (int) $stmt->fetchColumn();
 
     $stmt = $pdo->query("SELECT COALESCE(SUM(total_amount), 0) FROM orders");
-    $totalRevenue = (float)$stmt->fetchColumn();
+    $totalRevenue = (float) $stmt->fetchColumn();
 } catch (PDOException $e) {
     $totalProducts = 0;
     $totalOrders = 0;
@@ -38,14 +38,14 @@ try {
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
                     <h5>Total Products</h5>
-                    <h2><?= e((string)$totalProducts) ?></h2>
+                    <h2><?= e((string) $totalProducts) ?></h2>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
                     <h5>Total Orders</h5>
-                    <h2><?= e((string)$totalOrders) ?></h2>
+                    <h2><?= e((string) $totalOrders) ?></h2>
                 </div>
             </div>
 
@@ -75,6 +75,18 @@ try {
                     <p class="text-muted">View and update customer orders.</p>
                     <div class="d-flex gap-2 flex-wrap">
                         <a href="<?= APP_URL ?>/admin/orders.php" class="ld-btn-primary">Manage Orders</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card ld-card p-4 h-100">
+                    <h4 class="mb-3">Review Management</h4>
+                    <p class="text-muted">View, edit, or delete customer reviews.</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="<?= APP_URL ?>/admin/reviews.php" class="ld-btn-primary">
+                            Manage Reviews
+                        </a>
                     </div>
                 </div>
             </div>
