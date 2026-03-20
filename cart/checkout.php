@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->rollBack();
         }
         error_log('Checkout error: ' . $e->getMessage());
-        set_flash('danger', 'Could not place your order. Please try again.');
+        set_flash('danger', 'Checkout error: ' . $e->getMessage());
         redirect(APP_URL . '/cart/cart.php');
     }
 }
