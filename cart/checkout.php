@@ -5,6 +5,7 @@
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/config.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -14,7 +15,6 @@ require_login();
 
 $cart  = get_cart();
 $userId = (int)$_SESSION['user_id'];
-$csrf = csrf_token();
 
 // ------------------------------------------------------------------
 // Fetch current points from DB (never trust session for money/points)
@@ -210,6 +210,8 @@ require_once __DIR__ . '/../includes/header.php';
 <section class="ld-section-sm">
     <div class="container" style="max-width: 760px;">
         <h1 class="ld-section-title mb-4">Checkout</h1>
+        
+        <?php show_flash(); ?>
 
         <?php if (empty($cart)): ?>
             <div class="card ld-card p-4">
