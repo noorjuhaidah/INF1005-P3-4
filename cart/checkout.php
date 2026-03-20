@@ -1,16 +1,7 @@
 <?php
-<<<<<<< HEAD
 // =============================================================
 // cart/checkout.php — Order checkout with rewards redemption
 // =============================================================
-
-$page_title   = 'Checkout';
-$current_page = 'cart';
-require_once __DIR__ . '/../includes/header.php';
-=======
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
@@ -18,14 +9,13 @@ require_once __DIR__ . '/../includes/functions.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
->>>>>>> add334f66a5e1aed789e715e8f72f3d87437916f
 
 require_login();
 
 $cart  = get_cart();
 $userId = (int)$_SESSION['user_id'];
+$csrf = csrf_token();
 
-<<<<<<< HEAD
 // ------------------------------------------------------------------
 // Fetch current points from DB (never trust session for money/points)
 // ------------------------------------------------------------------
@@ -36,26 +26,6 @@ try {
     $row = $stmt->fetch();
     if ($row) {
         $currentPoints = (int)$row['points'];
-=======
-$cart = get_cart();
-
-try {
-    $total = cart_total();
-} catch (Throwable $e) {
-    error_log('Checkout cart_total error: ' . $e->getMessage());
-    set_flash('danger', 'Cart data is invalid. Please re-add your items.');
-    $_SESSION['cart'] = [];
-    redirect(APP_URL . '/cart/cart.php');
-}
-
-// Handle place order BEFORE any HTML output
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submitted = $_POST['csrf_token'] ?? '';
-
-    if (!hash_equals($_SESSION['csrf_token'] ?? '', $submitted)) {
-        set_flash('danger', 'Invalid request. Please refresh and try again.');
-        redirect(APP_URL . '/cart/cart.php');
->>>>>>> add334f66a5e1aed789e715e8f72f3d87437916f
     }
 } catch (PDOException $e) {
     $currentPoints = 0;
@@ -89,47 +59,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         $pdo->beginTransaction();
 
-<<<<<<< HEAD
         // 1. Insert the order
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, total_amount, points_used, status)
-            VALUES (?, ?, ?, 'submitted')
+            INSERT INTO orders (
+                user_id,
+                status,
+                payment_status,
+                subtotal,
+                points_redeemed,
+                discount_applied,
+                total_amount,
+                special_requests
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $userId,
-            $finalTotal,
+            'submitted',
+            'pending_verification',
+            $cartSubtotal,
             $applyRedeem ? POINTS_REDEEM_AMOUNT : 0,
+            $applyRedeem ? POINTS_REDEEM_VALUE : 0.00,
+            $finalTotal,
+            null,
         ]);
         $orderId = (int)$pdo->lastInsertId();
-=======
-        $stmt = $pdo->prepare("
-    INSERT INTO orders (
-        user_id,
-        status,
-        payment_status,
-        subtotal,
-        points_redeemed,
-        discount_applied,
-        total_amount,
-        special_requests
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-");
-
-$stmt->execute([
-    $_SESSION['user_id'],
-    'submitted',
-    'pending_verification',
-    $total,
-    0,
-    0.00,
-    $total,
-    null
-]);
-
-
-    
->>>>>>> add334f66a5e1aed789e715e8f72f3d87437916f
 
         // 2. Insert order_items (line-by-line snapshot)
         $itemStmt = $pdo->prepare("
@@ -144,7 +98,6 @@ $stmt->execute([
             $unitPrice = is_numeric($rawPrice) ? (float)$rawPrice : 0.0;
             $qty       = is_numeric($item['qty'] ?? 0) ? (int)$item['qty'] : 0;
 
-<<<<<<< HEAD
             if ($qty <= 0) continue;
 
             $itemStmt->execute([
@@ -167,9 +120,6 @@ $stmt->execute([
                 redirect(APP_URL . '/cart/checkout.php');
             }
         }
-=======
-        $_SESSION['cart'] = [];
->>>>>>> add334f66a5e1aed789e715e8f72f3d87437916f
 
         $pdo->commit();
 
@@ -177,9 +127,10 @@ $stmt->execute([
         award_points($pdo, $userId, $orderId, $finalTotal);
 
         // 5. Refresh session points so navbar/dashboard shows the new balance
-        $_SESSION['points'] = $currentPoints
-                            - ($applyRedeem ? POINTS_REDEEM_AMOUNT : 0)
-                            + (int)floor($finalTotal * POINTS_PER_DOLLAR);
+        $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
+        $stmt->execute([$userId]);
+        $freshPoints = $stmt->fetchColumn();
+        $_SESSION['points'] = $freshPoints !== false ? (int)$freshPoints : 0;
 
         // 6. Clear cart
         $_SESSION['cart'] = [];
@@ -201,21 +152,19 @@ $stmt->execute([
             $pdo->rollBack();
         }
         error_log('Checkout error: ' . $e->getMessage());
-        set_flash('danger', 'Could not place your order. Please try again.');
+        set_flash('danger', 'Checkout error: ' . $e->getMessage());
         redirect(APP_URL . '/cart/cart.php');
     }
 }
 
-<<<<<<< HEAD
 // Preview: what the total would be if the user redeems
 $previewTotal = $canRedeem
     ? max(0.0, $cartSubtotal - POINTS_REDEEM_VALUE)
     : $cartSubtotal;
-=======
-$page_title = 'Checkout';
+
+$page_title   = 'Checkout';
 $current_page = 'cart';
 require_once __DIR__ . '/../includes/header.php';
->>>>>>> add334f66a5e1aed789e715e8f72f3d87437916f
 ?>
 
 
