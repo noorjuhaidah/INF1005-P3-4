@@ -7,14 +7,26 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Sanitize inputs
-$full_name        = clean_input($_POST['full_name']        ?? '');
-$email            = clean_input($_POST['email']            ?? '');
-$phone            = clean_input($_POST['phone']            ?? '');
-$password         = $_POST['password']          ?? '';
-$confirm_password = $_POST['confirm_password']  ?? '';
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    redirect(APP_URL . '/auth/register.php');
+}
 
-// Validate
+// CSRF protection
+verify_csrf(APP_URL . '/auth/register.php');
+
+$full_name        = clean_input(trim($_POST['full_name'] ?? ''));
+$email            = clean_input(trim($_POST['email'] ?? ''));
+$phone            = clean_input(trim($_POST['phone'] ?? ''));
+$password         = $_POST['password'] ?? '';
+$confirm_password = $_POST['confirm_password'] ?? '';
+
+// Save old input using helper
+set_old_input([
+    'full_name' => $full_name,
+    'email' => $email,
+    'phone' => $phone
+]);
+
 if ($full_name === '' || $email === '' || $password === '') {
     set_flash('danger', 'Name, email and password are required.');
     redirect(APP_URL . '/auth/register.php');
@@ -36,15 +48,16 @@ if ($password !== $confirm_password) {
 }
 
 try {
-    // Check if email already in use
     $stmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ? LIMIT 1");
     $stmt->execute([$email]);
+
     if ($stmt->fetch()) {
         set_flash('danger', 'An account with this email already exists.');
         redirect(APP_URL . '/auth/register.php');
     }
 
-    // Insert new user — password_hash uses bcrypt (secure)
+    $pdo->beginTransaction();
+
     $password_hash = password_hash($password, PASSWORD_BCRYPT);
 
     $stmt = $pdo->prepare(
@@ -61,24 +74,30 @@ try {
 
     $new_user_id = $pdo->lastInsertId();
 
-    // Log the signup bonus in points_transactions
     $txn = $pdo->prepare(
         "INSERT INTO points_transactions (user_id, order_id, txn_type, points_delta, note)
          VALUES (?, NULL, 'bonus', ?, 'Welcome bonus for creating an account')"
     );
     $txn->execute([$new_user_id, POINTS_SIGNUP_BONUS]);
 
-    // Log the new user in immediately
+    $pdo->commit();
+
+    clear_old_input();
+
     session_regenerate_id(true);
     $_SESSION['user_id']   = $new_user_id;
     $_SESSION['full_name'] = $full_name;
     $_SESSION['role']      = 'customer';
     $_SESSION['points']    = POINTS_SIGNUP_BONUS;
 
-    set_flash('success', 'Welcome to LazyDrip, ' . e($full_name) . '! You\'ve earned ' . POINTS_SIGNUP_BONUS . ' bonus points.');
+    set_flash('success', 'Welcome to LazyDrip, ' . $full_name . '! You\'ve earned ' . POINTS_SIGNUP_BONUS . ' bonus points.');
     redirect(APP_URL . '/customer/dashboard.php');
 
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
     error_log('Register error: ' . $e->getMessage());
     set_flash('danger', 'Database error. Please try again.');
     redirect(APP_URL . '/auth/register.php');

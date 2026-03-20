@@ -1,27 +1,40 @@
 <?php
 $page_title = 'Register';
 $current_page = '';
+
 require_once __DIR__ . '/../includes/header.php';
+
+redirect_if_logged_in();
 ?>
+
 <section class="ld-section">
     <div class="container">
         <h1 class="ld-section-title text-center">Create Account</h1>
-        <p class="ld-section-subtitle text-center">Join LazyDrip and earn <?= POINTS_SIGNUP_BONUS ?> bonus points!</p>
+        <p class="ld-section-subtitle text-center">
+            Join LazyDrip and earn <?= POINTS_SIGNUP_BONUS ?> bonus points!
+        </p>
+
+        <?php show_flash(); ?>
+
         <div class="ld-form-card">
             <form method="post" action="<?= APP_URL ?>/auth/process_register.php"
                   class="needs-validation" novalidate>
+                
+                <?php csrf_field(); ?>
 
                 <div class="mb-3">
                     <label class="form-label" for="full_name">Full Name</label>
                     <input class="form-control" type="text" id="full_name" name="full_name"
-                           required autocomplete="name" placeholder="Jane Tan">
+                           required autocomplete="name" placeholder="Jane Tan"
+                           value="<?= e(old_input('full_name')) ?>">
                     <div class="invalid-feedback">Please enter your full name.</div>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label" for="email">Email</label>
                     <input class="form-control" type="email" id="email" name="email"
-                           required autocomplete="email" placeholder="you@example.com">
+                           required autocomplete="email" placeholder="you@example.com"
+                           value="<?= e(old_input('email')) ?>">
                     <div class="invalid-feedback">Please enter a valid email.</div>
                 </div>
 
@@ -30,7 +43,8 @@ require_once __DIR__ . '/../includes/header.php';
                         Phone <span class="text-muted">(optional)</span>
                     </label>
                     <input class="form-control" type="tel" id="phone" name="phone"
-                           autocomplete="tel" placeholder="+65 9123 4567">
+                           autocomplete="tel" placeholder="+65 9123 4567"
+                           value="<?= e(old_input('phone')) ?>">
                 </div>
 
                 <div class="mb-3">
@@ -68,9 +82,11 @@ require_once __DIR__ . '/../includes/header.php';
 </section>
 
 <script>
-const toggleBtn     = document.getElementById('togglePassword');
+const toggleBtn = document.getElementById('togglePassword');
 const passwordInput = document.getElementById('password');
-const toggleIcon    = document.getElementById('toggleIcon');
+const confirmPasswordInput = document.getElementById('confirm_password');
+const toggleIcon = document.getElementById('toggleIcon');
+
 if (toggleBtn) {
     toggleBtn.addEventListener('click', function () {
         const isPassword = passwordInput.type === 'password';
@@ -78,6 +94,21 @@ if (toggleBtn) {
         toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
     });
 }
+
+function validatePasswordMatch() {
+    if (confirmPasswordInput.value !== passwordInput.value) {
+        confirmPasswordInput.setCustomValidity('Passwords do not match');
+    } else {
+        confirmPasswordInput.setCustomValidity('');
+    }
+}
+
+if (passwordInput && confirmPasswordInput) {
+    passwordInput.addEventListener('input', validatePasswordMatch);
+    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
+}
 </script>
+
+<?php clear_old_input(); ?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

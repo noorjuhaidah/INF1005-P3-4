@@ -4,10 +4,7 @@ $current_page = 'admin';
 
 require_once __DIR__ . '/../includes/header.php';
 
-if (!is_logged_in() || !is_admin()) {
-    header('Location: ' . APP_URL . '/auth/login.php');
-    exit;
-}
+require_admin();
 
 $totalProducts = 0;
 $totalOrders = 0;
@@ -33,6 +30,8 @@ try {
     <div class="container">
         <h1 class="ld-section-title">Admin Dashboard</h1>
         <p class="ld-section-subtitle">Manage products and orders.</p>
+
+        <?php show_flash(); ?>
 
         <div class="row g-4 mb-4">
             <div class="col-md-4">
