@@ -36,6 +36,18 @@ function show_flash(): void {
     }
 }
 
+function set_old_input(array $data): void {
+    $_SESSION['old_input'] = $data;
+}
+
+function old_input(string $key, string $default = ''): string {
+    return $_SESSION['old_input'][$key] ?? $default;
+}
+
+function clear_old_input(): void {
+    unset($_SESSION['old_input']);
+}
+
 // -------------------------------------------------------------
 // REDIRECT HELPER
 // Usage: redirect('/lazydrip/auth/login.php');
@@ -58,7 +70,7 @@ function require_login(): void {
 }
 
 function require_admin(): void {
-    if (empty($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    if (empty($_SESSION['user_id']) || (($_SESSION['role'] ?? '') !== 'admin')) {
         set_flash('danger', 'Access denied.');
         redirect(APP_URL . '/auth/login.php');
     }
@@ -70,6 +82,15 @@ function is_logged_in(): bool {
 
 function is_admin(): bool {
     return !empty($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}
+
+function redirect_if_logged_in(): void {
+    if (is_logged_in()) {
+        if (is_admin()) {
+            redirect(APP_URL . '/admin/dashboard.php');
+        }
+        redirect(APP_URL . '/customer/dashboard.php');
+    }
 }
 
 // -------------------------------------------------------------

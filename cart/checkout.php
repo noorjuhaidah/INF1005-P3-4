@@ -3,14 +3,18 @@
 // cart/checkout.php — Order checkout with rewards redemption
 // =============================================================
 
-$page_title   = 'Checkout';
-$current_page = 'cart';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_login();
 
 $cart  = get_cart();
 $userId = (int)$_SESSION['user_id'];
+$csrf = csrf_token();
 
 // ------------------------------------------------------------------
 // Fetch current points from DB (never trust session for money/points)
@@ -29,6 +33,19 @@ try {
 
 $canRedeem    = $currentPoints >= POINTS_REDEEM_AMOUNT;
 $cartSubtotal = cart_total();
+
+// Detect the live order_items schema so checkout works across DB versions.
+$orderItemColumns = [];
+try {
+    $colStmt = $pdo->query("SHOW COLUMNS FROM order_items");
+    foreach ($colStmt->fetchAll() as $column) {
+        if (!empty($column['Field'])) {
+            $orderItemColumns[] = $column['Field'];
+        }
+    }
+} catch (PDOException $e) {
+    $orderItemColumns = [];
+}
 
 // ------------------------------------------------------------------
 // Handle POST — place order
@@ -57,20 +74,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 1. Insert the order
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, total_amount, points_used, status)
-            VALUES (?, ?, ?, 'submitted')
+            INSERT INTO orders (
+                user_id,
+                status,
+                payment_status,
+                subtotal,
+                points_redeemed,
+                discount_applied,
+                total_amount,
+                special_requests
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $userId,
-            $finalTotal,
+            'submitted',
+            'pending_verification',
+            $cartSubtotal,
             $applyRedeem ? POINTS_REDEEM_AMOUNT : 0,
+            $applyRedeem ? POINTS_REDEEM_VALUE : 0.00,
+            $finalTotal,
+            null,
         ]);
         $orderId = (int)$pdo->lastInsertId();
 
         // 2. Insert order_items (line-by-line snapshot)
+        $itemFieldMap = [
+            'order_id'   => null,
+            'item_id'    => null,
+            'item_name'  => null,
+            'unit_price' => null,
+            'quantity'   => null,
+            'qty'        => null,
+            'subtotal'   => null,
+        ];
+
+        $itemInsertColumns = [];
+        foreach (array_keys($itemFieldMap) as $fieldName) {
+            if (in_array($fieldName, $orderItemColumns, true)) {
+                $itemInsertColumns[] = $fieldName;
+            }
+        }
+
+        $itemPlaceholders = implode(', ', array_fill(0, count($itemInsertColumns), '?'));
         $itemStmt = $pdo->prepare("
-            INSERT INTO order_items (order_id, item_id, item_name, unit_price, quantity, subtotal)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO order_items (" . implode(', ', $itemInsertColumns) . ")
+            VALUES (" . $itemPlaceholders . ")
         ");
         foreach ($cart as $itemId => $item) {
             $rawPrice = $item['price'] ?? 0;
@@ -82,14 +131,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($qty <= 0) continue;
 
-            $itemStmt->execute([
-                $orderId,
-                (int)$itemId,
-                $item['name'] ?? 'Item',
-                $unitPrice,
-                $qty,
-                round($unitPrice * $qty, 2),
-            ]);
+            $rowData = [
+                'order_id'   => $orderId,
+                'item_id'    => (int)$itemId,
+                'item_name'  => $item['name'] ?? 'Item',
+                'unit_price' => $unitPrice,
+                'quantity'   => $qty,
+                'qty'        => $qty,
+                'subtotal'   => round($unitPrice * $qty, 2),
+            ];
+
+            $itemValues = [];
+            foreach ($itemInsertColumns as $columnName) {
+                $itemValues[] = $rowData[$columnName];
+            }
+
+            $itemStmt->execute($itemValues);
         }
 
         // 3. Deduct points INSIDE the transaction so it rolls back on failure
@@ -109,9 +166,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         award_points($pdo, $userId, $orderId, $finalTotal);
 
         // 5. Refresh session points so navbar/dashboard shows the new balance
-        $_SESSION['points'] = $currentPoints
-                            - ($applyRedeem ? POINTS_REDEEM_AMOUNT : 0)
-                            + (int)floor($finalTotal * POINTS_PER_DOLLAR);
+        $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
+        $stmt->execute([$userId]);
+        $freshPoints = $stmt->fetchColumn();
+        $_SESSION['points'] = $freshPoints !== false ? (int)$freshPoints : 0;
 
         // 6. Clear cart
         $_SESSION['cart'] = [];
@@ -133,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->rollBack();
         }
         error_log('Checkout error: ' . $e->getMessage());
-        set_flash('danger', 'Could not place your order. Please try again.');
+        set_flash('danger', 'Checkout error: ' . $e->getMessage());
         redirect(APP_URL . '/cart/cart.php');
     }
 }
@@ -142,6 +200,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $previewTotal = $canRedeem
     ? max(0.0, $cartSubtotal - POINTS_REDEEM_VALUE)
     : $cartSubtotal;
+
+$page_title   = 'Checkout';
+$current_page = 'cart';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 
