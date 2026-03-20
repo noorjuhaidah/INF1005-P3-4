@@ -7,9 +7,12 @@
 
 $page_title   = 'Reviews';
 $current_page = 'reviews';
-require_once __DIR__ . '/includes/header.php';
 
-// Handle new review submission
+// Load dependencies BEFORE header to process form submissions
+require_once __DIR__ . '/includes/config.php';
+require_once __DIR__ . '/includes/functions.php';
+
+// Handle new review submission BEFORE header output (so redirects work)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
     // Use the shared CSRF helper — falls back to reviews.php on failure
@@ -34,6 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
         redirect(APP_URL . '/reviews.php');
     }
 }
+
+// Now include header after form processing
+require_once __DIR__ . '/includes/header.php';
 
 // Fetch existing reviews
 $reviews = [];
