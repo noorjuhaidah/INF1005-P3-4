@@ -34,6 +34,19 @@ try {
 $canRedeem    = $currentPoints >= POINTS_REDEEM_AMOUNT;
 $cartSubtotal = cart_total();
 
+// Detect the live order_items schema so checkout works across DB versions.
+$orderItemColumns = [];
+try {
+    $colStmt = $pdo->query("SHOW COLUMNS FROM order_items");
+    foreach ($colStmt->fetchAll() as $column) {
+        if (!empty($column['Field'])) {
+            $orderItemColumns[] = $column['Field'];
+        }
+    }
+} catch (PDOException $e) {
+    $orderItemColumns = [];
+}
+
 // ------------------------------------------------------------------
 // Handle POST — place order
 // ------------------------------------------------------------------
@@ -86,9 +99,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $orderId = (int)$pdo->lastInsertId();
 
         // 2. Insert order_items (line-by-line snapshot)
+        $itemFieldMap = [
+            'order_id'   => null,
+            'item_id'    => null,
+            'item_name'  => null,
+            'unit_price' => null,
+            'quantity'   => null,
+            'qty'        => null,
+            'subtotal'   => null,
+        ];
+
+        $itemInsertColumns = [];
+        foreach (array_keys($itemFieldMap) as $fieldName) {
+            if (in_array($fieldName, $orderItemColumns, true)) {
+                $itemInsertColumns[] = $fieldName;
+            }
+        }
+
+        $itemPlaceholders = implode(', ', array_fill(0, count($itemInsertColumns), '?'));
         $itemStmt = $pdo->prepare("
-            INSERT INTO order_items (order_id, item_id, item_name, unit_price, quantity, subtotal)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO order_items (" . implode(', ', $itemInsertColumns) . ")
+            VALUES (" . $itemPlaceholders . ")
         ");
         foreach ($cart as $itemId => $item) {
             $rawPrice = $item['price'] ?? 0;
@@ -100,14 +131,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($qty <= 0) continue;
 
-            $itemStmt->execute([
-                $orderId,
-                (int)$itemId,
-                $item['name'] ?? 'Item',
-                $unitPrice,
-                $qty,
-                round($unitPrice * $qty, 2),
-            ]);
+            $rowData = [
+                'order_id'   => $orderId,
+                'item_id'    => (int)$itemId,
+                'item_name'  => $item['name'] ?? 'Item',
+                'unit_price' => $unitPrice,
+                'quantity'   => $qty,
+                'qty'        => $qty,
+                'subtotal'   => round($unitPrice * $qty, 2),
+            ];
+
+            $itemValues = [];
+            foreach ($itemInsertColumns as $columnName) {
+                $itemValues[] = $rowData[$columnName];
+            }
+
+            $itemStmt->execute($itemValues);
         }
 
         // 3. Deduct points INSIDE the transaction so it rolls back on failure
