@@ -60,6 +60,8 @@ function pickField(array $row, array $keys) {
 
 <section class="ld-section">
     <div class="container">
+         <?php show_flash(); ?>
+         
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-4">
 
             <div class="card w-100" style="max-width: 28rem;">
