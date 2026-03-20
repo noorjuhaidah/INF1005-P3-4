@@ -8,9 +8,13 @@
 $page_title   = 'Reviews';
 $current_page = 'reviews';
 
-// Load dependencies BEFORE header to process form submissions
-require_once __DIR__ . '/includes/config.php';
+// Load DB + helpers BEFORE header so POST/redirect logic can run safely.
+require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Handle new review submission BEFORE header output (so redirects work)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
@@ -33,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
         set_flash('success', 'Thanks for your review!');
         redirect(APP_URL . '/reviews.php');
     } catch (PDOException $e) {
+        error_log('Review submit error: ' . $e->getMessage());
         set_flash('danger', 'Unable to save your review. Please try again later.');
         redirect(APP_URL . '/reviews.php');
     }
