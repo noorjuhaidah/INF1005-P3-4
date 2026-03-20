@@ -3,14 +3,18 @@
 // cart/checkout.php — Order checkout with rewards redemption
 // =============================================================
 
-$page_title   = 'Checkout';
-$current_page = 'cart';
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_login();
 
 $cart  = get_cart();
 $userId = (int)$_SESSION['user_id'];
+$csrf = csrf_token();
 
 // ------------------------------------------------------------------
 // Fetch current points from DB (never trust session for money/points)
@@ -57,13 +61,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // 1. Insert the order
         $stmt = $pdo->prepare("
-            INSERT INTO orders (user_id, total_amount, points_used, status)
-            VALUES (?, ?, ?, 'submitted')
+            INSERT INTO orders (
+                user_id,
+                status,
+                payment_status,
+                subtotal,
+                points_redeemed,
+                discount_applied,
+                total_amount,
+                special_requests
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $userId,
-            $finalTotal,
+            'submitted',
+            'pending_verification',
+            $cartSubtotal,
             $applyRedeem ? POINTS_REDEEM_AMOUNT : 0,
+            $applyRedeem ? POINTS_REDEEM_VALUE : 0.00,
+            $finalTotal,
+            null,
         ]);
         $orderId = (int)$pdo->lastInsertId();
 
@@ -109,9 +127,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         award_points($pdo, $userId, $orderId, $finalTotal);
 
         // 5. Refresh session points so navbar/dashboard shows the new balance
-        $_SESSION['points'] = $currentPoints
-                            - ($applyRedeem ? POINTS_REDEEM_AMOUNT : 0)
-                            + (int)floor($finalTotal * POINTS_PER_DOLLAR);
+        $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
+        $stmt->execute([$userId]);
+        $freshPoints = $stmt->fetchColumn();
+        $_SESSION['points'] = $freshPoints !== false ? (int)$freshPoints : 0;
 
         // 6. Clear cart
         $_SESSION['cart'] = [];
@@ -142,6 +161,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $previewTotal = $canRedeem
     ? max(0.0, $cartSubtotal - POINTS_REDEEM_VALUE)
     : $cartSubtotal;
+
+$page_title   = 'Checkout';
+$current_page = 'cart';
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 
