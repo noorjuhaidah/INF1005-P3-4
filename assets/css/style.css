@@ -37,7 +37,6 @@ body {
 h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-head);
     font-weight: 600;
-    color: var(--ld-charcoal);
 }
 
 a {
@@ -288,3 +287,8 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     font-weight: 600;
 }
 .skip-link:focus { top: 0; }
+
+.ld-footer h2,
+.ld-footer h3 {
+    color: #fff !important;
+}
