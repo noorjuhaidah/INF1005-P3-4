@@ -9,6 +9,8 @@ require_admin();
 $totalProducts = 0;
 $totalOrders = 0;
 $totalRevenue = 0;
+$orderStatusLabels = [];
+$orderStatusCounts = [];
 
 try {
     $stmt = $pdo->query("SELECT COUNT(*) FROM menu_items");
@@ -19,10 +21,25 @@ try {
 
     $stmt = $pdo->query("SELECT COALESCE(SUM(total_amount), 0) FROM orders");
     $totalRevenue = (float) $stmt->fetchColumn();
+
+    $stmt = $pdo->query("
+        SELECT status, COUNT(*) AS total
+        FROM orders
+        GROUP BY status
+        ORDER BY total DESC
+    ");
+    $rows = $stmt->fetchAll();
+
+    foreach ($rows as $row) {
+        $orderStatusLabels[] = ucfirst(str_replace('_', ' ', $row['status']));
+        $orderStatusCounts[] = (int) $row['total'];
+    }
 } catch (PDOException $e) {
     $totalProducts = 0;
     $totalOrders = 0;
     $totalRevenue = 0;
+    $orderStatusLabels = [];
+    $orderStatusCounts = [];
 }
 ?>
 
@@ -60,10 +77,13 @@ try {
 
         <div class="card ld-card p-4 mb-4">
             <h4 class="mb-3">
-                <i class="fa-solid fa-chart-column me-2"></i>Business Overview
+                <i class="fa-solid fa-chart-pie me-2"></i>Orders by Status
             </h4>
+            <p class="text-muted small mb-3">
+                Overview of current order distribution.
+            </p>
             <div style="height: 320px;">
-                <canvas id="adminOverviewChart"></canvas>
+                <canvas id="ordersStatusChart"></canvas>
             </div>
         </div>
 
@@ -118,30 +138,21 @@ try {
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const adminChartCtx = document.getElementById('adminOverviewChart');
+const statusChartCtx = document.getElementById('ordersStatusChart');
 
-if (adminChartCtx) {
-    new Chart(adminChartCtx, {
-        type: 'bar',
+if (statusChartCtx) {
+    new Chart(statusChartCtx, {
+        type: 'doughnut',
         data: {
-            labels: ['Products', 'Orders', 'Revenue'],
+            labels: <?= json_encode($orderStatusLabels) ?>,
             datasets: [{
-                label: 'LazyDrip Overview',
-                data: [
-                    <?= (int) $totalProducts ?>,
-                    <?= (int) $totalOrders ?>,
-                    <?= (float) $totalRevenue ?>
-                ]
+                label: 'Orders by Status',
+                data: <?= json_encode($orderStatusCounts) ?>
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
+            maintainAspectRatio: false
         }
     });
 }
