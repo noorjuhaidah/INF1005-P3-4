@@ -16,6 +16,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 $contactMessageColumn = 'message';
+$contactColumns = [];
 try {
     $colStmt = $pdo->query("SHOW COLUMNS FROM contact_messages");
     $contactColumns = array_column($colStmt->fetchAll(), 'Field');
@@ -23,6 +24,7 @@ try {
         $contactMessageColumn = 'message_text';
     }
 } catch (PDOException $e) {
+    $contactColumns = [];
     $contactMessageColumn = 'message';
 }
 
@@ -64,14 +66,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // 4. If valid, store in DB and redirect with success flash
     if (empty($errors)) {
         try {
-            $userId = is_logged_in() ? (int)$_SESSION['user_id'] : null;
+            $insertColumns = [];
+            $insertValues = [];
+            $insertParams = [];
+
+            if (in_array('user_id', $contactColumns, true)) {
+                $insertColumns[] = 'user_id';
+                $insertValues[] = '?';
+                $insertParams[] = is_logged_in() ? (int)$_SESSION['user_id'] : null;
+            }
+
+            if (in_array('name', $contactColumns, true)) {
+                $insertColumns[] = 'name';
+                $insertValues[] = '?';
+                $insertParams[] = $name;
+            }
+
+            if (in_array('email', $contactColumns, true)) {
+                $insertColumns[] = 'email';
+                $insertValues[] = '?';
+                $insertParams[] = $email;
+            }
+
+            if (in_array('subject', $contactColumns, true)) {
+                $insertColumns[] = 'subject';
+                $insertValues[] = '?';
+                $insertParams[] = $subject;
+            }
+
+            $insertColumns[] = $contactMessageColumn;
+            $insertValues[] = '?';
+            $insertParams[] = $message;
+
+            if (in_array('created_at', $contactColumns, true)) {
+                $insertColumns[] = 'created_at';
+                $insertValues[] = 'NOW()';
+            }
 
             $stmt = $pdo->prepare("
                 INSERT INTO contact_messages
-                    (user_id, name, email, subject, {$contactMessageColumn}, created_at)
-                VALUES (?, ?, ?, ?, ?, NOW())
+                    (" . implode(', ', $insertColumns) . ")
+                VALUES (" . implode(', ', $insertValues) . ")
             ");
-            $stmt->execute([$userId, $name, $email, $subject, $message]);
+            $stmt->execute($insertParams);
 
             set_flash('success', 'Thanks for reaching out, ' . e($name) . '! We will get back to you within 1–2 business days.');
             redirect(APP_URL . '/contact.php');
