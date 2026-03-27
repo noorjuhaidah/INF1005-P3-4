@@ -36,7 +36,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 try {
     $stmt = $pdo->prepare("
-        SELECT user_id, full_name, email, role, password_hash
+        SELECT user_id, full_name, role, password_hash
         FROM users
         WHERE email = ? AND is_active = 1
         LIMIT 1
@@ -51,7 +51,6 @@ try {
 
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['full_name'] = $user['full_name'];
-        $_SESSION['email'] = $user['email'];
         $_SESSION['role'] = $user['role'];
 
         if ($user['role'] === 'admin') {
@@ -65,7 +64,6 @@ try {
     }
 
 } catch (PDOException $e) {
-    error_log('Login error: ' . $e->getMessage());
     set_flash('danger', 'Database error.');
     redirect(APP_URL . '/auth/login.php');
 }
