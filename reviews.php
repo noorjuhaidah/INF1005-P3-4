@@ -28,8 +28,10 @@ try {
     $reviewColumns = [];
 }
 
-$usesAdminReviewSchema = in_array('comment', $reviewColumns, true)
-    && in_array('name', $reviewColumns, true);
+$reviewTextColumn = in_array('comment', $reviewColumns, true) ? 'comment' : (in_array('review_text', $reviewColumns, true) ? 'review_text' : '');
+$reviewNameColumn = in_array('name', $reviewColumns, true) ? 'name' : '';
+$reviewRatingColumn = in_array('rating', $reviewColumns, true) ? 'rating' : '';
+$reviewUserIdColumn = in_array('user_id', $reviewColumns, true) ? 'user_id' : '';
 
 // Handle new review submission BEFORE header output (so redirects work)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
@@ -52,19 +54,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
     }
 
     try {
-        if ($usesAdminReviewSchema) {
-            $stmt = $pdo->prepare(
-                "INSERT INTO reviews (name, rating, comment, created_at)
-                        VALUES (?, ?, ?, NOW())"
-            );
-            $stmt->execute([$reviewerName, $rating, $reviewText]);
-        } else {
-            $stmt = $pdo->prepare(
-                "INSERT INTO reviews (user_id, review_text, created_at)
-                        VALUES (?, ?, NOW())"
-            );
-            $stmt->execute([$_SESSION['user_id'], $reviewText]);
+        $insertColumns = [];
+        $insertValues = [];
+        $insertParams = [];
+
+        if ($reviewNameColumn !== '') {
+            $insertColumns[] = $reviewNameColumn;
+            $insertValues[] = '?';
+            $insertParams[] = $reviewerName;
         }
+
+        if ($reviewRatingColumn !== '') {
+            $insertColumns[] = $reviewRatingColumn;
+            $insertValues[] = '?';
+            $insertParams[] = $rating;
+        }
+
+        if ($reviewUserIdColumn !== '') {
+            $insertColumns[] = $reviewUserIdColumn;
+            $insertValues[] = '?';
+            $insertParams[] = (int)$_SESSION['user_id'];
+        }
+
+        if ($reviewTextColumn === '') {
+            throw new PDOException('No supported review text column found.');
+        }
+
+        $insertColumns[] = $reviewTextColumn;
+        $insertValues[] = '?';
+        $insertParams[] = $reviewText;
+
+        if (in_array('created_at', $reviewColumns, true)) {
+            $insertColumns[] = 'created_at';
+            $insertValues[] = 'NOW()';
+        }
+
+        $stmt = $pdo->prepare(
+            "INSERT INTO reviews (" . implode(', ', $insertColumns) . ")
+                    VALUES (" . implode(', ', $insertValues) . ")"
+        );
+        $stmt->execute($insertParams);
 
         set_flash('success', 'Thanks for your review!');
         redirect(APP_URL . '/reviews.php');
@@ -81,22 +110,34 @@ require_once __DIR__ . '/includes/header.php';
 // Fetch existing reviews
 $reviews = [];
 try {
-    if ($usesAdminReviewSchema) {
-        $stmt = $pdo->query(
-            "SELECT r.comment AS review_text, r.created_at, r.name AS full_name, r.rating
-               FROM reviews r
-              ORDER BY r.created_at DESC"
-        );
-        $reviews = $stmt->fetchAll();
+    $selectParts = [];
+    $selectParts[] = $reviewTextColumn !== '' ? "r.{$reviewTextColumn} AS review_text" : "'' AS review_text";
+    $selectParts[] = in_array('created_at', $reviewColumns, true) ? "r.created_at" : "NULL AS created_at";
+
+    if ($reviewNameColumn !== '') {
+        $selectParts[] = "r.{$reviewNameColumn} AS full_name";
+    } elseif ($reviewUserIdColumn !== '') {
+        $selectParts[] = "u.full_name AS full_name";
     } else {
-        $stmt = $pdo->query(
-            "SELECT r.review_text, r.created_at, u.full_name
-               FROM reviews r
-               LEFT JOIN users u ON u.user_id = r.user_id
-              ORDER BY r.created_at DESC"
-        );
-        $reviews = $stmt->fetchAll();
+        $selectParts[] = "'Anonymous' AS full_name";
     }
+
+    if ($reviewRatingColumn !== '') {
+        $selectParts[] = "r.{$reviewRatingColumn} AS rating";
+    } else {
+        $selectParts[] = "NULL AS rating";
+    }
+
+    $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
+    if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
+        $sql .= " LEFT JOIN users u ON u.user_id = r.{$reviewUserIdColumn}";
+    }
+    if (in_array('created_at', $reviewColumns, true)) {
+        $sql .= " ORDER BY r.created_at DESC";
+    }
+
+    $stmt = $pdo->query($sql);
+    $reviews = $stmt->fetchAll();
 } catch (PDOException $e) {
     $reviews = [];
 }
