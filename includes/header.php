@@ -51,7 +51,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         <!-- Brand logo / name -->
         <a class="navbar-brand ld-brand" href="<?= APP_URL ?>/index.php">
-            <img src="<?= APP_URL ?>/assets/images/CatLogo.png" alt="LazyDrip Logo" style="max-height: 40px; margin-right: 8px; width: auto;"> <!-- for image -->
+            <img src="<?= APP_URL ?>/assets/images/CatLogo_transparent.png" alt="LazyDrip Logo" style="max-height: 40px; margin-right: 8px; width: auto;"> <!-- for image -->
             <!--if changed code does not work, replace line 54 with: <span class="ld-logo-dot"></span>LazyDrip -->
         </a>
 
