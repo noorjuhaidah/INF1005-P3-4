@@ -127,12 +127,4 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<section class="ld-section">
-    <div class="container text-center">
-        <p class="text-muted">
-            Foundation loaded successfully - database, session, navbar, and footer all connected.
-        </p>
-    </div>
-</section>
-
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
