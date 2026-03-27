@@ -227,6 +227,15 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     background-color: var(--ld-charcoal);
     color: #ccc;
 }
+.ld-footer .ld-footer-brand,
+.ld-footer .ld-footer-heading {
+    color: #fff !important;
+}
+.ld-footer .text-muted,
+.ld-footer p,
+.ld-footer .small {
+    color: rgba(255, 255, 255, 0.78) !important;
+}
 .ld-footer a {
     color: #aaa;
 }
