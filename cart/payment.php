@@ -6,6 +6,7 @@
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/mailer.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -48,10 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $expiry = trim($_POST['expiry'] ?? '');
     $cvv = trim($_POST['cvv'] ?? '');
 
-    if ($cardName === '' ||
+    if (
+        $cardName === '' ||
         !preg_match('/^\d{16}$/', $cardNumber) ||
         !preg_match('/^\d{2}\/\d{2}$/', $expiry) ||
-        !preg_match('/^\d{3}$/', $cvv)) {
+        !preg_match('/^\d{3}$/', $cvv)
+    ) {
         set_old_input([
             'card_name' => $cardName,
             'card_number' => $_POST['card_number'] ?? '',
@@ -164,6 +167,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $freshPoints = $stmt->fetchColumn();
         $_SESSION['points'] = $freshPoints !== false ? (int)$freshPoints : 0;
 
+        // Send order confirmation email
+        if (!empty($_SESSION['email'])) {
+            $body = "
+                <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                    <h2 style='color:#6f4e37;'>☕ Order Confirmation</h2>
+                    <p>Hi " . e($_SESSION['full_name']) . ",</p>
+                    <p>Your order <strong>#{$orderId}</strong> has been placed successfully.</p>
+                    <p><strong>Total Paid:</strong> " . format_price($finalTotal) . "</p>
+                    <p><strong>Status:</strong> submitted</p>
+                    <p>Thank you for choosing LazyDrip!</p>
+                </div>
+            ";
+
+            send_email(
+                $_SESSION['email'],
+                $_SESSION['full_name'],
+                'LazyDrip Order Confirmation',
+                $body
+            );
+        }
+
         $_SESSION['cart'] = [];
         unset($_SESSION['pending_checkout']);
         clear_old_input();
@@ -207,6 +231,8 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="card ld-card p-4">
                     <h1 class="ld-section-title mb-3">Payment</h1>
                     <p class="text-muted mb-4">Mock payment page for project demo. No real payment is processed.</p>
+
+                    <?php show_flash(); ?>
 
                     <form method="POST" action="<?= APP_URL ?>/cart/payment.php" class="row g-3">
                         <?php csrf_field(); ?>

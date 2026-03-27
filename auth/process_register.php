@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/mailer.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -87,8 +88,19 @@ try {
     session_regenerate_id(true);
     $_SESSION['user_id']   = $new_user_id;
     $_SESSION['full_name'] = $full_name;
+    $_SESSION['email']     = $email;
     $_SESSION['role']      = 'customer';
     $_SESSION['points']    = POINTS_SIGNUP_BONUS;
+
+    $body = "
+        <h2>Welcome to LazyDrip ☕</h2>
+        <p>Hi " . e($full_name) . ",</p>
+        <p>Your account has been successfully created.</p>
+        <p>You received <strong>" . POINTS_SIGNUP_BONUS . " bonus points</strong>.</p>
+        <p>We’re excited to have you with us.</p>
+    ";
+
+    send_email($email, $full_name, 'Welcome to LazyDrip', $body);
 
     set_flash('success', 'Welcome to LazyDrip, ' . $full_name . '! You\'ve earned ' . POINTS_SIGNUP_BONUS . ' bonus points.');
     redirect(APP_URL . '/customer/dashboard.php');
