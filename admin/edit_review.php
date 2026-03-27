@@ -23,6 +23,7 @@ $reviewTextColumn = '';
 $reviewNameColumn = '';
 $reviewRatingColumn = '';
 $reviewUserIdColumn = '';
+$reviewIdColumn = '';
 
 try {
     $columnsStmt = $pdo->query("SHOW COLUMNS FROM reviews");
@@ -32,18 +33,41 @@ try {
         }
     }
 
-    $reviewTextColumn = in_array('comment', $reviewColumns, true)
-        ? 'comment'
-        : (in_array('review_text', $reviewColumns, true) ? 'review_text' : '');
-    $reviewNameColumn = in_array('name', $reviewColumns, true) ? 'name' : '';
-    $reviewRatingColumn = in_array('rating', $reviewColumns, true) ? 'rating' : '';
-    $reviewUserIdColumn = in_array('user_id', $reviewColumns, true) ? 'user_id' : '';
+    $pickColumn = static function (array $candidates, array $columns): string {
+        foreach ($candidates as $candidate) {
+            if (in_array($candidate, $columns, true)) {
+                return $candidate;
+            }
+        }
+        return '';
+    };
 
-    if ($reviewTextColumn === '') {
-        throw new RuntimeException('No supported review text column found in reviews table.');
+    $reviewIdColumn = $pickColumn(['id', 'review_id'], $reviewColumns);
+    $reviewTextColumn = $pickColumn(['comment', 'review_text', 'review', 'feedback'], $reviewColumns);
+    $reviewNameColumn = $pickColumn(['name', 'reviewer_name', 'full_name'], $reviewColumns);
+    $reviewRatingColumn = $pickColumn(['rating', 'stars'], $reviewColumns);
+    $reviewUserIdColumn = $pickColumn(['user_id', 'customer_id'], $reviewColumns);
+    $userPrimaryKeyColumn = 'user_id';
+
+    if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
+        $userColumns = [];
+        $userColumnsStmt = $pdo->query("SHOW COLUMNS FROM users");
+        foreach ($userColumnsStmt->fetchAll() as $column) {
+            if (!empty($column['Field'])) {
+                $userColumns[] = $column['Field'];
+            }
+        }
+        $userPrimaryKeyColumn = $pickColumn(['user_id', 'id'], $userColumns);
+        if ($userPrimaryKeyColumn === '') {
+            $userPrimaryKeyColumn = 'user_id';
+        }
     }
 
-    $selectParts = ['r.id', "r.{$reviewTextColumn} AS review_text"];
+    if ($reviewIdColumn === '' || $reviewTextColumn === '') {
+        throw new RuntimeException('No supported review ID/text columns found in reviews table.');
+    }
+
+    $selectParts = ["r.{$reviewIdColumn} AS review_id", "r.{$reviewTextColumn} AS review_text"];
 
     if ($reviewNameColumn !== '') {
         $selectParts[] = "r.{$reviewNameColumn} AS reviewer_name";
@@ -61,9 +85,9 @@ try {
 
     $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
-        $sql .= " LEFT JOIN users u ON u.user_id = r.{$reviewUserIdColumn}";
+        $sql .= " LEFT JOIN users u ON u.{$userPrimaryKeyColumn} = r.{$reviewUserIdColumn}";
     }
-    $sql .= " WHERE r.id = ?";
+    $sql .= " WHERE r.{$reviewIdColumn} = ?";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$id]);
@@ -123,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $params[] = $id;
 
     try {
-        $sql = "UPDATE reviews SET " . implode(', ', $setParts) . " WHERE id = ?";
+        $sql = "UPDATE reviews SET " . implode(', ', $setParts) . " WHERE {$reviewIdColumn} = ?";
         $updateStmt = $pdo->prepare($sql);
         $updateStmt->execute($params);
 

@@ -23,20 +23,44 @@ try {
         }
     }
 
-    $reviewTextColumn = in_array('comment', $reviewColumns, true)
-        ? 'comment'
-        : (in_array('review_text', $reviewColumns, true) ? 'review_text' : '');
-    $reviewNameColumn = in_array('name', $reviewColumns, true) ? 'name' : '';
-    $reviewRatingColumn = in_array('rating', $reviewColumns, true) ? 'rating' : '';
-    $reviewUserIdColumn = in_array('user_id', $reviewColumns, true) ? 'user_id' : '';
+    $pickColumn = static function (array $candidates, array $columns): string {
+        foreach ($candidates as $candidate) {
+            if (in_array($candidate, $columns, true)) {
+                return $candidate;
+            }
+        }
+        return '';
+    };
 
-    if ($reviewTextColumn === '') {
-        throw new RuntimeException('No supported review text column found in reviews table.');
+    $reviewIdColumn = $pickColumn(['id', 'review_id'], $reviewColumns);
+    $reviewTextColumn = $pickColumn(['comment', 'review_text', 'review', 'feedback'], $reviewColumns);
+    $reviewNameColumn = $pickColumn(['name', 'reviewer_name', 'full_name'], $reviewColumns);
+    $reviewRatingColumn = $pickColumn(['rating', 'stars'], $reviewColumns);
+    $reviewUserIdColumn = $pickColumn(['user_id', 'customer_id'], $reviewColumns);
+    $reviewCreatedAtColumn = $pickColumn(['created_at', 'created_on', 'review_date'], $reviewColumns);
+    $userPrimaryKeyColumn = 'user_id';
+
+    if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
+        $userColumns = [];
+        $userColumnsStmt = $pdo->query("SHOW COLUMNS FROM users");
+        foreach ($userColumnsStmt->fetchAll() as $column) {
+            if (!empty($column['Field'])) {
+                $userColumns[] = $column['Field'];
+            }
+        }
+        $userPrimaryKeyColumn = $pickColumn(['user_id', 'id'], $userColumns);
+        if ($userPrimaryKeyColumn === '') {
+            $userPrimaryKeyColumn = 'user_id';
+        }
     }
 
-    $selectParts = ['r.id'];
+    if ($reviewIdColumn === '' || $reviewTextColumn === '') {
+        throw new RuntimeException('No supported review ID/text columns found in reviews table.');
+    }
+
+    $selectParts = ["r.{$reviewIdColumn} AS review_id"];
     $selectParts[] = "r.{$reviewTextColumn} AS review_text";
-    $selectParts[] = in_array('created_at', $reviewColumns, true) ? "r.created_at" : "NULL AS created_at";
+    $selectParts[] = $reviewCreatedAtColumn !== '' ? "r.{$reviewCreatedAtColumn} AS created_at" : "NULL AS created_at";
 
     if ($reviewNameColumn !== '') {
         $selectParts[] = "r.{$reviewNameColumn} AS reviewer_name";
@@ -54,12 +78,12 @@ try {
 
     $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
-        $sql .= " LEFT JOIN users u ON u.user_id = r.{$reviewUserIdColumn}";
+        $sql .= " LEFT JOIN users u ON u.{$userPrimaryKeyColumn} = r.{$reviewUserIdColumn}";
     }
-    if (in_array('created_at', $reviewColumns, true)) {
-        $sql .= " ORDER BY r.created_at DESC";
+    if ($reviewCreatedAtColumn !== '') {
+        $sql .= " ORDER BY r.{$reviewCreatedAtColumn} DESC";
     } else {
-        $sql .= " ORDER BY r.id DESC";
+        $sql .= " ORDER BY r.{$reviewIdColumn} DESC";
     }
 
     $reviewsStmt = $pdo->query($sql);
@@ -113,17 +137,17 @@ require_once __DIR__ . '/../includes/header.php';
                             }
                             ?>
                             <tr>
-                                <td><?= e((string) $review['id']) ?></td>
+                                <td><?= e((string) $review['review_id']) ?></td>
                                 <td><?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?></td>
                                 <td><?= $review['rating'] !== null ? e((string) $review['rating']) . '/5' : '-' ?></td>
                                 <td><?= nl2br(e((string) ($review['review_text'] ?? ''))) ?></td>
                                 <td><?= e($createdAt) ?></td>
                                 <td>
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <a href="<?= APP_URL ?>/admin/edit_review.php?id=<?= e((string) $review['id']) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                        <a href="<?= APP_URL ?>/admin/edit_review.php?id=<?= e((string) $review['review_id']) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
                                         <form method="post" action="<?= APP_URL ?>/admin/delete_review.php" onsubmit="return confirm('Delete this review?');">
                                             <?php csrf_field(); ?>
-                                            <input type="hidden" name="id" value="<?= e((string) $review['id']) ?>">
+                                            <input type="hidden" name="id" value="<?= e((string) $review['review_id']) ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                         </form>
                                     </div>

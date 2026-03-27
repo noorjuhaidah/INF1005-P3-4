@@ -22,7 +22,26 @@ if (!$id) {
 }
 
 try {
-    $stmt = $pdo->prepare("DELETE FROM reviews WHERE id = ?");
+    $reviewColumns = [];
+    $columnsStmt = $pdo->query("SHOW COLUMNS FROM reviews");
+    foreach ($columnsStmt->fetchAll() as $column) {
+        if (!empty($column['Field'])) {
+            $reviewColumns[] = $column['Field'];
+        }
+    }
+
+    $reviewIdColumn = '';
+    if (in_array('id', $reviewColumns, true)) {
+        $reviewIdColumn = 'id';
+    } elseif (in_array('review_id', $reviewColumns, true)) {
+        $reviewIdColumn = 'review_id';
+    }
+
+    if ($reviewIdColumn === '') {
+        throw new RuntimeException('No supported review ID column found in reviews table.');
+    }
+
+    $stmt = $pdo->prepare("DELETE FROM reviews WHERE {$reviewIdColumn} = ?");
     $stmt->execute([$id]);
 
     if ($stmt->rowCount() > 0) {
@@ -30,7 +49,7 @@ try {
     } else {
         set_flash('warning', 'Review not found or already deleted.');
     }
-} catch (PDOException $e) {
+} catch (Throwable $e) {
     error_log('Admin review delete error: ' . $e->getMessage());
     set_flash('danger', 'Failed to delete review.');
 }
