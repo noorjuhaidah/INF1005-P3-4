@@ -8,7 +8,23 @@
 
 $page_title   = 'Contact Us';
 $current_page = 'contact';
-require_once __DIR__ . '/includes/header.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$contactMessageColumn = 'message';
+try {
+    $colStmt = $pdo->query("SHOW COLUMNS FROM contact_messages");
+    $contactColumns = array_column($colStmt->fetchAll(), 'Field');
+    if (!in_array('message', $contactColumns, true) && in_array('message_text', $contactColumns, true)) {
+        $contactMessageColumn = 'message_text';
+    }
+} catch (PDOException $e) {
+    $contactMessageColumn = 'message';
+}
 
 // ------------------------------------------------------------------
 // Handle POST submission
@@ -52,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt = $pdo->prepare("
                 INSERT INTO contact_messages
-                    (user_id, name, email, subject, message, created_at)
+                    (user_id, name, email, subject, {$contactMessageColumn}, created_at)
                 VALUES (?, ?, ?, ?, ?, NOW())
             ");
             $stmt->execute([$userId, $name, $email, $subject, $message]);
@@ -62,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (PDOException $e) {
             error_log('Contact form DB error: ' . $e->getMessage());
-            set_flash('danger', 'Something went wrong saving your message. Please try again later.');
+            set_flash('danger', 'Contact form error: ' . $e->getMessage());
             redirect(APP_URL . '/contact.php');
         }
     }
@@ -84,6 +100,8 @@ $email   = $email   ?? '';
 $subject = $subject ?? '';
 $message = $message ?? '';
 $errors  = $errors  ?? [];
+
+require_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Page header -->

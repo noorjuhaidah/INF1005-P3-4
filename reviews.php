@@ -23,21 +23,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
     verify_csrf(APP_URL . '/reviews.php');
 
     $reviewText = clean_input($_POST['review'] ?? '');
+    $rating = filter_input(INPUT_POST, 'rating', FILTER_VALIDATE_INT);
+    $reviewerName = trim($_SESSION['full_name'] ?? 'Customer');
+
     if (empty($reviewText)) {
         set_flash('warning', 'Please enter a review before submitting.');
         redirect(APP_URL . '/reviews.php');
     }
 
+    if (!$rating || $rating < 1 || $rating > 5) {
+        set_flash('warning', 'Please choose a rating from 1 to 5.');
+        redirect(APP_URL . '/reviews.php');
+    }
+
     try {
         $stmt = $pdo->prepare(
-            "INSERT INTO reviews (user_id, review_text, created_at)
-                    VALUES (?, ?, NOW())"
+            "INSERT INTO reviews (name, rating, comment, created_at)
+                    VALUES (?, ?, ?, NOW())"
         );
-        $stmt->execute([$_SESSION['user_id'], $reviewText]);
+        $stmt->execute([$reviewerName, $rating, $reviewText]);
         set_flash('success', 'Thanks for your review!');
         redirect(APP_URL . '/reviews.php');
     } catch (PDOException $e) {
-        die('Review submit error: ' . $e->getMessage());
+        error_log('Review submit error: ' . $e->getMessage());
+        set_flash('danger', 'Unable to save your review. Please try again later.');
+        redirect(APP_URL . '/reviews.php');
     }
 }
 
@@ -48,20 +58,13 @@ require_once __DIR__ . '/includes/header.php';
 $reviews = [];
 try {
     $stmt = $pdo->query(
-        "SELECT r.review_text, r.created_at, u.full_name
+        "SELECT r.comment AS review_text, r.created_at, r.name AS full_name, r.rating
            FROM reviews r
-           LEFT JOIN users u ON u.user_id = r.user_id
           ORDER BY r.created_at DESC"
     );
     $reviews = $stmt->fetchAll();
 } catch (PDOException $e) {
-    // fallback: query reviews without join
-    try {
-        $stmt = $pdo->query("SELECT review_text, created_at FROM reviews ORDER BY created_at DESC");
-        $reviews = $stmt->fetchAll();
-    } catch (PDOException $e2) {
-        $reviews = [];
-    }
+    $reviews = [];
 }
 
 ?>
@@ -79,6 +82,17 @@ try {
                             <h2 class="h5 mb-3">Leave a review</h2>
                             <form method="POST" action="<?= APP_URL ?>/reviews.php">
                                 <?php csrf_field(); ?>
+                                <div class="mb-3">
+                                    <label class="form-label" for="rating">Rating</label>
+                                    <select id="rating" name="rating" class="form-select" required>
+                                        <option value="">Select a rating</option>
+                                        <option value="5">5 - Excellent</option>
+                                        <option value="4">4 - Good</option>
+                                        <option value="3">3 - Okay</option>
+                                        <option value="2">2 - Poor</option>
+                                        <option value="1">1 - Very poor</option>
+                                    </select>
+                                </div>
                                 <div class="mb-3">
                                     <label class="form-label" for="review">Your review</label>
                                     <textarea id="review" name="review" class="form-control" rows="4" required></textarea>
@@ -114,6 +128,9 @@ try {
                                             <span class="text-muted small">&middot; <?= e($date) ?></span>
                                         <?php endif; ?>
                                     </div>
+                                    <?php if (!empty($review['rating'])): ?>
+                                        <span class="ld-chip"><?= (int)$review['rating'] ?>/5</span>
+                                    <?php endif; ?>
                                 </div>
                                 <p class="mt-2 mb-0"><?= nl2br(e($review['review_text'] ?? '')) ?></p>
                             </div>
