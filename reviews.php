@@ -16,6 +16,21 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$reviewColumns = [];
+try {
+    $colStmt = $pdo->query("SHOW COLUMNS FROM reviews");
+    foreach ($colStmt->fetchAll() as $column) {
+        if (!empty($column['Field'])) {
+            $reviewColumns[] = $column['Field'];
+        }
+    }
+} catch (PDOException $e) {
+    $reviewColumns = [];
+}
+
+$usesAdminReviewSchema = in_array('comment', $reviewColumns, true)
+    && in_array('name', $reviewColumns, true);
+
 // Handle new review submission BEFORE header output (so redirects work)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
@@ -37,16 +52,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
     }
 
     try {
-        $stmt = $pdo->prepare(
-            "INSERT INTO reviews (name, rating, comment, created_at)
-                    VALUES (?, ?, ?, NOW())"
-        );
-        $stmt->execute([$reviewerName, $rating, $reviewText]);
+        if ($usesAdminReviewSchema) {
+            $stmt = $pdo->prepare(
+                "INSERT INTO reviews (name, rating, comment, created_at)
+                        VALUES (?, ?, ?, NOW())"
+            );
+            $stmt->execute([$reviewerName, $rating, $reviewText]);
+        } else {
+            $stmt = $pdo->prepare(
+                "INSERT INTO reviews (user_id, review_text, created_at)
+                        VALUES (?, ?, NOW())"
+            );
+            $stmt->execute([$_SESSION['user_id'], $reviewText]);
+        }
+
         set_flash('success', 'Thanks for your review!');
         redirect(APP_URL . '/reviews.php');
     } catch (PDOException $e) {
         error_log('Review submit error: ' . $e->getMessage());
-        set_flash('danger', 'Unable to save your review. Please try again later.');
+        set_flash('danger', 'Review error: ' . $e->getMessage());
         redirect(APP_URL . '/reviews.php');
     }
 }
@@ -57,12 +81,22 @@ require_once __DIR__ . '/includes/header.php';
 // Fetch existing reviews
 $reviews = [];
 try {
-    $stmt = $pdo->query(
-        "SELECT r.comment AS review_text, r.created_at, r.name AS full_name, r.rating
-           FROM reviews r
-          ORDER BY r.created_at DESC"
-    );
-    $reviews = $stmt->fetchAll();
+    if ($usesAdminReviewSchema) {
+        $stmt = $pdo->query(
+            "SELECT r.comment AS review_text, r.created_at, r.name AS full_name, r.rating
+               FROM reviews r
+              ORDER BY r.created_at DESC"
+        );
+        $reviews = $stmt->fetchAll();
+    } else {
+        $stmt = $pdo->query(
+            "SELECT r.review_text, r.created_at, u.full_name
+               FROM reviews r
+               LEFT JOIN users u ON u.user_id = r.user_id
+              ORDER BY r.created_at DESC"
+        );
+        $reviews = $stmt->fetchAll();
+    }
 } catch (PDOException $e) {
     $reviews = [];
 }
