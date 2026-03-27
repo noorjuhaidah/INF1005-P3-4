@@ -9,6 +9,8 @@ require_admin();
 $totalProducts = 0;
 $totalOrders = 0;
 $totalRevenue = 0;
+$totalMessages = 0;
+$unreadMessages = 0;
 $orderStatusLabels = [];
 $orderStatusCounts = [];
 
@@ -21,6 +23,27 @@ try {
 
     $stmt = $pdo->query("SELECT COALESCE(SUM(total_amount), 0) FROM orders");
     $totalRevenue = (float) $stmt->fetchColumn();
+
+    try {
+        $stmt = $pdo->query("SELECT COUNT(*) FROM contact_messages");
+        $totalMessages = (int) $stmt->fetchColumn();
+
+        $contactColumns = [];
+        $stmt = $pdo->query("SHOW COLUMNS FROM contact_messages");
+        foreach ($stmt->fetchAll() as $column) {
+            if (!empty($column['Field'])) {
+                $contactColumns[] = $column['Field'];
+            }
+        }
+
+        if (in_array('is_read', $contactColumns, true)) {
+            $stmt = $pdo->query("SELECT COUNT(*) FROM contact_messages WHERE is_read = 0");
+            $unreadMessages = (int) $stmt->fetchColumn();
+        }
+    } catch (PDOException $e) {
+        $totalMessages = 0;
+        $unreadMessages = 0;
+    }
 
     $stmt = $pdo->query("
         SELECT status, COUNT(*) AS total
@@ -38,6 +61,8 @@ try {
     $totalProducts = 0;
     $totalOrders = 0;
     $totalRevenue = 0;
+    $totalMessages = 0;
+    $unreadMessages = 0;
     $orderStatusLabels = [];
     $orderStatusCounts = [];
 }
@@ -128,6 +153,26 @@ try {
                     <div class="d-flex gap-2 flex-wrap">
                         <a href="<?= APP_URL ?>/admin/reviews.php" class="ld-btn-primary">
                             <i class="fa-solid fa-comments me-1"></i>Manage Reviews
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card ld-card p-4 h-100">
+                    <h4 class="mb-3">
+                        <i class="fa-solid fa-envelope-open-text me-2"></i>Customer Inquiries
+                    </h4>
+                    <p class="text-muted mb-2">Access messages submitted from Contact Us.</p>
+                    <p class="small text-muted mb-3">
+                        Total: <?= e((string) $totalMessages) ?>
+                        <?php if ($unreadMessages > 0): ?>
+                            &middot; Unread: <?= e((string) $unreadMessages) ?>
+                        <?php endif; ?>
+                    </p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="<?= APP_URL ?>/admin/messages.php" class="ld-btn-primary">
+                            <i class="fa-solid fa-inbox me-1"></i>Check Messages
                         </a>
                     </div>
                 </div>

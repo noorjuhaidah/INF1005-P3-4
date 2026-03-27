@@ -1,0 +1,228 @@
+<?php
+$page_title = 'Customer Inquiries';
+$current_page = 'admin';
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_admin();
+
+$messageColumns = [];
+$messages = [];
+$loadError = '';
+
+$messageIdColumn = '';
+$messageNameColumn = '';
+$messageEmailColumn = '';
+$messageSubjectColumn = '';
+$messageBodyColumn = '';
+$messageCreatedAtColumn = '';
+$messageReadColumn = '';
+$messageUserIdColumn = '';
+
+$pickColumn = static function (array $candidates, array $columns): string {
+    foreach ($candidates as $candidate) {
+        if (in_array($candidate, $columns, true)) {
+            return $candidate;
+        }
+    }
+    return '';
+};
+
+try {
+    $columnsStmt = $pdo->query("SHOW COLUMNS FROM contact_messages");
+    foreach ($columnsStmt->fetchAll() as $column) {
+        if (!empty($column['Field'])) {
+            $messageColumns[] = $column['Field'];
+        }
+    }
+
+    $messageIdColumn = $pickColumn(['message_id', 'id'], $messageColumns);
+    $messageNameColumn = $pickColumn(['name', 'full_name'], $messageColumns);
+    $messageEmailColumn = $pickColumn(['email'], $messageColumns);
+    $messageSubjectColumn = $pickColumn(['subject', 'title'], $messageColumns);
+    $messageBodyColumn = $pickColumn(['message', 'message_text', 'content'], $messageColumns);
+    $messageCreatedAtColumn = $pickColumn(['created_at', 'submitted_at', 'created_on'], $messageColumns);
+    $messageReadColumn = $pickColumn(['is_read', 'read_status'], $messageColumns);
+    $messageUserIdColumn = $pickColumn(['user_id', 'customer_id'], $messageColumns);
+
+    if ($messageIdColumn === '' || $messageBodyColumn === '') {
+        throw new RuntimeException('No supported message ID/body columns found in contact_messages table.');
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $messageReadColumn !== '') {
+        verify_csrf(APP_URL . '/admin/messages.php');
+
+        $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
+        $action = $_POST['mark_action'] ?? '';
+        if ($id && in_array($action, ['read', 'unread'], true)) {
+            $newValue = $action === 'read' ? 1 : 0;
+            $updateStmt = $pdo->prepare("
+                UPDATE contact_messages
+                SET {$messageReadColumn} = ?
+                WHERE {$messageIdColumn} = ?
+            ");
+            $updateStmt->execute([$newValue, $id]);
+        }
+
+        redirect(APP_URL . '/admin/messages.php');
+    }
+
+    $selectParts = ["m.{$messageIdColumn} AS message_id"];
+    $selectParts[] = $messageBodyColumn !== '' ? "m.{$messageBodyColumn} AS message_body" : "'' AS message_body";
+    $selectParts[] = $messageSubjectColumn !== '' ? "m.{$messageSubjectColumn} AS message_subject" : "'' AS message_subject";
+    $selectParts[] = $messageCreatedAtColumn !== '' ? "m.{$messageCreatedAtColumn} AS created_at" : "NULL AS created_at";
+    $selectParts[] = $messageReadColumn !== '' ? "m.{$messageReadColumn} AS is_read" : "NULL AS is_read";
+
+    $joinUsers = false;
+    if ($messageNameColumn !== '') {
+        $selectParts[] = "m.{$messageNameColumn} AS sender_name";
+    } else {
+        $selectParts[] = "'Anonymous' AS sender_name";
+        if ($messageUserIdColumn !== '') {
+            $joinUsers = true;
+        }
+    }
+
+    if ($messageEmailColumn !== '') {
+        $selectParts[] = "m.{$messageEmailColumn} AS sender_email";
+    } else {
+        $selectParts[] = "'' AS sender_email";
+        if ($messageUserIdColumn !== '') {
+            $joinUsers = true;
+        }
+    }
+
+    $sql = "SELECT " . implode(', ', $selectParts) . " FROM contact_messages m";
+    if ($joinUsers) {
+        $userColumns = [];
+        $userColumnsStmt = $pdo->query("SHOW COLUMNS FROM users");
+        foreach ($userColumnsStmt->fetchAll() as $column) {
+            if (!empty($column['Field'])) {
+                $userColumns[] = $column['Field'];
+            }
+        }
+
+        $userPrimaryKeyColumn = $pickColumn(['user_id', 'id'], $userColumns);
+        $userNameColumn = $pickColumn(['full_name', 'name'], $userColumns);
+        $userEmailColumn = $pickColumn(['email'], $userColumns);
+
+        if ($userPrimaryKeyColumn !== '') {
+            $sql = "SELECT " . implode(', ', $selectParts) . ",
+                           " . ($userNameColumn !== '' ? "u.{$userNameColumn}" : "'Anonymous'") . " AS user_name_fallback,
+                           " . ($userEmailColumn !== '' ? "u.{$userEmailColumn}" : "''") . " AS user_email_fallback
+                FROM contact_messages m
+                LEFT JOIN users u ON u.{$userPrimaryKeyColumn} = m.{$messageUserIdColumn}";
+        }
+    }
+
+    if ($messageCreatedAtColumn !== '') {
+        $sql .= " ORDER BY m.{$messageCreatedAtColumn} DESC";
+    } else {
+        $sql .= " ORDER BY m.{$messageIdColumn} DESC";
+    }
+
+    $messagesStmt = $pdo->query($sql);
+    $messages = $messagesStmt->fetchAll();
+
+    foreach ($messages as &$message) {
+        if (($message['sender_name'] ?? '') === 'Anonymous' && !empty($message['user_name_fallback'])) {
+            $message['sender_name'] = $message['user_name_fallback'];
+        }
+        if (($message['sender_email'] ?? '') === '' && !empty($message['user_email_fallback'])) {
+            $message['sender_email'] = $message['user_email_fallback'];
+        }
+    }
+    unset($message);
+} catch (Throwable $e) {
+    error_log('Admin messages load error: ' . $e->getMessage());
+    $loadError = 'Unable to load contact inquiries right now.';
+}
+
+require_once __DIR__ . '/../includes/header.php';
+?>
+
+<section class="ld-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="ld-section-title">Customer Inquiries</h1>
+                <p class="ld-section-subtitle">Messages submitted via Contact Us.</p>
+            </div>
+            <a href="<?= APP_URL ?>/admin/dashboard.php" class="ld-btn-outline">Back to Dashboard</a>
+        </div>
+
+        <?php if ($loadError !== ''): ?>
+            <div class="alert alert-danger"><?= e($loadError) ?></div>
+        <?php endif; ?>
+
+        <div class="card ld-card p-4">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Message</th>
+                            <th>Submitted</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php if (empty($messages)): ?>
+                        <tr>
+                            <td colspan="7">No inquiries found.</td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($messages as $message): ?>
+                            <?php
+                            $createdAt = '';
+                            if (!empty($message['created_at'])) {
+                                $createdAt = format_date($message['created_at']);
+                            }
+                            $isRead = isset($message['is_read']) ? (int)$message['is_read'] === 1 : null;
+                            ?>
+                            <tr>
+                                <td><?= e((string) ($message['message_id'] ?? '')) ?></td>
+                                <td><?= e((string) ($message['sender_name'] ?? 'Anonymous')) ?></td>
+                                <td><?= e((string) ($message['sender_email'] ?? '')) ?></td>
+                                <td><?= e((string) ($message['message_subject'] ?? '')) ?></td>
+                                <td style="min-width: 260px; white-space: normal;"><?= nl2br(e((string) ($message['message_body'] ?? ''))) ?></td>
+                                <td><?= e($createdAt) ?></td>
+                                <td>
+                                    <?php if ($isRead === null): ?>
+                                        <span class="text-muted">N/A</span>
+                                    <?php elseif ($isRead): ?>
+                                        <span class="badge bg-success-subtle text-success-emphasis">Read</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis">Unread</span>
+                                    <?php endif; ?>
+
+                                    <?php if ($messageReadColumn !== ''): ?>
+                                        <form method="post" action="<?= APP_URL ?>/admin/messages.php" class="mt-2">
+                                            <?php csrf_field(); ?>
+                                            <input type="hidden" name="id" value="<?= e((string) ($message['message_id'] ?? '')) ?>">
+                                            <input type="hidden" name="mark_action" value="<?= $isRead ? 'unread' : 'read' ?>">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                Mark as <?= $isRead ? 'Unread' : 'Read' ?>
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
