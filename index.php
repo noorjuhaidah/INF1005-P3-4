@@ -24,6 +24,7 @@ require_once __DIR__ . '/includes/header.php';
         width: 100%;
         height: 100%;
         object-fit: cover;
+        object-position: center center;
     }
 
     .ld-video-hero::before {
@@ -31,8 +32,8 @@ require_once __DIR__ . '/includes/header.php';
         position: absolute;
         inset: 0;
         background:
-            linear-gradient(90deg, rgba(8, 16, 24, 0.82) 0%, rgba(8, 16, 24, 0.58) 42%, rgba(8, 16, 24, 0.28) 100%),
-            linear-gradient(180deg, rgba(9, 17, 24, 0.28) 0%, rgba(9, 17, 24, 0.52) 100%);
+            linear-gradient(90deg, rgba(8, 16, 24, 0.52) 0%, rgba(8, 16, 24, 0.34) 30%, rgba(8, 16, 24, 0.14) 55%, rgba(8, 16, 24, 0.08) 100%),
+            linear-gradient(180deg, rgba(9, 17, 24, 0.18) 0%, rgba(9, 17, 24, 0.28) 100%);
     }
 
     .ld-video-hero .container {
@@ -41,16 +42,27 @@ require_once __DIR__ . '/includes/header.php';
     }
 
     .ld-video-panel {
-        max-width: 640px;
-        padding: 2rem 2.2rem;
-        border: 1px solid rgba(255, 255, 255, 0.14);
+        max-width: 520px;
+        padding: 1.85rem 1.9rem;
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 28px;
-        background: rgba(7, 15, 22, 0.36);
-        backdrop-filter: blur(10px);
-        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.22);
+        background: rgba(10, 18, 26, 0.42);
+        backdrop-filter: blur(8px);
+        box-shadow: 0 28px 60px rgba(0, 0, 0, 0.18);
     }
 
-    .ld-video-hero .ld-chip,
+    .ld-video-hero .ld-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.55rem 1.2rem;
+        border-radius: 999px;
+        background: rgba(241, 248, 255, 0.92);
+        color: #35566b;
+        font-weight: 700;
+        border: 1px solid rgba(132, 180, 210, 0.45);
+        box-shadow: 0 8px 22px rgba(7, 15, 22, 0.08);
+    }
+
     .ld-video-hero .ld-hero-title,
     .ld-video-hero .ld-hero-subtitle {
         color: #fff;
@@ -66,11 +78,17 @@ require_once __DIR__ . '/includes/header.php';
     @media (max-width: 991.98px) {
         .ld-video-hero {
             min-height: 78vh;
+            align-items: flex-end;
+        }
+
+        .ld-video-hero video {
+            object-position: 62% center;
         }
 
         .ld-video-panel {
             max-width: 100%;
             padding: 1.5rem;
+            margin-bottom: 1rem;
         }
     }
 </style>
@@ -82,7 +100,7 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-7">
+            <div class="col-lg-6">
                 <div class="ld-video-panel">
                     <p class="ld-chip mb-3">Now open for pre-orders</p>
                     <h1 class="ld-hero-title mb-3">
