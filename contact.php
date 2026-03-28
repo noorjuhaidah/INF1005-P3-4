@@ -44,23 +44,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // 3. Validate
     $errors = [];
+    $name_error = $email_error = $subject_error = $message_error = '';
 
     if ($name === '') {
-        $errors[] = 'Your name is required.';
+        $name_error = 'Your name is required.';
+        $errors[] = $name_error;
     }
 
-    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = 'A valid email address is required.';
+    if ($email === '') {
+        $email_error = 'Email address is required.';
+        $errors[] = $email_error;
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $email_error = 'Please enter a valid email address.';
+        $errors[] = $email_error;
     }
 
     if ($subject === '') {
-        $errors[] = 'A subject is required.';
+        $subject_error = 'A subject is required.';
+        $errors[] = $subject_error;
     }
 
     if ($message === '') {
-        $errors[] = 'A message is required.';
+        $message_error = 'A message is required.';
+        $errors[] = $message_error;
     } elseif (mb_strlen($message) < 10) {
-        $errors[] = 'Your message is a bit short — please give us a little more detail.';
+        $message_error = 'Your message is a bit short — please give us a little more detail.';
+        $errors[] = $message_error;
     }
 
     // 4. If valid, store in DB and redirect with success flash
@@ -158,17 +167,6 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ---- Contact form ---- -->
             <div class="col-lg-7">
 
-                <?php if (!empty($errors)): ?>
-                    <div class="alert alert-danger">
-                        <strong>Please fix the following:</strong>
-                        <ul class="mb-0 mt-1">
-                            <?php foreach ($errors as $err): ?>
-                                <li><?= e($err) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                <?php endif; ?>
-
                 <form method="POST" action="<?= APP_URL ?>/contact.php" novalidate>
                     <?php csrf_field(); ?>
 
@@ -179,10 +177,14 @@ require_once __DIR__ . '/includes/header.php';
                             <input type="text"
                                    id="name"
                                    name="name"
-                                   class="form-control <?= !empty($errors) && $name === '' ? 'is-invalid' : '' ?>"
+                                   class="form-control <?= $name_error ? 'is-invalid' : '' ?>"
                                    value="<?= e($name) ?>"
                                    autocomplete="name"
-                                   required>
+                                   required
+                                   aria-describedby="<?= $name_error ? 'name-error' : '' ?>">
+                            <?php if ($name_error): ?>
+                                <div id="name-error" class="invalid-feedback"><?= e($name_error) ?></div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-sm-6">
@@ -190,10 +192,14 @@ require_once __DIR__ . '/includes/header.php';
                             <input type="email"
                                    id="email"
                                    name="email"
-                                   class="form-control <?= !empty($errors) && !filter_var($email, FILTER_VALIDATE_EMAIL) ? 'is-invalid' : '' ?>"
+                                   class="form-control <?= $email_error ? 'is-invalid' : '' ?>"
                                    value="<?= e($email) ?>"
                                    autocomplete="email"
-                                   required>
+                                   required
+                                   aria-describedby="<?= $email_error ? 'email-error' : '' ?>">
+                            <?php if ($email_error): ?>
+                                <div id="email-error" class="invalid-feedback"><?= e($email_error) ?></div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-12">
@@ -201,20 +207,28 @@ require_once __DIR__ . '/includes/header.php';
                             <input type="text"
                                    id="subject"
                                    name="subject"
-                                   class="form-control <?= !empty($errors) && $subject === '' ? 'is-invalid' : '' ?>"
+                                   class="form-control <?= $subject_error ? 'is-invalid' : '' ?>"
                                    value="<?= e($subject) ?>"
                                    placeholder="e.g. Question about my order"
-                                   required>
+                                   required
+                                   aria-describedby="<?= $subject_error ? 'subject-error' : '' ?>">
+                            <?php if ($subject_error): ?>
+                                <div id="subject-error" class="invalid-feedback"><?= e($subject_error) ?></div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label" for="message">Message <span class="text-danger" aria-hidden="true">*</span></label>
                             <textarea id="message"
                                       name="message"
-                                      class="form-control <?= !empty($errors) && $message === '' ? 'is-invalid' : '' ?>"
+                                      class="form-control <?= $message_error ? 'is-invalid' : '' ?>"
                                       rows="6"
                                       placeholder="Tell us what is on your mind…"
-                                      required><?= e($message) ?></textarea>
+                                      required
+                                      aria-describedby="<?= $message_error ? 'message-error' : '' ?>"><?= e($message) ?></textarea>
+                            <?php if ($message_error): ?>
+                                <div id="message-error" class="invalid-feedback"><?= e($message_error) ?></div>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-12">

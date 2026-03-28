@@ -179,8 +179,8 @@ require_once __DIR__ . '/../includes/header.php';
                     </div>
                 <?php else: ?>
                     <div class="mb-3">
-                        <label class="form-label">Name</label>
-                        <input type="text" class="form-control" value="<?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?>" disabled>
+                        <label class="form-label" for="reviewer_name_readonly">Name</label>
+                        <input id="reviewer_name_readonly" type="text" class="form-control" value="<?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?>" readonly aria-readonly="true">
                         <small class="text-muted">Name comes from the linked user account in this schema.</small>
                     </div>
                 <?php endif; ?>

@@ -28,7 +28,7 @@ function show_flash(): void {
     if (!empty($_SESSION['flash'])) {
         $type = $_SESSION['flash']['type'];   // 'success' | 'danger' | 'warning' | 'info'
         $msg  = e($_SESSION['flash']['message']);
-        echo "<div class=\"alert alert-{$type} alert-dismissible fade show\" role=\"alert\">
+        echo "<div class=\"alert alert-{$type} alert-dismissible fade show\">
                 {$msg}
                 <button type=\"button\" class=\"btn-close\" data-bs-dismiss=\"alert\" aria-label=\"Close\"></button>
               </div>";
@@ -142,6 +142,14 @@ function cart_count(): int {
 // -------------------------------------------------------------
 // FORMATTING HELPERS
 // -------------------------------------------------------------
+/**
+ * Formats a price for currency display.
+ * IMPORTANT: Use only in visual contexts with labels.
+ * Do NOT use in alt text or form field values without context.
+ * 
+ * @param  float  $amount  The price to format
+ * @return string  Formatted as "$XX.XX"
+ */
 function format_price(float $amount): string {
     return '$' . number_format($amount, 2);
 }

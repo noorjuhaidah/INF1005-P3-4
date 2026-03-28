@@ -44,7 +44,7 @@ function pickField(array $row, array $keys) {
 
         <?php if (empty($orders)): ?>
             <div class="text-center py-5">
-                <i class="bi bi-clock-history fs-1 text-muted"></i>
+                <i class="bi bi-clock-history fs-1 text-muted" aria-hidden="true"></i>
                 <h2 class="h5 mt-3">No orders found</h2>
                 <p class="text-muted">Once you place an order, it will appear here.</p>
                 <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary mt-2">Browse menu</a>
@@ -52,15 +52,19 @@ function pickField(array $row, array $keys) {
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
+                    <caption class="visually-hidden">Order history showing date, total amount, status, and row action.</caption>
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Total</th>
-                            <th>Status</th>
+                            <th scope="col">Date</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($orders as $order):
+                            $orderId = pickField($order, ['order_id', 'id']);
+                            $rowAnchor = $orderId !== null ? ('order-' . (int)$orderId) : null;
                             $dateRaw = pickField($order, ['created_at', 'created', 'order_date', 'date']);
                             $date = $dateRaw ? format_date($dateRaw) : '—';
                             $totalRaw = pickField($order, ['total_amount', 'total_price', 'total', 'amount']);
@@ -68,10 +72,18 @@ function pickField(array $row, array $keys) {
                             $status = pickField($order, ['status', 'order_status', 'status_label']) ?? 'Unknown';
                             $statusSlug = strtolower(str_replace(' ', '_', $status));
                         ?>
-                        <tr>
+                        <tr id="<?= $rowAnchor !== null ? e($rowAnchor) : '' ?>">
                             <td><?= e($date) ?></td>
                             <td><?= e($total) ?></td>
                             <td><span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span></td>
+                            <td>
+                                <a
+                                    href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
+                                    aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($date) ?>"
+                                >
+                                    View order
+                                </a>
+                            </td>
                         </tr>
                         <?php endforeach; ?>
                     </tbody>

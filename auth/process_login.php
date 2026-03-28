@@ -23,13 +23,23 @@ set_old_input([
     'email' => $email
 ]);
 
+// Reset field-level errors for this request cycle.
+$_SESSION['field_errors'] = [];
+
 // Validation
 if ($email === '' || $password === '') {
+    if ($email === '') {
+        $_SESSION['field_errors']['email'] = 'Please enter a valid email address.';
+    }
+    if ($password === '') {
+        $_SESSION['field_errors']['password'] = 'Please enter your password.';
+    }
     set_flash('danger', 'Email and password are required.');
     redirect(APP_URL . '/auth/login.php');
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION['field_errors']['email'] = 'Please enter a valid email address.';
     set_flash('danger', 'Please enter a valid email address.');
     redirect(APP_URL . '/auth/login.php');
 }
@@ -48,6 +58,7 @@ try {
         session_regenerate_id(true);
 
         clear_old_input();
+        unset($_SESSION['field_errors']);
 
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['full_name'] = $user['full_name'];
@@ -59,11 +70,14 @@ try {
             redirect(APP_URL . '/customer/dashboard.php');
         }
     } else {
+        $_SESSION['field_errors']['email'] = 'Invalid email or password.';
+        $_SESSION['field_errors']['password'] = 'Invalid email or password.';
         set_flash('danger', 'Invalid email or password.');
         redirect(APP_URL . '/auth/login.php');
     }
 
 } catch (PDOException $e) {
+    $_SESSION['field_errors']['email'] = 'We could not sign you in right now. Please try again.';
     set_flash('danger', 'Database error.');
     redirect(APP_URL . '/auth/login.php');
 }

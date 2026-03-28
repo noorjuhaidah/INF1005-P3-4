@@ -111,9 +111,9 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
 
-        <div class="row gy-4 justify-content-center">
+        <ol class="row gy-4 justify-content-center list-unstyled mb-0" aria-label="How LazyDrip pickup works in four steps">
             <!-- Step 1 -->
-            <div class="col-sm-6 col-lg-3">
+            <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
                          style="
@@ -131,9 +131,9 @@ require_once __DIR__ . '/includes/header.php';
                         <?= POINTS_SIGNUP_BONUS ?> bonus loyalty points instantly.
                     </p>
                 </div>
-            </div>
+            </li>
             <!-- Step 2 -->
-            <div class="col-sm-6 col-lg-3">
+            <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
                          style="
@@ -151,9 +151,9 @@ require_once __DIR__ . '/includes/header.php';
                         Pay securely online.
                     </p>
                 </div>
-            </div>
+            </li>
             <!-- Step 3 -->
-            <div class="col-sm-6 col-lg-3">
+            <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
                          style="
@@ -171,9 +171,9 @@ require_once __DIR__ . '/includes/header.php';
                         No queue, no fuss.
                     </p>
                 </div>
-            </div>
+            </li>
             <!-- Step 4 -->
-            <div class="col-sm-6 col-lg-3">
+            <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
                          style="
@@ -191,8 +191,8 @@ require_once __DIR__ . '/includes/header.php';
                         Stack them up and enjoy <?= format_price(POINTS_REDEEM_VALUE) ?> off your next order.
                     </p>
                 </div>
-            </div>
-        </div>
+            </li>
+        </ol>
     </div>
 </section>
 

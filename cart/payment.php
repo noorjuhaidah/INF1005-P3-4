@@ -43,21 +43,46 @@ try {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/cart/payment.php');
 
+    $_SESSION['field_errors'] = [];
+
     $cardName = trim($_POST['card_name'] ?? '');
     $cardNumber = preg_replace('/\s+/', '', $_POST['card_number'] ?? '');
     $expiry = trim($_POST['expiry'] ?? '');
     $cvv = trim($_POST['cvv'] ?? '');
 
-    if ($cardName === '' ||
-        !preg_match('/^\d{16}$/', $cardNumber) ||
-        !preg_match('/^\d{2}\/\d{2}$/', $expiry) ||
-        !preg_match('/^\d{3}$/', $cvv)) {
+    if ($cardName === '') {
+        $_SESSION['field_errors']['card_name'] = 'Please enter the cardholder name.';
+    }
+
+    if (!preg_match('/^\d{16}$/', $cardNumber)) {
+        $_SESSION['field_errors']['card_number'] = 'Enter a valid 16-digit card number.';
+    }
+
+    if (!preg_match('/^\d{2}\/\d{2}$/', $expiry)) {
+        $_SESSION['field_errors']['expiry'] = 'Enter expiry in MM/YY format.';
+    } else {
+        [$expMonth, $expYearShort] = array_map('intval', explode('/', $expiry));
+        $currentYearShort = (int)date('y');
+        $currentMonth = (int)date('m');
+
+        if ($expMonth < 1 || $expMonth > 12) {
+            $_SESSION['field_errors']['expiry'] = 'Expiry month must be between 01 and 12.';
+        } elseif ($expYearShort < $currentYearShort || ($expYearShort === $currentYearShort && $expMonth < $currentMonth)) {
+            $_SESSION['field_errors']['expiry'] = 'Card expiry date cannot be in the past.';
+        }
+    }
+
+    if (!preg_match('/^\d{3}$/', $cvv)) {
+        $_SESSION['field_errors']['cvv'] = 'Enter a valid 3-digit CVV.';
+    }
+
+    if (!empty($_SESSION['field_errors'])) {
         set_old_input([
             'card_name' => $cardName,
             'card_number' => $_POST['card_number'] ?? '',
             'expiry' => $expiry,
         ]);
-        set_flash('danger', 'Please enter valid payment details.');
+        set_flash('danger', 'Please correct the highlighted payment details.');
         redirect(APP_URL . '/cart/payment.php');
     }
 
@@ -167,6 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $_SESSION['cart'] = [];
         unset($_SESSION['pending_checkout']);
+    unset($_SESSION['field_errors']);
         clear_old_input();
 
         $maskedCard = '**** **** **** ' . substr($cardNumber, -4);
@@ -190,8 +216,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'card_number' => $_POST['card_number'] ?? '',
             'expiry' => $expiry,
         ]);
+        $_SESSION['field_errors']['card_number'] = 'We could not process payment right now. Please try again.';
         error_log('Payment checkout error: ' . $e->getMessage());
-        set_flash('danger', 'Payment failed: ' . $e->getMessage());
+        set_flash('danger', 'Payment failed. Please try again.');
         redirect(APP_URL . '/cart/payment.php');
     }
 }
@@ -199,6 +226,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $page_title = 'Payment';
 $current_page = 'cart';
 require_once __DIR__ . '/../includes/header.php';
+
+$field_errors = $_SESSION['field_errors'] ?? [];
+unset($_SESSION['field_errors']);
 ?>
 
 <section class="ld-section-sm">
@@ -213,58 +243,71 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php csrf_field(); ?>
 
                         <div class="col-12">
-                            <label class="form-label" for="card_name">Cardholder name</label>
+                            <label class="form-label" for="card_name">Cardholder name <span class="text-danger" aria-hidden="true">*</span></label>
                             <input
                                 type="text"
                                 id="card_name"
                                 name="card_name"
-                                class="form-control"
+                                class="form-control <?= !empty($field_errors['card_name']) ? 'is-invalid' : '' ?>"
                                 value="<?= e(old_input('card_name')) ?>"
+                                autocomplete="cc-name"
+                                aria-describedby="<?= !empty($field_errors['card_name']) ? 'card_name_error' : '' ?>"
                                 required
                             >
+                            <div id="card_name_error" class="invalid-feedback"><?= e($field_errors['card_name'] ?? 'Please enter the cardholder name.') ?></div>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label" for="card_number">Card number</label>
+                            <label class="form-label" for="card_number">Card number <span class="text-danger" aria-hidden="true">*</span></label>
                             <input
                                 type="text"
                                 id="card_number"
                                 name="card_number"
-                                class="form-control"
+                                class="form-control <?= !empty($field_errors['card_number']) ? 'is-invalid' : '' ?>"
                                 inputmode="numeric"
                                 maxlength="19"
                                 placeholder="1234 5678 9012 3456"
                                 value="<?= e(old_input('card_number')) ?>"
+                                autocomplete="cc-number"
+                                aria-describedby="card_number_help<?= !empty($field_errors['card_number']) ? ' card_number_error' : '' ?>"
                                 required
                             >
+                            <div id="card_number_help" class="form-text">Enter 16 digits without letters or symbols.</div>
+                            <div id="card_number_error" class="invalid-feedback"><?= e($field_errors['card_number'] ?? 'Enter a valid 16-digit card number.') ?></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="expiry">Expiry</label>
+                            <label class="form-label" for="expiry">Expiry (MM/YY) <span class="text-danger" aria-hidden="true">*</span></label>
                             <input
                                 type="text"
                                 id="expiry"
                                 name="expiry"
-                                class="form-control"
+                                class="form-control <?= !empty($field_errors['expiry']) ? 'is-invalid' : '' ?>"
                                 placeholder="MM/YY"
                                 maxlength="5"
                                 value="<?= e(old_input('expiry')) ?>"
+                                autocomplete="cc-exp"
+                                aria-describedby="<?= !empty($field_errors['expiry']) ? 'expiry_error' : '' ?>"
                                 required
                             >
+                            <div id="expiry_error" class="invalid-feedback"><?= e($field_errors['expiry'] ?? 'Enter expiry in MM/YY format.') ?></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="cvv">CVV</label>
+                            <label class="form-label" for="cvv">CVV <span class="text-danger" aria-hidden="true">*</span></label>
                             <input
                                 type="password"
                                 id="cvv"
                                 name="cvv"
-                                class="form-control"
+                                class="form-control <?= !empty($field_errors['cvv']) ? 'is-invalid' : '' ?>"
                                 inputmode="numeric"
                                 maxlength="3"
                                 placeholder="123"
+                                autocomplete="cc-csc"
+                                aria-describedby="<?= !empty($field_errors['cvv']) ? 'cvv_error' : '' ?>"
                                 required
                             >
+                            <div id="cvv_error" class="invalid-feedback"><?= e($field_errors['cvv'] ?? 'Enter a valid 3-digit CVV.') ?></div>
                         </div>
 
                         <div class="col-12 d-flex gap-2 flex-wrap mt-3">

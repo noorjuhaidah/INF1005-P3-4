@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
         redirect(APP_URL . '/reviews.php');
     } catch (PDOException $e) {
         error_log('Review submit error: ' . $e->getMessage());
-        set_flash('danger', 'Review error: ' . $e->getMessage());
+        set_flash('danger', 'Unable to submit your review right now. Please try again.');
         redirect(APP_URL . '/reviews.php');
     }
 }
@@ -184,7 +184,7 @@ try {
 
                 <?php if (empty($reviews)): ?>
                     <div class="text-center py-5">
-                        <i class="bi bi-chat-dots fs-1 text-muted"></i>
+                        <i class="bi bi-chat-dots fs-1 text-muted" aria-hidden="true"></i>
                         <h2 class="h5 mt-3">No reviews yet</h2>
                         <p class="text-muted">Be the first to share your experience!</p>
                     </div>
@@ -195,7 +195,7 @@ try {
                             $date   = $review['created_at'] ?? null;
                             $date   = $date ? format_date($date) : '';
                         ?>
-                            <div class="list-group-item">
+                            <article class="list-group-item" aria-label="Customer review by <?= e($author) ?>">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <strong><?= e($author) ?></strong>
@@ -208,7 +208,7 @@ try {
                                     <?php endif; ?>
                                 </div>
                                 <p class="mt-2 mb-0"><?= nl2br(e($review['review_text'] ?? '')) ?></p>
-                            </div>
+                            </article>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>

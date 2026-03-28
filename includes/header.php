@@ -47,6 +47,7 @@ if (session_status() === PHP_SESSION_NONE) {
      Active link detection: set $current_page before including
      header.php, e.g. $current_page = 'menu';
      ============================================================ -->
+<header class="ld-navbar-header">
 <nav class="navbar navbar-expand-lg navbar-light ld-navbar sticky-top" aria-label="Main navigation">
     <div class="container">
 
@@ -99,14 +100,15 @@ if (session_status() === PHP_SESSION_NONE) {
 
                 <!-- Cart (only for logged-in customers) -->
                 <?php if (is_logged_in() && !is_admin()): ?>
+                    <?php $cartCount = cart_count(); ?>
                 <li class="nav-item">
                     <a class="nav-link position-relative" href="<?= APP_URL ?>/cart/cart.php"
-                       aria-label="Shopping cart">
+                       aria-label="Shopping cart<?= $cartCount > 0 ? ' (' . $cartCount . ' items)' : '' ?>">
                         <i class="bi bi-bag" aria-hidden="true"></i>
-                        <?php $cartCount = cart_count(); if ($cartCount > 0): ?>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill ld-badge">
+                        <?php if ($cartCount > 0): ?>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill ld-badge"
+                              aria-hidden="true">
                             <?= $cartCount ?>
-                            <span class="visually-hidden">items in cart</span>
                         </span>
                         <?php endif; ?>
                     </a>
@@ -116,12 +118,12 @@ if (session_status() === PHP_SESSION_NONE) {
                 <?php if (is_logged_in()): ?>
                 <!-- Logged-in dropdown -->
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button"
+                    <button class="nav-link dropdown-toggle bg-transparent border-0" type="button"
                        data-bs-toggle="dropdown" aria-expanded="false"
                        id="userMenuBtn">
                         <i class="bi bi-person-circle" aria-hidden="true"></i>
                         <?= e($_SESSION['full_name'] ?? 'Account') ?>
-                    </a>
+                    </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuBtn">
                         <?php if (is_admin()): ?>
                         <li>
@@ -170,11 +172,23 @@ if (session_status() === PHP_SESSION_NONE) {
         </div><!-- /.collapse -->
     </div><!-- /.container -->
 </nav>
+</header><!-- /.ld-navbar-header -->
 
 <!-- Flash messages appear here on every page -->
-<div class="container mt-3" id="flash-container">
+<div class="container mt-3" id="flash-container" role="status" aria-live="polite" aria-atomic="true">
     <?php show_flash(); ?>
 </div>
+<script>
+(function () {
+    if (window.location.hash === '#flash-container') {
+        var flash = document.getElementById('flash-container');
+        if (flash) {
+            flash.setAttribute('tabindex', '-1');
+            flash.focus();
+        }
+    }
+})();
+</script>
 
 <!-- Page content starts here. id="main-content" is the skip-link target. -->
 <main id="main-content">

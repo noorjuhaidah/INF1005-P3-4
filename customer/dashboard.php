@@ -91,6 +91,8 @@ function pickField(array $row, array $keys) {
                     <?php else: ?>
                         <div class="list-group list-group-flush">
                             <?php foreach ($recentOrders as $order):
+                                $orderId = pickField($order, ['order_id', 'id']);
+                                $rowAnchor = $orderId !== null ? ('order-' . (int)$orderId) : null;
                                 $orderDate = pickField($order, ['created_at', 'created', 'order_date', 'date']);
                                 $orderDate = $orderDate ? format_date($orderDate) : '—';
                                 $total = pickField($order, ['total_amount', 'total_price', 'total', 'amount']);
@@ -103,6 +105,13 @@ function pickField(array $row, array $keys) {
                                     <div>
                                         <div class="fw-semibold"><?= e($orderDate) ?></div>
                                         <div class="text-muted small">Total: <?= $total ?></div>
+                                        <a
+                                            href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
+                                            class="small"
+                                            aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($orderDate) ?>"
+                                        >
+                                            View order
+                                        </a>
                                     </div>
                                     <span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span>
                                 </div>

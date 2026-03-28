@@ -10,7 +10,7 @@
 ?>
 </main><!-- /#main closed -->
 
-<footer class="ld-footer mt-auto py-5" role="contentinfo">
+<footer class="ld-footer mt-auto py-5">
     <div class="container">
         <div class="row gy-4">
 
@@ -25,7 +25,7 @@
 
             <!-- Quick links -->
             <div class="col-md-2">
-                <h3 class="ld-footer-heading">Explore</h3>
+                <h2 class="ld-footer-heading">Explore</h2>
                 <ul class="list-unstyled small">
                     <li><a href="<?= APP_URL ?>/menu.php">Menu</a></li>
                     <li><a href="<?= APP_URL ?>/rewards.php">Rewards</a></li>
@@ -36,7 +36,7 @@
 
             <!-- Account links -->
             <div class="col-md-2">
-                <h3 class="ld-footer-heading">Account</h3>
+                <h2 class="ld-footer-heading">Account</h2>
                 <ul class="list-unstyled small">
                     <?php if (is_logged_in()): ?>
                     <li><a href="<?= APP_URL ?>/customer/dashboard.php">Dashboard</a></li>
@@ -51,7 +51,7 @@
 
             <!-- Contact snippet -->
             <div class="col-md-4">
-                <h3 class="ld-footer-heading">Get in Touch</h3>
+                <h2 class="ld-footer-heading">Get in Touch</h2>
                 <p class="text-muted small mb-1">
                     <i class="bi bi-envelope me-1" aria-hidden="true"></i>
                     hello@lazydrip.sg

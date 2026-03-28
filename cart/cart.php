@@ -47,11 +47,12 @@ $total = cart_total();
      ============================================================ -->
 <section class="ld-section-sm">
     <div class="container">
+        <div id="cart-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
         <?php if (empty($cart)): ?>
         <!-- Empty cart state -->
         <div class="text-center py-5">
-            <i class="bi bi-bag-x fs-1 text-muted"></i>
+            <i class="bi bi-bag-x fs-1 text-muted" aria-hidden="true"></i>
             <h2 class="mt-3 h5">Your cart is empty</h2>
             <p class="text-muted">Looks like you haven't added anything yet.</p>
             <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary mt-2">
@@ -97,27 +98,31 @@ $total = cart_total();
 
                             <div class="qty-wrapper d-flex align-items-center border rounded-pill px-2">
                                 <button type="button" class="qty-decrease ld-qty-btn"
-                                        aria-label="Decrease quantity">
+                                        aria-label="Decrease quantity for <?= e($item['name']) ?>">
                                     <i class="bi bi-dash" aria-hidden="true"></i>
                                 </button>
+                                <?php $qty_input_id = 'qty-' . (int)$item_id; ?>
+                                <label for="<?= $qty_input_id ?>" class="visually-hidden">
+                                    Quantity for <?= e($item['name']) ?>
+                                </label>
                                 <input
                                     type="number"
+                                    id="<?= $qty_input_id ?>"
                                     name="qty"
                                     class="qty-input"
                                     value="<?= (int)$item['qty'] ?>"
                                     min="1" max="10"
-                                    aria-label="Quantity for <?= e($item['name']) ?>"
                                     style="width:2.2rem;text-align:center;border:none;background:transparent;font-weight:600;"
                                 >
                                 <button type="button" class="qty-increase ld-qty-btn"
-                                        aria-label="Increase quantity">
+                                        aria-label="Increase quantity for <?= e($item['name']) ?>">
                                     <i class="bi bi-plus" aria-hidden="true"></i>
                                 </button>
                             </div>
 
                             <button type="submit" class="ld-btn-outline ld-cart-update-btn"
-                                    aria-label="Update quantity">
-                                Update
+                                    aria-label="Update quantity for <?= e($item['name']) ?>">
+                                Update <?= e($item['name']) ?>
                             </button>
                         </form>
 
@@ -360,6 +365,18 @@ $total = cart_total();
     }
 
     // ---------------------------------------------------------
+    // Announce cart updates for assistive tech users
+    // ---------------------------------------------------------
+    function announceCartStatus(message) {
+        const live = document.getElementById('cart-status');
+        if (!live) return;
+        live.textContent = '';
+        setTimeout(function () {
+            live.textContent = message;
+        }, 20);
+    }
+
+    // ---------------------------------------------------------
     // Handle quantity UPDATE forms
     // ---------------------------------------------------------
     document.querySelectorAll('.update-cart-form').forEach(function (form) {
@@ -378,6 +395,7 @@ $total = cart_total();
                     const sub = document.getElementById('subtotal-' + itemId);
                     if (sub) sub.textContent = '$' + parseFloat(data.item_subtotal).toFixed(2);
                     updateTotalDisplay(data.cart_total);
+                    announceCartStatus(data.message || 'Cart updated.');
 
                     // Update navbar badge
                     const badge = document.querySelector('.ld-badge');
@@ -420,6 +438,7 @@ $total = cart_total();
                         setTimeout(function () { row.remove(); }, 300);
                     }
                     updateTotalDisplay(data.cart_total);
+                    announceCartStatus(data.message || 'Item removed from cart.');
 
                     // Update navbar badge
                     const badge = document.querySelector('.ld-badge');

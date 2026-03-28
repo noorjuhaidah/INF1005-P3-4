@@ -5,6 +5,9 @@ $current_page = '';
 require_once __DIR__ . '/../includes/header.php';
 
 redirect_if_logged_in();
+
+$field_errors = $_SESSION['field_errors'] ?? [];
+unset($_SESSION['field_errors']);
 ?>
 
 <section class="ld-section">
@@ -23,19 +26,23 @@ redirect_if_logged_in();
                 <?php csrf_field(); ?>
 
                 <div class="mb-3">
-                    <label class="form-label" for="full_name">Full Name</label>
-                    <input class="form-control" type="text" id="full_name" name="full_name"
+                    <label class="form-label" for="full_name">Full Name <span class="text-danger" aria-hidden="true">*</span></label>
+                    <input type="text" id="full_name" name="full_name"
                            required autocomplete="name" placeholder="Jane Tan"
-                           value="<?= e(old_input('full_name')) ?>">
-                    <div class="invalid-feedback">Please enter your full name.</div>
+                          value="<?= e(old_input('full_name')) ?>"
+                          aria-describedby="<?= !empty($field_errors['full_name']) ? 'full_name_error' : '' ?>"
+                          class="form-control <?= !empty($field_errors['full_name']) ? 'is-invalid' : '' ?>">
+                      <div id="full_name_error" class="invalid-feedback"><?= e($field_errors['full_name'] ?? 'Please enter your full name.') ?></div>
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="email">Email</label>
-                    <input class="form-control" type="email" id="email" name="email"
+                    <label class="form-label" for="email">Email <span class="text-danger" aria-hidden="true">*</span></label>
+                    <input type="email" id="email" name="email"
                            required autocomplete="email" placeholder="you@example.com"
-                           value="<?= e(old_input('email')) ?>">
-                    <div class="invalid-feedback">Please enter a valid email.</div>
+                          value="<?= e(old_input('email')) ?>"
+                          aria-describedby="<?= !empty($field_errors['email']) ? 'email_error' : '' ?>"
+                          class="form-control <?= !empty($field_errors['email']) ? 'is-invalid' : '' ?>">
+                      <div id="email_error" class="invalid-feedback"><?= e($field_errors['email'] ?? 'Please enter a valid email.') ?></div>
                 </div>
 
                 <div class="mb-3">
@@ -48,25 +55,35 @@ redirect_if_logged_in();
                 </div>
 
                 <div class="mb-3">
-                    <label class="form-label" for="password">Password</label>
+                    <label class="form-label" for="password">Password <span class="text-danger" aria-hidden="true">*</span></label>
                     <div class="input-group">
-                        <input class="form-control" type="password" id="password" name="password"
+                        <input type="password" id="password" name="password"
                                required minlength="8" autocomplete="new-password"
-                               placeholder="Min. 8 characters">
+                               placeholder="Min. 8 characters"
+                               aria-describedby="<?= !empty($field_errors['password']) ? 'password_error' : '' ?>"
+                               class="form-control <?= !empty($field_errors['password']) ? 'is-invalid' : '' ?>">
                         <button class="btn btn-outline-secondary" type="button"
-                                id="togglePassword" aria-label="Show or hide password">
+                                id="togglePassword" aria-label="Show password" aria-pressed="false">
                             <i class="bi bi-eye" id="toggleIcon" aria-hidden="true"></i>
                         </button>
                     </div>
-                    <div class="invalid-feedback">Password must be at least 8 characters.</div>
+                    <div id="password_error" class="invalid-feedback d-block"><?= e($field_errors['password'] ?? '') ?></div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label" for="confirm_password">Confirm Password</label>
-                    <input class="form-control" type="password" id="confirm_password"
-                           name="confirm_password" required autocomplete="new-password"
-                           placeholder="Repeat your password">
-                    <div class="invalid-feedback">Passwords do not match.</div>
+                    <label class="form-label" for="confirm_password">Confirm Password <span class="text-danger" aria-hidden="true">*</span></label>
+                    <div class="input-group">
+                        <input type="password" id="confirm_password"
+                               name="confirm_password" required autocomplete="new-password"
+                               placeholder="Repeat your password"
+                               aria-describedby="<?= !empty($field_errors['confirm_password']) ? 'confirm_password_error' : '' ?>"
+                               class="form-control <?= !empty($field_errors['confirm_password']) ? 'is-invalid' : '' ?>">
+                        <button class="btn btn-outline-secondary" type="button"
+                                id="toggleConfirmPassword" aria-label="Show password" aria-pressed="false">
+                            <i class="bi bi-eye" id="toggleConfirmIcon" aria-hidden="true"></i>
+                        </button>
+                    </div>
+                    <div id="confirm_password_error" class="invalid-feedback d-block"><?= e($field_errors['confirm_password'] ?? '') ?></div>
                 </div>
 
                 <button type="submit" class="ld-btn-primary">Create Account</button>
@@ -87,11 +104,26 @@ const passwordInput = document.getElementById('password');
 const confirmPasswordInput = document.getElementById('confirm_password');
 const toggleIcon = document.getElementById('toggleIcon');
 
+const toggleConfirmBtn = document.getElementById('toggleConfirmPassword');
+const toggleConfirmIcon = document.getElementById('toggleConfirmIcon');
+
 if (toggleBtn) {
     toggleBtn.addEventListener('click', function () {
         const isPassword = passwordInput.type === 'password';
         passwordInput.type = isPassword ? 'text' : 'password';
         toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        this.setAttribute('aria-pressed', !isPassword);
+    });
+}
+
+if (toggleConfirmBtn) {
+    toggleConfirmBtn.addEventListener('click', function () {
+        const isPassword = confirmPasswordInput.type === 'password';
+        confirmPasswordInput.type = isPassword ? 'text' : 'password';
+        toggleConfirmIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
+        this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+        this.setAttribute('aria-pressed', !isPassword);
     });
 }
 

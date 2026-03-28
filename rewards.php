@@ -201,25 +201,26 @@ $pointsToNext = ($userPoints !== null)
             <div class="col-lg-6">
                 <h2 class="h5 text-center fw-bold mb-4">At a glance</h2>
                 <table class="table table-borderless bg-white rounded" style="border-radius: var(--ld-radius); overflow: hidden;">
+                    <caption class="visually-hidden">Rewards program summary values at a glance.</caption>
                     <tbody>
                         <tr>
-                            <th class="fw-semibold ps-4 py-3">Sign-up bonus</th>
+                            <th scope="row" class="fw-semibold ps-4 py-3">Sign-up bonus</th>
                             <td class="py-3 pe-4 text-end text-muted"><?= POINTS_SIGNUP_BONUS ?> points</td>
                         </tr>
                         <tr class="table-light">
-                            <th class="fw-semibold ps-4 py-3">Earn rate</th>
+                            <th scope="row" class="fw-semibold ps-4 py-3">Earn rate</th>
                             <td class="py-3 pe-4 text-end text-muted"><?= POINTS_PER_DOLLAR ?> pt per $1 spent</td>
                         </tr>
                         <tr>
-                            <th class="fw-semibold ps-4 py-3">Points to redeem</th>
+                            <th scope="row" class="fw-semibold ps-4 py-3">Points to redeem</th>
                             <td class="py-3 pe-4 text-end text-muted"><?= POINTS_REDEEM_AMOUNT ?> points</td>
                         </tr>
                         <tr class="table-light">
-                            <th class="fw-semibold ps-4 py-3">Redemption value</th>
+                            <th scope="row" class="fw-semibold ps-4 py-3">Redemption value</th>
                             <td class="py-3 pe-4 text-end text-muted"><?= format_price(POINTS_REDEEM_VALUE) ?> off order</td>
                         </tr>
                         <tr>
-                            <th class="fw-semibold ps-4 py-3">Expiry</th>
+                            <th scope="row" class="fw-semibold ps-4 py-3">Expiry</th>
                             <td class="py-3 pe-4 text-end text-muted">Never</td>
                         </tr>
                     </tbody>

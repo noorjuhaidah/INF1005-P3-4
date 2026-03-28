@@ -163,15 +163,16 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="card ld-card p-4">
             <div class="table-responsive">
                 <table class="table align-middle">
+                    <caption class="visually-hidden">Customer inquiries table listing sender details, message content, submitted date, status, and row action.</caption>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Subject</th>
-                            <th>Message</th>
-                            <th>Submitted</th>
-                            <th>Status</th>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Subject</th>
+                            <th scope="col">Message</th>
+                            <th scope="col">Submitted</th>
+                            <th scope="col">Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -186,10 +187,11 @@ require_once __DIR__ . '/../includes/header.php';
                             if (!empty($message['created_at'])) {
                                 $createdAt = format_date($message['created_at']);
                             }
+                            $messageId = (string) ($message['message_id'] ?? '');
                             $isRead = isset($message['is_read']) ? (int)$message['is_read'] === 1 : null;
                             ?>
                             <tr>
-                                <td><?= e((string) ($message['message_id'] ?? '')) ?></td>
+                                <th scope="row"><?= e($messageId) ?></th>
                                 <td><?= e((string) ($message['sender_name'] ?? 'Anonymous')) ?></td>
                                 <td><?= e((string) ($message['sender_email'] ?? '')) ?></td>
                                 <td><?= e((string) ($message['message_subject'] ?? '')) ?></td>
@@ -199,17 +201,17 @@ require_once __DIR__ . '/../includes/header.php';
                                     <?php if ($isRead === null): ?>
                                         <span class="text-muted">N/A</span>
                                     <?php elseif ($isRead): ?>
-                                        <span class="badge bg-success-subtle text-success-emphasis">Read</span>
+                                        <span class="badge bg-success-subtle text-success-emphasis" aria-label="Message status: Read">Read</span>
                                     <?php else: ?>
-                                        <span class="badge bg-warning-subtle text-warning-emphasis">Unread</span>
+                                        <span class="badge bg-warning-subtle text-warning-emphasis" aria-label="Message status: Unread">Unread</span>
                                     <?php endif; ?>
 
                                     <?php if ($messageReadColumn !== ''): ?>
-                                        <form method="post" action="<?= APP_URL ?>/admin/messages.php" class="mt-2">
+                                        <form method="post" action="<?= APP_URL ?>/admin/messages.php" class="mt-2" aria-label="Update read status for message <?= e($messageId) ?>">
                                             <?php csrf_field(); ?>
-                                            <input type="hidden" name="id" value="<?= e((string) ($message['message_id'] ?? '')) ?>">
+                                            <input type="hidden" name="id" value="<?= e($messageId) ?>">
                                             <input type="hidden" name="mark_action" value="<?= $isRead ? 'unread' : 'read' ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                            <button type="submit" class="btn btn-sm btn-outline-secondary" aria-label="Mark message <?= e($messageId) ?> as <?= $isRead ? 'Unread' : 'Read' ?>">
                                                 Mark as <?= $isRead ? 'Unread' : 'Read' ?>
                                             </button>
                                         </form>

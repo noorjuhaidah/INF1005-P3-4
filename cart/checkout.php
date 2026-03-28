@@ -115,10 +115,14 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
             </div>
 
+            <form method="POST" action="<?= APP_URL ?>/cart/checkout.php" id="checkout-form">
+                <?php csrf_field(); ?>
+
             <?php if ($canRedeem): ?>
-                <div class="card ld-card p-4 mb-3" style="border-left: 4px solid var(--ld-blue-dark);">
+                <fieldset class="card ld-card p-4 mb-3" style="border-left: 4px solid var(--ld-blue-dark);">
                     <div class="flex-grow-1">
-                        <h2 class="h6 fw-semibold mb-1">You have <?= number_format($currentPoints) ?> points</h2>
+                        <legend class="h6 fw-semibold mb-1">Apply rewards points</legend>
+                        <p class="small fw-semibold mb-1">You have <?= number_format($currentPoints) ?> points</p>
                         <p class="text-muted small mb-2">
                             Redeem <?= POINTS_REDEEM_AMOUNT ?> points for <?= format_price(POINTS_REDEEM_VALUE) ?> off.
                             Your total would become <?= format_price($previewTotal) ?>.
@@ -130,7 +134,7 @@ require_once __DIR__ . '/../includes/header.php';
                             </label>
                         </div>
                     </div>
-                </div>
+                </fieldset>
             <?php else: ?>
                 <div class="card p-4 mb-3" style="background: var(--ld-blue-light); border: none; border-radius: var(--ld-radius);">
                     <p class="mb-1 small fw-semibold">
@@ -143,10 +147,6 @@ require_once __DIR__ . '/../includes/header.php';
                     </p>
                 </div>
             <?php endif; ?>
-
-            <form method="POST" action="<?= APP_URL ?>/cart/checkout.php" id="checkout-form">
-                <?php csrf_field(); ?>
-                <input type="hidden" name="redeem_points" value="0" id="redeem_hidden">
 
                 <div class="d-flex gap-2 flex-wrap">
                     <button type="submit" class="ld-btn-primary">
@@ -164,7 +164,6 @@ require_once __DIR__ . '/../includes/header.php';
 <script>
 (function () {
     const toggle = document.getElementById('redeem_toggle');
-    const hidden = document.getElementById('redeem_hidden');
     const totalEl = document.getElementById('total-display');
     const discRow = document.getElementById('discount-row');
     const subtotal = <?= json_encode($cartSubtotal) ?>;
@@ -175,11 +174,9 @@ require_once __DIR__ . '/../includes/header.php';
 
     toggle.addEventListener('change', function () {
         if (this.checked) {
-            hidden.value = '1';
             totalEl.textContent = fmt(Math.max(0, subtotal - discount));
             discRow.style.removeProperty('display');
         } else {
-            hidden.value = '0';
             totalEl.textContent = fmt(subtotal);
             discRow.style.display = 'none';
         }

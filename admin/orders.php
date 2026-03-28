@@ -78,14 +78,16 @@ try {
 
 <table class="table align-middle">
 
+<caption class="visually-hidden">Orders table listing order ID, customer, total, status, created date, and status update action.</caption>
+
 <thead>
 <tr>
-<th>Order ID</th>
-<th>Customer</th>
-<th>Total</th>
-<th>Status</th>
-<th>Created At</th>
-<th>Update</th>
+<th scope="col">Order ID</th>
+<th scope="col">Customer</th>
+<th scope="col">Total</th>
+<th scope="col">Status</th>
+<th scope="col">Created At</th>
+<th scope="col">Update status</th>
 </tr>
 </thead>
 
@@ -103,29 +105,29 @@ try {
 
 <tr>
 
-<td><?= e((string)$order['order_id']) ?></td>
+<th scope="row"><?= e((string)$order['order_id']) ?></th>
 
 <td><?= e($order['full_name']) ?></td>
 
 <td>$<?= number_format((float)$order['total_amount'], 2) ?></td>
 
-<td><?= e($order['status']) ?></td>
+<td><?= e(ucwords(str_replace('_', ' ', $order['status']))) ?></td>
 
 <td><?= e($order['created_at']) ?></td>
 
 <td>
 
-<form method="post" class="d-flex gap-2">
+<form method="post" class="d-flex gap-2" aria-label="Update status for order <?= e((string)$order['order_id']) ?>">
 
 <input type="hidden" name="order_id" value="<?= e((string)$order['order_id']) ?>">
 
-<select name="status" class="form-select form-select-sm">
+<select name="status" class="form-select form-select-sm" aria-label="Order status for order <?= e((string)$order['order_id']) ?>">
 
 <option value="submitted" <?= $order['status'] === 'submitted' ? 'selected' : '' ?>>submitted</option>
 
 <option value="preparing" <?= $order['status'] === 'preparing' ? 'selected' : '' ?>>preparing</option>
 
-<option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>ready_for_pickup</option>
+<option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>Ready for pickup</option>
 
 <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>completed</option>
 
@@ -133,7 +135,7 @@ try {
 
 </select>
 
-<button type="submit" class="btn btn-sm btn-primary">Save</button>
+<button type="submit" class="btn btn-sm btn-primary" aria-label="Save status update for order <?= e((string)$order['order_id']) ?>">Save</button>
 
 </form>
 

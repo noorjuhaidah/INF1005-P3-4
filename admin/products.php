@@ -40,14 +40,15 @@ try {
         <div class="card ld-card p-4">
             <div class="table-responsive">
                 <table class="table align-middle">
+                    <caption class="visually-hidden">Products table listing product details and row actions for edit and delete.</caption>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Available</th>
-                            <th>Actions</th>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Available</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -58,14 +59,14 @@ try {
                     <?php else: ?>
                         <?php foreach ($products as $product): ?>
                             <tr>
-                                <td><?= e((string)$product['item_id']) ?></td>
+                                <th scope="row"><?= e((string)$product['item_id']) ?></th>
                                 <td><?= e($product['item_name']) ?></td>
                                 <td><?= e($product['category_name']) ?></td>
                                 <td>$<?= number_format((float)$product['price'], 2) ?></td>
                                 <td><?= $product['is_available'] ? 'Yes' : 'No' ?></td>
                                 <td>
-                                    <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this product?');">Delete</a>
+                                    <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-primary" aria-label="Edit product <?= e($product['item_name']) ?>">Edit</a>
+                                    <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-danger" aria-label="Delete product <?= e($product['item_name']) ?>" onclick="return confirm('Delete this product?');">Delete</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

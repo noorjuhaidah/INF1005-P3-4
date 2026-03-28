@@ -113,14 +113,15 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="card ld-card p-4">
             <div class="table-responsive">
                 <table class="table align-middle">
+                    <caption class="visually-hidden">Reviews table listing reviewer details, rating, comment, created date, and row actions.</caption>
                     <thead>
                         <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Rating</th>
-                            <th>Comment</th>
-                            <th>Created</th>
-                            <th>Actions</th>
+                            <th scope="col">ID</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Rating</th>
+                            <th scope="col">Comment</th>
+                            <th scope="col">Created</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -137,19 +138,15 @@ require_once __DIR__ . '/../includes/header.php';
                             }
                             ?>
                             <tr>
-                                <td><?= e((string) $review['review_id']) ?></td>
+                                <th scope="row"><?= e((string) $review['review_id']) ?></th>
                                 <td><?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?></td>
                                 <td><?= $review['rating'] !== null ? e((string) $review['rating']) . '/5' : '-' ?></td>
                                 <td><?= nl2br(e((string) ($review['review_text'] ?? ''))) ?></td>
                                 <td><?= e($createdAt) ?></td>
                                 <td>
                                     <div class="d-flex gap-2 flex-wrap">
-                                        <a href="<?= APP_URL ?>/admin/edit_review.php?id=<?= e((string) $review['review_id']) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                                        <form method="post" action="<?= APP_URL ?>/admin/delete_review.php" onsubmit="return confirm('Delete this review?');">
-                                            <?php csrf_field(); ?>
-                                            <input type="hidden" name="id" value="<?= e((string) $review['review_id']) ?>">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
-                                        </form>
+                                        <a href="<?= APP_URL ?>/admin/edit_review.php?id=<?= e((string) $review['review_id']) ?>" class="btn btn-sm btn-outline-primary" aria-label="Edit review <?= e((string) $review['review_id']) ?>">Edit</a>
+                                        <a href="<?= APP_URL ?>/admin/delete_review.php?id=<?= e((string) $review['review_id']) ?>" class="btn btn-sm btn-outline-danger" aria-label="Delete review <?= e((string) $review['review_id']) ?>">Delete</a>
                                     </div>
                                 </td>
                             </tr>

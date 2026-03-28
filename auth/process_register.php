@@ -27,22 +27,37 @@ set_old_input([
     'phone' => $phone
 ]);
 
+// Reset field-level errors for this request cycle.
+$_SESSION['field_errors'] = [];
+
 if ($full_name === '' || $email === '' || $password === '') {
+    if ($full_name === '') {
+        $_SESSION['field_errors']['full_name'] = 'Please enter your full name.';
+    }
+    if ($email === '') {
+        $_SESSION['field_errors']['email'] = 'Please enter a valid email.';
+    }
+    if ($password === '') {
+        $_SESSION['field_errors']['password'] = 'Please enter a password.';
+    }
     set_flash('danger', 'Name, email and password are required.');
     redirect(APP_URL . '/auth/register.php');
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $_SESSION['field_errors']['email'] = 'Please enter a valid email.';
     set_flash('danger', 'Please enter a valid email address.');
     redirect(APP_URL . '/auth/register.php');
 }
 
 if (strlen($password) < 8) {
+    $_SESSION['field_errors']['password'] = 'Password must be at least 8 characters.';
     set_flash('danger', 'Password must be at least 8 characters.');
     redirect(APP_URL . '/auth/register.php');
 }
 
 if ($password !== $confirm_password) {
+    $_SESSION['field_errors']['confirm_password'] = 'Passwords do not match.';
     set_flash('danger', 'Passwords do not match.');
     redirect(APP_URL . '/auth/register.php');
 }
@@ -52,7 +67,8 @@ try {
     $stmt->execute([$email]);
 
     if ($stmt->fetch()) {
-        set_flash('danger', 'An account with this email already exists.');
+        $_SESSION['field_errors']['email'] = 'Unable to complete registration. Please check your details or sign in.';
+        set_flash('danger', 'Unable to complete registration. Please check your details or sign in.');
         redirect(APP_URL . '/auth/register.php');
     }
 
@@ -83,6 +99,7 @@ try {
     $pdo->commit();
 
     clear_old_input();
+    unset($_SESSION['field_errors']);
 
     session_regenerate_id(true);
     $_SESSION['user_id']   = $new_user_id;
@@ -99,6 +116,7 @@ try {
     }
 
     error_log('Register error: ' . $e->getMessage());
+    $_SESSION['field_errors']['email'] = 'We could not complete registration right now. Please try again.';
     set_flash('danger', 'Database error. Please try again.');
     redirect(APP_URL . '/auth/register.php');
 }

@@ -91,11 +91,22 @@ require_once __DIR__ . '/includes/header.php';
             margin-bottom: 1rem;
         }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+        .ld-video-hero video {
+            display: none;
+        }
+        .ld-video-hero {
+            background: url('<?= APP_URL ?>/assets/images/placeholder.png') center/cover no-repeat;
+        }
+    }
 </style>
 
 <section class="ld-video-hero">
-    <video autoplay muted loop playsinline poster="<?= APP_URL ?>/assets/images/placeholder.png" aria-hidden="true">
+    <video autoplay muted loop playsinline aria-hidden="true">
         <source src="<?= APP_URL ?>/assets/videos/lazydrip.mp4" type="video/mp4">
+        <!-- Fallback for when video doesn't load -->
+        <img src="<?= APP_URL ?>/assets/images/placeholder.png" alt="Coffee shop interior with warm lighting and minimalist decor">
     </video>
 
     <div class="container">

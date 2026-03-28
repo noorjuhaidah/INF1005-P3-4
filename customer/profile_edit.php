@@ -10,6 +10,9 @@ require_once __DIR__ . '/../includes/header.php';
 // Require login
 require_login();
 
+$field_errors = $_SESSION['field_errors'] ?? [];
+unset($_SESSION['field_errors']);
+
 // Ensure CSRF token exists
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -25,9 +28,9 @@ function fetchUserData(PDO $pdo, int $userId): array {
 
 // Initial values for form fields
 $userData = fetchUserData($pdo, $_SESSION['user_id']);
-$email     = $userData['email'] ?? '';
-$phone     = $userData['phone'] ?? '';
-$fullName  = $userData['full_name'] ?? '';
+$email     = old_input('email', $userData['email'] ?? '');
+$phone     = old_input('phone', $userData['phone'] ?? '');
+$fullName  = old_input('full_name', $userData['full_name'] ?? '');
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -41,8 +44,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone    = clean_input($_POST['phone'] ?? '');
     $fullName = clean_input($_POST['full_name'] ?? '');
 
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        set_flash('danger', 'Please provide a valid email address.');
+    $_SESSION['field_errors'] = [];
+
+    if ($fullName === '') {
+        $_SESSION['field_errors']['full_name'] = 'Please enter your full name.';
+    }
+
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['field_errors']['email'] = 'Please provide a valid email address.';
+    }
+
+    if (!empty($_SESSION['field_errors'])) {
+        set_old_input([
+            'email' => $email,
+            'phone' => $phone,
+            'full_name' => $fullName,
+        ]);
+        set_flash('danger', 'Please correct the highlighted fields.');
         redirect(APP_URL . '/customer/profile_edit.php');
     }
 
@@ -57,9 +75,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Update session name as well
         $_SESSION['full_name'] = $fullName;
 
+        clear_old_input();
+        unset($_SESSION['field_errors']);
+
         set_flash('success', 'Profile updated!');
         redirect(APP_URL . '/customer/dashboard.php');
     } catch (PDOException $e) {
+        set_old_input([
+            'email' => $email,
+            'phone' => $phone,
+            'full_name' => $fullName,
+        ]);
         set_flash('danger', 'Failed to update profile. Please try again.');
         redirect(APP_URL . '/customer/profile_edit.php');
     }
@@ -71,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="container">
         <h1 class="ld-section-title mb-3">Edit Profile</h1>
         <p class="text-muted mb-4">Update your contact details so we can keep you in the loop.</p>
+        <?php show_flash(); ?>
 
         <div class="row">
             <div class="col-md-8">
@@ -78,27 +105,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
                     <div class="mb-3">
-                        <label class="form-label" for="full_name">Full name</label>
+                        <label class="form-label" for="full_name">Full name <span class="text-danger" aria-hidden="true">*</span></label>
                         <input
                             id="full_name"
                             name="full_name"
                             type="text"
-                            class="form-control"
+                            class="form-control <?= !empty($field_errors['full_name']) ? 'is-invalid' : '' ?>"
                             value="<?= e($fullName) ?>"
+                            autocomplete="name"
+                            aria-describedby="<?= !empty($field_errors['full_name']) ? 'full_name_error' : '' ?>"
                             required
                         >
+                        <?php if (!empty($field_errors['full_name'])): ?>
+                        <div id="full_name_error" class="invalid-feedback"><?= e($field_errors['full_name']) ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label" for="email">Email address</label>
+                        <label class="form-label" for="email">Email address <span class="text-danger" aria-hidden="true">*</span></label>
                         <input
                             id="email"
                             name="email"
                             type="email"
-                            class="form-control"
+                            class="form-control <?= !empty($field_errors['email']) ? 'is-invalid' : '' ?>"
                             value="<?= e($email) ?>"
+                            autocomplete="email"
+                            aria-describedby="<?= !empty($field_errors['email']) ? 'email_error' : '' ?>"
                             required
                         >
+                        <?php if (!empty($field_errors['email'])): ?>
+                        <div id="email_error" class="invalid-feedback"><?= e($field_errors['email']) ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="mb-3">
@@ -109,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             type="tel"
                             class="form-control"
                             value="<?= e($phone) ?>"
+                            autocomplete="tel"
                         >
                     </div>
 

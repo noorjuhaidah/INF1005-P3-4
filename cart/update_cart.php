@@ -62,13 +62,18 @@ if (!isset($_SESSION['cart'])) {
 // REMOVE action
 // -------------------------------------------------------------
 if ($action === 'remove') {
+    $removedName = '';
+    if (isset($_SESSION['cart'][$item_id]['name'])) {
+        $removedName = (string)$_SESSION['cart'][$item_id]['name'];
+    }
+
     unset($_SESSION['cart'][$item_id]);
 
     $cart_count = cart_count();
     $cart_total = cart_total();
 
     if ($is_ajax) {
-        json_response(true, 'Item removed.', [
+        json_response(true, $removedName !== '' ? ($removedName . ' removed from cart.') : 'Item removed from cart.', [
             'cart_count' => $cart_count,
             'cart_total' => number_format($cart_total, 2),
         ]);

@@ -84,8 +84,8 @@ try {
     $db_item = $stmt->fetch();
 } catch (PDOException $e) {
     error_log('Cart DB error: ' . $e->getMessage());
-    if ($is_ajax) json_response(false, 'A database error occurred.');
-    set_flash('danger', 'A database error occurred. Please try again.');
+    if ($is_ajax) json_response(false, 'Could not add item right now. Please try again.');
+    set_flash('danger', 'Could not add item right now. Please try again.');
     redirect(APP_URL . '/menu.php');
 }
 
