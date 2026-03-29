@@ -31,6 +31,7 @@ define('POINTS_REDEEM_VALUE',    5.00);// Dollar value of redemption
 // --- Authentication security rules ---------------------------
 define('MAX_LOGIN_ATTEMPTS',     5);   // Failed attempts before temporary lockout
 define('LOGIN_LOCKOUT_MINUTES', 15);   // Account+IP lockout duration
+define('FORCE_HTTPS', filter_var(getenv('FORCE_HTTPS') ?: '0', FILTER_VALIDATE_BOOLEAN));
 
 // --- Session cookie settings (more secure) ------------------
 // Respect reverse proxies that terminate TLS.

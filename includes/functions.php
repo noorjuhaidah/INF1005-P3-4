@@ -196,6 +196,10 @@ function request_is_https(): bool {
  * Forces HTTPS in web requests, with optional localhost allowance.
  */
 function enforce_https(bool $allowLocal = true): void {
+    if (!defined('FORCE_HTTPS') || FORCE_HTTPS !== true) {
+        return;
+    }
+
     if (PHP_SAPI === 'cli' || request_is_https()) {
         return;
     }

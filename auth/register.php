@@ -2,10 +2,13 @@
 $page_title = 'Register';
 $current_page = '';
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 
-redirect_if_logged_in();
 enforce_https();
+redirect_if_logged_in();
+
+require_once __DIR__ . '/../includes/header.php';
 
 $field_errors = $_SESSION['field_errors'] ?? [];
 unset($_SESSION['field_errors']);
