@@ -5,6 +5,7 @@ $current_page = '';
 require_once __DIR__ . '/../includes/header.php';
 
 redirect_if_logged_in();
+enforce_https();
 
 $field_errors = $_SESSION['field_errors'] ?? [];
 unset($_SESSION['field_errors']);

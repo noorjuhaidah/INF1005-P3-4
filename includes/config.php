@@ -28,6 +28,19 @@ define('POINTS_PER_DOLLAR',      1);   // 1 point per $1 spent
 define('POINTS_REDEEM_AMOUNT',  50);   // Points needed to redeem
 define('POINTS_REDEEM_VALUE',    5.00);// Dollar value of redemption
 
+// --- Authentication security rules ---------------------------
+define('MAX_LOGIN_ATTEMPTS',     5);   // Failed attempts before temporary lockout
+define('LOGIN_LOCKOUT_MINUTES', 15);   // Account+IP lockout duration
+
 // --- Session cookie settings (more secure) ------------------
+// Respect reverse proxies that terminate TLS.
+$httpsDetected = (
+	(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+	|| (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+	|| (isset($_SERVER['SERVER_PORT']) && (string)$_SERVER['SERVER_PORT'] === '443')
+);
+
+ini_set('session.cookie_secure', $httpsDetected ? '1' : '0');
 ini_set('session.cookie_httponly', 1);
+ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.use_strict_mode', 1);

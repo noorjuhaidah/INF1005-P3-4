@@ -7,6 +7,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+enforce_https();
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect(APP_URL . '/auth/register.php');
 }

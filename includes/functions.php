@@ -167,6 +167,52 @@ function clean_input(string $value): string {
 }
 
 // =============================================================
+// TRANSPORT SECURITY HELPERS
+// =============================================================
+
+/**
+ * Returns true when the current request is served over HTTPS.
+ */
+function request_is_https(): bool {
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+
+    if (isset($_SERVER['SERVER_PORT']) && (string)$_SERVER['SERVER_PORT'] === '443') {
+        return true;
+    }
+
+    if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $proto = strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']);
+        if ($proto === 'https') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Forces HTTPS in web requests, with optional localhost allowance.
+ */
+function enforce_https(bool $allowLocal = true): void {
+    if (PHP_SAPI === 'cli' || request_is_https()) {
+        return;
+    }
+
+    $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
+    if ($allowLocal && in_array($remoteAddr, ['127.0.0.1', '::1'], true)) {
+        return;
+    }
+
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $uri  = $_SERVER['REQUEST_URI'] ?? '/';
+
+    header('Location: https://' . $host . $uri, true, 302);
+    exit;
+}
+
+// =============================================================
 // CSRF PROTECTION HELPERS
 // =============================================================
 
