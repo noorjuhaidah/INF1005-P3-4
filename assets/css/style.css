@@ -98,7 +98,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 
 .navbar-nav .nav-link.active {
     background-color: var(--ld-blue-light);
-    color: #1F6F93;
+    color: #185A79;
 }
 
 /* Cart badge */
@@ -109,8 +109,10 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 /* --- Buttons ------------------------------------------------ */
-.ld-btn-primary {
+.ld-btn-primary,
+.btn.ld-btn-primary {
     background-color: #1F6F93;
+    border-color: #1F6F93;
     border: none;
     color: #fff;
     font-weight: 600;
