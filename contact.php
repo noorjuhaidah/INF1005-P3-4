@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (PDOException $e) {
             error_log('Contact form DB error: ' . $e->getMessage());
-            set_flash('danger', 'Contact form error: ' . $e->getMessage());
+            set_flash('danger', 'Unable to send your message right now. Please try again in a moment.');
             redirect(APP_URL . '/contact.php');
         }
     }
