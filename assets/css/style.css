@@ -97,8 +97,8 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 .navbar-nav .nav-link.active {
-    background-color: var(--ld-blue-light);
-    color: #185A79;
+    background-color: var(--ld-blue-light) !important;
+    color: #185A79 !important;
 }
 
 /* Cart badge */
@@ -110,20 +110,26 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 
 /* --- Buttons ------------------------------------------------ */
 .ld-btn-primary,
-.btn.ld-btn-primary {
-    background-color: #1F6F93;
-    border-color: #1F6F93;
-    border: none;
-    color: #fff;
+.btn.ld-btn-primary,
+a.ld-btn-primary,
+button.ld-btn-primary {
+    background-color: #1F6F93 !important;
+    border-color: #1F6F93 !important;
+    border: none !important;
+    color: #fff !important;
     font-weight: 600;
     border-radius: var(--ld-radius);
     padding: 0.5rem 1.4rem;
     transition: background 0.2s, transform 0.1s;
     display: inline-block;
 }
-.ld-btn-primary:hover {
-    background-color: #185A79;
-    color: #fff;
+
+.ld-btn-primary:hover,
+.btn.ld-btn-primary:hover,
+a.ld-btn-primary:hover,
+button.ld-btn-primary:hover {
+    background-color: #185A79 !important;
+    color: #fff !important;
     text-decoration: none;
     transform: translateY(-1px);
 }
