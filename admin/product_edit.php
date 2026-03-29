@@ -133,31 +133,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php if (!empty($image_path)): ?>
 
-<img src="<?= APP_URL ?>/uploads/<?= e($image_path) ?>" alt="Current image for <?= e($name) ?>" style="max-width:120px;margin-bottom:10px;">
+<img src="<?= APP_URL ?>/uploads/<?= e($image_path) ?>" alt="Current image for <?= e($name) ?>" title="Current image for <?= e($name) ?>" style="max-width:120px;margin-bottom:10px;">
 
 <?php endif; ?>
 
 <div class="mb-3">
 <label class="form-label" for="name">Product Name <span class="text-danger" aria-hidden="true">*</span></label>
-<input id="name" type="text" class="form-control <?= !empty($fieldErrors['name']) ? 'is-invalid' : '' ?>" name="name" value="<?= e($name) ?>" aria-describedby="<?= !empty($fieldErrors['name']) ? 'name_error' : '' ?>" required>
+<input id="name" type="text" class="form-control <?= !empty($fieldErrors['name']) ? 'is-invalid' : '' ?>" name="name" value="<?= e($name) ?>" aria-label="Product name" aria-describedby="<?= !empty($fieldErrors['name']) ? 'name_error' : '' ?>" required>
 <?php if (!empty($fieldErrors['name'])): ?><div id="name_error" class="invalid-feedback"><?= e($fieldErrors['name']) ?></div><?php endif; ?>
 </div>
 
 <div class="mb-3">
 <label class="form-label" for="description">Description</label>
-<textarea id="description" class="form-control" name="description"><?= e($description) ?></textarea>
+<textarea id="description" class="form-control" name="description" aria-label="Product description"><?= e($description) ?></textarea>
 </div>
 
 <div class="mb-3">
 <label class="form-label" for="price">Price <span class="text-danger" aria-hidden="true">*</span></label>
-<input id="price" type="number" step="0.01" min="0" class="form-control <?= !empty($fieldErrors['price']) ? 'is-invalid' : '' ?>" name="price" value="<?= e($price) ?>" aria-describedby="price_hint<?= !empty($fieldErrors['price']) ? ' price_error' : '' ?>" required>
+<input id="price" type="number" step="0.01" min="0" class="form-control <?= !empty($fieldErrors['price']) ? 'is-invalid' : '' ?>" name="price" value="<?= e($price) ?>" aria-label="Price" aria-describedby="price_hint<?= !empty($fieldErrors['price']) ? ' price_error' : '' ?>" required>
 <div id="price_hint" class="form-text">Use numbers only, for example 4.50.</div>
 <?php if (!empty($fieldErrors['price'])): ?><div id="price_error" class="invalid-feedback"><?= e($fieldErrors['price']) ?></div><?php endif; ?>
 </div>
 
 <div class="mb-3">
 <label class="form-label" for="category_id">Category <span class="text-danger" aria-hidden="true">*</span></label>
-<select id="category_id" class="form-control <?= !empty($fieldErrors['category_id']) ? 'is-invalid' : '' ?>" name="category_id" aria-describedby="<?= !empty($fieldErrors['category_id']) ? 'category_error' : '' ?>" required>
+<select id="category_id" class="form-control <?= !empty($fieldErrors['category_id']) ? 'is-invalid' : '' ?>" name="category_id" aria-label="Category" aria-describedby="<?= !empty($fieldErrors['category_id']) ? 'category_error' : '' ?>" required>
 
 <option value="">Select category</option>
 
@@ -175,13 +175,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="mb-3">
 <label class="form-label" for="image">Change Image</label>
-<input id="image" type="file" class="form-control <?= !empty($fieldErrors['image']) ? 'is-invalid' : '' ?>" name="image" accept="image/*" aria-describedby="image_help<?= !empty($fieldErrors['image']) ? ' image_error' : '' ?>">
+<input id="image" type="file" class="form-control <?= !empty($fieldErrors['image']) ? 'is-invalid' : '' ?>" name="image" accept="image/*" aria-label="Change product image" aria-describedby="image_help<?= !empty($fieldErrors['image']) ? ' image_error' : '' ?>">
 <div id="image_help" class="form-text">Upload a clear replacement image. Ensure customer-facing pages include descriptive alt text or mark decorative images with empty alt text.</div>
 <?php if (!empty($fieldErrors['image'])): ?><div id="image_error" class="invalid-feedback"><?= e($fieldErrors['image']) ?></div><?php endif; ?>
 </div>
 
 <div class="form-check mb-3">
-<input id="is_available" class="form-check-input" type="checkbox" name="is_available" <?= $is_available ? 'checked' : '' ?>>
+<input id="is_available" class="form-check-input" type="checkbox" name="is_available" aria-label="Available" <?= $is_available ? 'checked' : '' ?>>
 <label class="form-check-label" for="is_available">Available</label>
 </div>
 

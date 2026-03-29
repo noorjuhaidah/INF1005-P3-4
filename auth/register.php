@@ -92,7 +92,7 @@ unset($_SESSION['field_errors']);
             <hr class="mt-4">
             <p class="text-center text-muted small mb-0">
                 Already have an account?
-                <a href="<?= APP_URL ?>/auth/login.php" class="fw-semibold">Log in</a>
+                <a href="<?= APP_URL ?>/auth/login.php" class="fw-semibold ld-auth-link">Log in</a>
             </p>
         </div>
     </div>

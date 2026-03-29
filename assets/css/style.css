@@ -57,9 +57,9 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 .ld-navbar {
-    background-color: transparent;
-    border-bottom: none;
-    box-shadow: none;
+    background-color: var(--ld-white); 
+    border-bottom: 1px solid rgba(0,0,0,0.06); 
+    box-shadow: var(--ld-shadow); 
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
 }
@@ -129,8 +129,8 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 .ld-btn-outline {
-    border: 2px solid var(--ld-blue-dark);
-    color: var(--ld-blue-dark);
+    border: 2px solid #1F6F93;
+    color: #1F6F93;
     font-weight: 600;
     border-radius: var(--ld-radius);
     padding: 0.5rem 1.4rem;
@@ -139,7 +139,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     background: transparent;
 }
 .ld-btn-outline:hover {
-    background-color: var(--ld-blue-dark);
+    background-color: #185A79;
     color: #fff;
     text-decoration: none;
 }
@@ -218,6 +218,15 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     box-shadow: 0 0 0 0.2rem rgba(126,200,227,0.35);
 }
 
+.ld-contact-email {
+    color: #1F6F93;
+}
+
+.ld-contact-email:hover,
+.ld-contact-email:focus {
+    color: #185A79;
+}
+
 /* --- Badges & Chips ---------------------------------------- */
 .ld-chip {
     display: inline-block;
@@ -226,7 +235,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     font-size: 0.78rem;
     font-weight: 600;
     background-color: var(--ld-blue-light);
-    color: #3a9abf;
+    color: #185A79;
 }
 
 /* Order status chips */
@@ -285,6 +294,39 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 /* --- Accessibility ----------------------------------------- */
+.alert a {
+    color: #185A79;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+.alert a:hover,
+.alert a:focus {
+    color: #0f4a5f;
+}
+
+.ld-auth-link {
+    color: #1F6F93;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ld-auth-link:hover,
+.ld-auth-link:focus {
+    color: #185A79;
+}
+
+.ld-back-link {
+    color: #1F6F93;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ld-back-link:hover,
+.ld-back-link:focus {
+    color: #185A79;
+}
+
 /* Visible focus ring for keyboard users */
 :focus-visible {
     outline: 3px solid var(--ld-blue-dark);

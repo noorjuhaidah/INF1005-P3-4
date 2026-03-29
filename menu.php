@@ -237,7 +237,7 @@ foreach ($all_items as $item) {
     font-weight: 600; font-size: 0.85rem; color: var(--ld-muted); cursor: pointer; transition: all 0.2s;
 }
 .ld-filter-btn:hover, .ld-filter-btn.active {
-    background: var(--ld-blue-dark); border-color: var(--ld-blue-dark); color: #fff;
+    background: #1F6F93; border-color: #1F6F93; color: #fff;
 }
 .ld-menu-img { height: 200px; object-fit: cover; background-color: var(--ld-blue-light); }
 .ld-menu-item-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }

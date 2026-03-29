@@ -121,17 +121,19 @@ try {
 
 <input type="hidden" name="order_id" value="<?= e((string)$order['order_id']) ?>">
 
-<select name="status" class="form-select form-select-sm" aria-label="Order status for order <?= e((string)$order['order_id']) ?>">
+<label class="visually-hidden" for="status-<?= e((string)$order['order_id']) ?>">Order status for order <?= e((string)$order['order_id']) ?></label>
 
-<option value="submitted" <?= $order['status'] === 'submitted' ? 'selected' : '' ?>>submitted</option>
+<select id="status-<?= e((string)$order['order_id']) ?>" name="status" class="form-select form-select-sm" aria-label="Order status for order <?= e((string)$order['order_id']) ?>">
 
-<option value="preparing" <?= $order['status'] === 'preparing' ? 'selected' : '' ?>>preparing</option>
+    <option value="submitted" <?= $order['status'] === 'submitted' ? 'selected' : '' ?>>Submitted</option>
 
-<option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>Ready for pickup</option>
+    <option value="preparing" <?= $order['status'] === 'preparing' ? 'selected' : '' ?>>Preparing</option>
 
-<option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>completed</option>
+    <option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>Ready For Pickup</option>
 
-<option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>cancelled</option>
+    <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
+
+    <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
 
 </select>
 

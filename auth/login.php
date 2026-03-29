@@ -53,7 +53,7 @@ unset($_SESSION['field_errors']);
 
             <p class="mt-3 text-center">
                 Don’t have an account?
-                <a href="<?= APP_URL ?>/auth/register.php">Register here</a>.
+                <a class="ld-auth-link" href="<?= APP_URL ?>/auth/register.php">Register here</a>.
             </p>
         </div>
     </div>

@@ -250,7 +250,7 @@ require_once __DIR__ . '/includes/header.php';
                     <ul class="list-unstyled text-muted small mb-0">
                         <li class="mb-2">
                             <i class="bi bi-envelope me-2" aria-hidden="true"></i>
-                            <a href="mailto:hello@lazydrip.sg">hello@lazydrip.sg</a>
+                            <a class="ld-contact-email" href="mailto:hello@lazydrip.sg">hello@lazydrip.sg</a>
                         </li>
                         <li class="mb-2">
                             <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>
