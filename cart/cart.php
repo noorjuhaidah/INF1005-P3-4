@@ -599,7 +599,7 @@ $total = cart_total();
                     if (btn) { btn.disabled = false; btn.textContent = 'Update'; }
                     form.dataset.updating = '0';
                 } else {
-                    alert(data.message || 'Could not update cart.');
+                    window.ldShowNotice(data.message || 'Could not update cart.', 'warning');
                     if (btn) { btn.disabled = false; btn.textContent = 'Update'; }
                     form.dataset.updating = '0';
                 }
@@ -672,7 +672,7 @@ $total = cart_total();
                         setTimeout(function () { location.reload(); }, 400);
                     }
                 } else {
-                    alert(data.message || 'Could not remove item.');
+                    window.ldShowNotice(data.message || 'Could not remove item.', 'warning');
                 }
             })
             .catch(function () {

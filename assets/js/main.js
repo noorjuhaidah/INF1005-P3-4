@@ -7,6 +7,35 @@
 'use strict';
 
 // -------------------------------------------------------------
+// Shared inline notice helper
+// Usage: window.ldShowNotice('Message', 'warning')
+// Levels: primary, secondary, success, danger, warning, info
+// -------------------------------------------------------------
+window.ldShowNotice = function (message, level) {
+    const host = document.getElementById('flash-container') || document.querySelector('main') || document.body;
+    const notice = document.createElement('div');
+    notice.className = 'alert alert-' + (level || 'info') + ' alert-dismissible fade show mt-2';
+    notice.setAttribute('role', 'status');
+    notice.setAttribute('aria-live', 'polite');
+    notice.innerHTML =
+        '<span></span>' +
+        '<button type="button" class="btn-close" aria-label="Close"></button>';
+    notice.querySelector('span').textContent = message;
+    host.prepend(notice);
+
+    const closeBtn = notice.querySelector('.btn-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            notice.remove();
+        });
+    }
+
+    setTimeout(function () {
+        if (notice.isConnected) notice.remove();
+    }, 4000);
+};
+
+// -------------------------------------------------------------
 // 1. Bootstrap form validation
 //    Adds .was-validated to any form with class .needs-validation
 //    on submit, triggering Bootstrap's built-in error styles.
@@ -73,6 +102,7 @@ document.querySelectorAll('.qty-increase').forEach(function (btn) {
 // -------------------------------------------------------------
 (function () {
     const alerts = document.querySelectorAll('#flash-container .alert');
+    if (typeof bootstrap === 'undefined' || !bootstrap.Alert) return;
     alerts.forEach(function (alert) {
         setTimeout(function () {
             const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);

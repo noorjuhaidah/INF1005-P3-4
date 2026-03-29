@@ -126,19 +126,6 @@ if (toggleConfirmBtn) {
         this.setAttribute('aria-pressed', !isPassword);
     });
 }
-
-function validatePasswordMatch() {
-    if (confirmPasswordInput.value !== passwordInput.value) {
-        confirmPasswordInput.setCustomValidity('Passwords do not match');
-    } else {
-        confirmPasswordInput.setCustomValidity('');
-    }
-}
-
-if (passwordInput && confirmPasswordInput) {
-    passwordInput.addEventListener('input', validatePasswordMatch);
-    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
-}
 </script>
 
 <?php clear_old_input(); ?>

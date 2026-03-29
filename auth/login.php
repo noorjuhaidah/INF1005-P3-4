@@ -60,16 +60,21 @@ unset($_SESSION['field_errors']);
 </section>
 
 <script>
-document.getElementById('togglePassword').addEventListener('click', function() {
-    const password = document.getElementById('password');
-    const icon = this.querySelector('i');
-    const isVisible = password.type === 'text';
-    
-    password.type = isVisible ? 'password' : 'text';
-    icon.className = isVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
-    this.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
-    this.setAttribute('aria-pressed', !isVisible);
-});
+const togglePasswordBtn = document.getElementById('togglePassword');
+if (togglePasswordBtn) {
+    togglePasswordBtn.addEventListener('click', function () {
+        const password = document.getElementById('password');
+        const icon = this.querySelector('i');
+        if (!password || !icon) return;
+
+        const isVisible = password.type === 'text';
+
+        password.type = isVisible ? 'password' : 'text';
+        icon.className = isVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
+        this.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+        this.setAttribute('aria-pressed', !isVisible);
+    });
+}
 </script>
 
 <?php clear_old_input(); ?>

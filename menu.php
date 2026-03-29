@@ -363,7 +363,16 @@ foreach ($all_items as $item) {
                 body: new FormData(form),
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(function (res) { return res.json(); })
+            .then(function (res) {
+                const contentType = res.headers.get('content-type') || '';
+                if (!res.ok) {
+                    throw new Error('Request failed with status ' + res.status);
+                }
+                if (!contentType.includes('application/json')) {
+                    throw new Error('Unexpected response format');
+                }
+                return res.json();
+            })
             .then(function (data) {
                 if (data.success) {
                     // Update navbar cart badge
@@ -383,12 +392,13 @@ foreach ($all_items as $item) {
                         }, 1500);
                     }
                 } else {
-                    alert(data.message || 'Could not add item. Please try again.');
+                    window.ldShowNotice(data.message || 'Could not add item. Please try again.', 'warning');
                     if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
                 }
             })
-            .catch(function () {
-                alert('Something went wrong. Please try again.');
+            .catch(function (err) {
+                console.error('Add to cart failed:', err);
+                window.ldShowNotice('Something went wrong. Please try again.', 'danger');
                 if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
             });
         });
