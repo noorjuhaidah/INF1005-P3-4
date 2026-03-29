@@ -2,12 +2,14 @@
 $page_title = 'Add Product';
 $current_page = 'admin';
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
 
-if (!is_logged_in() || !is_admin()) {
-    header('Location: ' . APP_URL . '/auth/login.php');
-    exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
+
+require_admin();
 
 $name = '';
 $description = '';
@@ -81,14 +83,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $is_available
             ]);
 
-            header('Location: ' . APP_URL . '/admin/products.php');
-            exit;
+            set_flash('success', 'Product added successfully.');
+            redirect(APP_URL . '/admin/products.php#flash-container');
 
         } catch (PDOException $e) {
             $fieldErrors['form'] = 'Unable to add product.';
         }
     }
 }
+
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="ld-section">

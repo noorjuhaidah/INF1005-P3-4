@@ -2,12 +2,14 @@
 $page_title = 'Manage Products';
 $current_page = 'admin';
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
 
-if (!is_logged_in() || !is_admin()) {
-    header('Location: ' . APP_URL . '/auth/login.php');
-    exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
+
+require_admin();
 
 $products = [];
 
@@ -25,6 +27,8 @@ try {
 } catch (PDOException $e) {
     $products = [];
 }
+
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="ld-section">
@@ -66,7 +70,7 @@ try {
                                 <td><?= $product['is_available'] ? 'Yes' : 'No' ?></td>
                                 <td>
                                     <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-primary" aria-label="Edit product <?= e($product['item_name']) ?>">Edit</a>
-                                    <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-danger" aria-label="Delete product <?= e($product['item_name']) ?>" onclick="return confirm('Delete this product?');">Delete</a>
+                                    <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-danger" aria-label="Delete product <?= e($product['item_name']) ?>">Delete</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
