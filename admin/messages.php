@@ -32,6 +32,12 @@ $pickColumn = static function (array $candidates, array $columns): string {
     }
     return '';
 };
+$quoteIdent = static function (string $identifier): string {
+    if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+        throw new RuntimeException('Unsafe SQL identifier: ' . $identifier);
+    }
+    return '`' . $identifier . '`';
+};
 
 try {
     $columnsStmt = $pdo->query("SHOW COLUMNS FROM contact_messages");
@@ -64,8 +70,8 @@ try {
             $newValue = $action === 'read' ? 1 : 0;
             $updateStmt = $pdo->prepare("
                 UPDATE contact_messages
-                SET {$messageReadColumn} = ?
-                WHERE {$messageIdColumn} = ?
+                SET " . $quoteIdent($messageReadColumn) . " = ?
+                WHERE " . $quoteIdent($messageIdColumn) . " = ?
             ");
             $updateStmt->execute([$newValue, $id]);
         }
@@ -73,15 +79,15 @@ try {
         redirect(APP_URL . '/admin/messages.php');
     }
 
-    $selectParts = ["m.{$messageIdColumn} AS message_id"];
-    $selectParts[] = $messageBodyColumn !== '' ? "m.{$messageBodyColumn} AS message_body" : "'' AS message_body";
-    $selectParts[] = $messageSubjectColumn !== '' ? "m.{$messageSubjectColumn} AS message_subject" : "'' AS message_subject";
-    $selectParts[] = $messageCreatedAtColumn !== '' ? "m.{$messageCreatedAtColumn} AS created_at" : "NULL AS created_at";
-    $selectParts[] = $messageReadColumn !== '' ? "m.{$messageReadColumn} AS is_read" : "NULL AS is_read";
+    $selectParts = ["m." . $quoteIdent($messageIdColumn) . " AS message_id"];
+    $selectParts[] = $messageBodyColumn !== '' ? "m." . $quoteIdent($messageBodyColumn) . " AS message_body" : "'' AS message_body";
+    $selectParts[] = $messageSubjectColumn !== '' ? "m." . $quoteIdent($messageSubjectColumn) . " AS message_subject" : "'' AS message_subject";
+    $selectParts[] = $messageCreatedAtColumn !== '' ? "m." . $quoteIdent($messageCreatedAtColumn) . " AS created_at" : "NULL AS created_at";
+    $selectParts[] = $messageReadColumn !== '' ? "m." . $quoteIdent($messageReadColumn) . " AS is_read" : "NULL AS is_read";
 
     $joinUsers = false;
     if ($messageNameColumn !== '') {
-        $selectParts[] = "m.{$messageNameColumn} AS sender_name";
+        $selectParts[] = "m." . $quoteIdent($messageNameColumn) . " AS sender_name";
     } else {
         $selectParts[] = "'Anonymous' AS sender_name";
         if ($messageUserIdColumn !== '') {
@@ -90,7 +96,7 @@ try {
     }
 
     if ($messageEmailColumn !== '') {
-        $selectParts[] = "m.{$messageEmailColumn} AS sender_email";
+        $selectParts[] = "m." . $quoteIdent($messageEmailColumn) . " AS sender_email";
     } else {
         $selectParts[] = "'' AS sender_email";
         if ($messageUserIdColumn !== '') {
@@ -114,17 +120,17 @@ try {
 
         if ($userPrimaryKeyColumn !== '') {
             $sql = "SELECT " . implode(', ', $selectParts) . ",
-                           " . ($userNameColumn !== '' ? "u.{$userNameColumn}" : "'Anonymous'") . " AS user_name_fallback,
-                           " . ($userEmailColumn !== '' ? "u.{$userEmailColumn}" : "''") . " AS user_email_fallback
+                           " . ($userNameColumn !== '' ? "u." . $quoteIdent($userNameColumn) : "'Anonymous'") . " AS user_name_fallback,
+                           " . ($userEmailColumn !== '' ? "u." . $quoteIdent($userEmailColumn) : "''") . " AS user_email_fallback
                 FROM contact_messages m
-                LEFT JOIN users u ON u.{$userPrimaryKeyColumn} = m.{$messageUserIdColumn}";
+                LEFT JOIN users u ON u." . $quoteIdent($userPrimaryKeyColumn) . " = m." . $quoteIdent($messageUserIdColumn);
         }
     }
 
     if ($messageCreatedAtColumn !== '') {
-        $sql .= " ORDER BY m.{$messageCreatedAtColumn} DESC";
+        $sql .= " ORDER BY m." . $quoteIdent($messageCreatedAtColumn) . " DESC";
     } else {
-        $sql .= " ORDER BY m.{$messageIdColumn} DESC";
+        $sql .= " ORDER BY m." . $quoteIdent($messageIdColumn) . " DESC";
     }
 
     $messagesStmt = $pdo->query($sql);

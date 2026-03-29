@@ -15,6 +15,22 @@ require_once __DIR__ . '/functions.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: SAMEORIGIN");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header(
+    "Content-Security-Policy: "
+    . "default-src 'self'; "
+    . "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+    . "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "img-src 'self' data:; "
+    . "connect-src 'self'; "
+    . "object-src 'none'; "
+    . "base-uri 'self'; "
+    . "frame-ancestors 'self'"
+);
 ?>
 <!DOCTYPE html>
 <html lang="en">

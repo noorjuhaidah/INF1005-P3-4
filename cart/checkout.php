@@ -166,8 +166,8 @@ require_once __DIR__ . '/../includes/header.php';
     const toggle = document.getElementById('redeem_toggle');
     const totalEl = document.getElementById('total-display');
     const discRow = document.getElementById('discount-row');
-    const subtotal = <?= json_encode($cartSubtotal) ?>;
-    const discount = <?= json_encode((float)POINTS_REDEEM_VALUE) ?>;
+    const subtotal = <?= json_encode($cartSubtotal, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const discount = <?= json_encode((float)POINTS_REDEEM_VALUE, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     const fmt = v => '$' + v.toFixed(2);
 
     if (!toggle) return;

@@ -189,10 +189,10 @@ if (statusChartCtx) {
     new Chart(statusChartCtx, {
         type: 'doughnut',
         data: {
-            labels: <?= json_encode($orderStatusLabels) ?>,
+            labels: <?= json_encode($orderStatusLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
             datasets: [{
                 label: 'Orders by Status',
-                data: <?= json_encode($orderStatusCounts) ?>
+                data: <?= json_encode($orderStatusCounts, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
             }]
         },
         options: {

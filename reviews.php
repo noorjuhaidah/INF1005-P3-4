@@ -33,6 +33,13 @@ $reviewNameColumn = in_array('name', $reviewColumns, true) ? 'name' : '';
 $reviewRatingColumn = in_array('rating', $reviewColumns, true) ? 'rating' : '';
 $reviewUserIdColumn = in_array('user_id', $reviewColumns, true) ? 'user_id' : '';
 
+$quoteIdent = static function (string $identifier): string {
+    if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+        throw new RuntimeException('Unsafe SQL identifier: ' . $identifier);
+    }
+    return '`' . $identifier . '`';
+};
+
 // Handle new review submission BEFORE header output (so redirects work)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
@@ -98,9 +105,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
             $insertValues[] = 'NOW()';
         }
 
+        $safeInsertColumns = array_map($quoteIdent, $insertColumns);
         $stmt = $pdo->prepare(
-            "INSERT INTO reviews (" . implode(', ', $insertColumns) . ")
-                    VALUES (" . implode(', ', $insertValues) . ")"
+            "INSERT INTO reviews (" . implode(', ', $safeInsertColumns) . ")
+                VALUES (" . implode(', ', $insertValues) . ")"
         );
         $stmt->execute($insertParams);
 
@@ -120,29 +128,29 @@ require_once __DIR__ . '/includes/header.php';
 $reviews = [];
 try {
     $selectParts = [];
-    $selectParts[] = $reviewTextColumn !== '' ? "r.{$reviewTextColumn} AS review_text" : "'' AS review_text";
-    $selectParts[] = in_array('created_at', $reviewColumns, true) ? "r.created_at" : "NULL AS created_at";
+    $selectParts[] = $reviewTextColumn !== '' ? "r." . $quoteIdent($reviewTextColumn) . " AS review_text" : "'' AS review_text";
+    $selectParts[] = in_array('created_at', $reviewColumns, true) ? "r.`created_at`" : "NULL AS created_at";
 
     if ($reviewNameColumn !== '') {
-        $selectParts[] = "r.{$reviewNameColumn} AS full_name";
+        $selectParts[] = "r." . $quoteIdent($reviewNameColumn) . " AS full_name";
     } elseif ($reviewUserIdColumn !== '') {
-        $selectParts[] = "u.full_name AS full_name";
+        $selectParts[] = "u.`full_name` AS full_name";
     } else {
         $selectParts[] = "'Anonymous' AS full_name";
     }
 
     if ($reviewRatingColumn !== '') {
-        $selectParts[] = "r.{$reviewRatingColumn} AS rating";
+        $selectParts[] = "r." . $quoteIdent($reviewRatingColumn) . " AS rating";
     } else {
         $selectParts[] = "NULL AS rating";
     }
 
     $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
-        $sql .= " LEFT JOIN users u ON u.user_id = r.{$reviewUserIdColumn}";
+        $sql .= " LEFT JOIN users u ON u.`user_id` = r." . $quoteIdent($reviewUserIdColumn);
     }
     if (in_array('created_at', $reviewColumns, true)) {
-        $sql .= " ORDER BY r.created_at DESC";
+        $sql .= " ORDER BY r.`created_at` DESC";
     }
 
     $stmt = $pdo->query($sql);
