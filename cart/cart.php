@@ -70,7 +70,11 @@ $total = cart_total();
                 <div class="ld-cart-card">
 
                     <?php foreach ($cart as $item_id => $item): ?>
-                    <div class="ld-cart-row" id="cart-row-<?= (int)$item_id ?>">
+                    <?php
+                        $item_key = (string)$item_id;
+                        $item_dom_suffix = md5($item_key);
+                    ?>
+                    <div class="ld-cart-row" id="cart-row-<?= $item_dom_suffix ?>">
 
                         <!-- Item info -->
                         <div class="ld-cart-info">
@@ -87,13 +91,14 @@ $total = cart_total();
 
                         <!-- Qty update form -->
                         <form
-                            action="<?= APP_URL ?>/cart/update_cart.php"
+                            action="update_cart.php"
                             method="POST"
                             class="update-cart-form d-flex align-items-center gap-2"
                             aria-label="Update quantity for <?= e($item['name']) ?>"
                         >
                             <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
                             <input type="hidden" name="item_id"    value="<?= (int)$item_id ?>">
+                            <input type="hidden" name="cart_key"   value="<?= e($item_key) ?>">
                             <input type="hidden" name="action"     value="update">
 
                             <div class="qty-wrapper d-flex align-items-center border rounded-pill px-2">
@@ -101,7 +106,7 @@ $total = cart_total();
                                         aria-label="Decrease quantity for <?= e($item['name']) ?>">
                                     <i class="bi bi-dash" aria-hidden="true"></i>
                                 </button>
-                                <?php $qty_input_id = 'qty-' . (int)$item_id; ?>
+                                <?php $qty_input_id = 'qty-' . $item_dom_suffix; ?>
                                 <label for="<?= $qty_input_id ?>" class="visually-hidden">
                                     Quantity for <?= e($item['name']) ?>
                                 </label>
@@ -122,31 +127,31 @@ $total = cart_total();
 
                             <button type="submit" class="ld-btn-outline ld-cart-update-btn"
                                     aria-label="Update quantity for <?= e($item['name']) ?>">
-                                Update <?= e($item['name']) ?>
+                                Update
                             </button>
                         </form>
 
                         <!-- Item subtotal -->
-                        <p class="ld-cart-subtotal" id="subtotal-<?= (int)$item_id ?>">
+                        <p class="ld-cart-subtotal" id="subtotal-<?= $item_dom_suffix ?>">
                             <?= format_price($item['price'] * $item['qty']) ?>
                         </p>
 
                         <!-- Remove button -->
                         <form
-                            action="<?= APP_URL ?>/cart/update_cart.php"
+                            action="update_cart.php"
                             method="POST"
                             class="remove-cart-form"
                             aria-label="Remove <?= e($item['name']) ?> from cart"
                         >
                             <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
                             <input type="hidden" name="item_id"    value="<?= (int)$item_id ?>">
+                            <input type="hidden" name="cart_key"   value="<?= e($item_key) ?>">
                             <input type="hidden" name="action"     value="remove">
 
                             <button
                                 type="submit"
                                 class="ld-remove-btn"
                                 aria-label="Remove <?= e($item['name']) ?>"
-                                data-confirm="Remove <?= e($item['name']) ?> from your cart?"
                             >
                                 <i class="bi bi-trash3" aria-hidden="true"></i>
                             </button>
@@ -154,7 +159,7 @@ $total = cart_total();
 
                     </div><!-- /.ld-cart-row -->
 
-                    <?php if (!array_key_last($cart) !== $item_id): ?>
+                    <?php if (array_key_last($cart) !== $item_id): ?>
                     <hr class="ld-cart-divider">
                     <?php endif; ?>
 
@@ -174,6 +179,17 @@ $total = cart_total();
             <div class="col-lg-4">
                 <div class="ld-summary-card">
                     <h2 class="ld-summary-title">Order Summary</h2>
+
+                    <div class="ld-summary-items" aria-label="Items in your cart">
+                        <?php foreach ($cart as $item): ?>
+                        <div class="ld-summary-item-row">
+                            <span class="ld-summary-item-name"><?= e($item['name']) ?></span>
+                            <span class="ld-summary-item-qty">x<?= (int)$item['qty'] ?></span>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <hr>
 
                     <div class="ld-summary-row">
                         <span class="text-muted">Subtotal</span>
@@ -209,6 +225,19 @@ $total = cart_total();
 
     </div>
 </section>
+
+<div class="ld-modal-backdrop" id="ld-cart-confirm" hidden>
+    <div class="ld-modal-card" role="dialog" aria-modal="true" aria-labelledby="ld-cart-confirm-title" aria-describedby="ld-cart-confirm-text">
+        <h3 id="ld-cart-confirm-title" class="ld-modal-title">Remove item</h3>
+        <p id="ld-cart-confirm-text" class="ld-modal-text">Are you sure you want to remove this item from your cart?</p>
+        <div class="ld-modal-actions">
+            <button type="button" class="ld-btn-outline" id="ld-cart-confirm-cancel">Cancel</button>
+            <button type="button" class="ld-btn-danger" id="ld-cart-confirm-ok">
+                <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Remove
+            </button>
+        </div>
+    </div>
+</div>
 
 <!-- ============================================================
      PAGE CSS
@@ -317,9 +346,84 @@ $total = cart_total();
     margin-bottom: 0.75rem;
     font-size: 0.95rem;
 }
+.ld-summary-items {
+    margin-bottom: 0.75rem;
+}
+.ld-summary-item-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.45rem;
+    font-size: 0.9rem;
+}
+.ld-summary-item-name {
+    color: var(--ld-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 75%;
+}
+.ld-summary-item-qty {
+    font-weight: 600;
+}
 .ld-summary-total {
     font-weight: 700;
     font-size: 1.1rem;
+}
+
+/* Remove-confirm modal */
+.ld-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(18, 31, 43, 0.42);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+.ld-modal-card {
+    width: min(420px, 100%);
+    background: #fff;
+    border-radius: var(--ld-radius);
+    box-shadow: 0 14px 34px rgba(20, 40, 56, 0.24);
+    border: 1px solid rgba(43, 122, 158, 0.16);
+    padding: 1.2rem;
+}
+.ld-modal-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1b2733;
+}
+.ld-modal-text {
+    margin: 0.6rem 0 1rem;
+    color: var(--ld-muted);
+    font-size: 0.94rem;
+}
+.ld-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+}
+.ld-btn-danger {
+    border: none;
+    border-radius: 999px;
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #d94848 0%, #c63737 100%);
+    color: #fff;
+    box-shadow: 0 6px 14px rgba(198, 55, 55, 0.28);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.ld-btn-danger:hover {
+    filter: brightness(0.98);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(198, 55, 55, 0.34);
+}
+.ld-btn-danger:focus-visible {
+    outline: 3px solid rgba(217, 72, 72, 0.28);
+    outline-offset: 2px;
 }
 
 /* Fade out removed row */
@@ -342,6 +446,11 @@ $total = cart_total();
 (function () {
     'use strict';
 
+    // Keep update buttons as non-JS fallback, but hide them when JS is available.
+    document.querySelectorAll('.ld-cart-update-btn').forEach(function (btn) {
+        btn.classList.add('d-none');
+    });
+
     // ---------------------------------------------------------
     // AJAX helper — sends a form via fetch(), returns JSON
     // ---------------------------------------------------------
@@ -349,8 +458,20 @@ $total = cart_total();
         return fetch(url, {
             method: 'POST',
             body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        }).then(function (res) { return res.json(); });
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        }).then(function (res) {
+            return res.text().then(function (text) {
+                try {
+                    return JSON.parse(text);
+                } catch (err) {
+                    throw new Error('Invalid server response');
+                }
+            });
+        });
     }
 
     // ---------------------------------------------------------
@@ -376,15 +497,76 @@ $total = cart_total();
         }, 20);
     }
 
+    // Fallback to normal form post if AJAX path fails.
+    function submitFormNormally(form) {
+        form.submit();
+    }
+
+    // ---------------------------------------------------------
+    // Custom remove confirmation modal
+    // ---------------------------------------------------------
+    const confirmModal = document.getElementById('ld-cart-confirm');
+    const confirmText = document.getElementById('ld-cart-confirm-text');
+    const confirmOk = document.getElementById('ld-cart-confirm-ok');
+    const confirmCancel = document.getElementById('ld-cart-confirm-cancel');
+    let confirmResolver = null;
+
+    function closeConfirmModal(result) {
+        if (confirmModal) {
+            confirmModal.hidden = true;
+        }
+        if (confirmResolver) {
+            confirmResolver(result);
+            confirmResolver = null;
+        }
+    }
+
+    function openConfirmModal(message) {
+        return new Promise(function (resolve) {
+            confirmResolver = resolve;
+            if (confirmText) confirmText.textContent = message;
+            if (confirmModal) confirmModal.hidden = false;
+            if (confirmCancel) confirmCancel.focus();
+        });
+    }
+
+    if (confirmCancel) {
+        confirmCancel.addEventListener('click', function () {
+            closeConfirmModal(false);
+        });
+    }
+    if (confirmOk) {
+        confirmOk.addEventListener('click', function () {
+            closeConfirmModal(true);
+        });
+    }
+    if (confirmModal) {
+        confirmModal.addEventListener('click', function (e) {
+            if (e.target === confirmModal) {
+                closeConfirmModal(false);
+            }
+        });
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && confirmModal && !confirmModal.hidden) {
+            closeConfirmModal(false);
+        }
+    });
+
     // ---------------------------------------------------------
     // Handle quantity UPDATE forms
     // ---------------------------------------------------------
     document.querySelectorAll('.update-cart-form').forEach(function (form) {
+        let autoUpdateTimer = null;
+
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             const btn  = form.querySelector('button[type="submit"]');
-            const itemId = form.querySelector('[name="item_id"]').value;
+            const itemDomKey = form.querySelector('[name="cart_key"]').value;
+
+            if (form.dataset.updating === '1') return;
+            form.dataset.updating = '1';
 
             if (btn) { btn.disabled = true; btn.textContent = '…'; }
 
@@ -392,7 +574,7 @@ $total = cart_total();
             .then(function (data) {
                 if (data.success) {
                     // Update subtotal for this row
-                    const sub = document.getElementById('subtotal-' + itemId);
+                    const sub = document.getElementById('subtotal-' + itemDomKey);
                     if (sub) sub.textContent = '$' + parseFloat(data.item_subtotal).toFixed(2);
                     updateTotalDisplay(data.cart_total);
                     announceCartStatus(data.message || 'Cart updated.');
@@ -402,14 +584,40 @@ $total = cart_total();
                     if (badge) badge.textContent = data.cart_count;
 
                     if (btn) { btn.disabled = false; btn.textContent = 'Update'; }
+                    form.dataset.updating = '0';
                 } else {
                     alert(data.message || 'Could not update cart.');
                     if (btn) { btn.disabled = false; btn.textContent = 'Update'; }
+                    form.dataset.updating = '0';
                 }
             })
             .catch(function () {
-                alert('Something went wrong. Please try again.');
                 if (btn) { btn.disabled = false; btn.textContent = 'Update'; }
+                form.dataset.updating = '0';
+                submitFormNormally(form);
+            });
+        });
+
+        const qtyInput = form.querySelector('.qty-input');
+        if (qtyInput) {
+            qtyInput.addEventListener('change', function () {
+                form.requestSubmit();
+            });
+        }
+
+        ['.qty-decrease', '.qty-increase'].forEach(function (selector) {
+            const spinnerBtn = form.querySelector(selector);
+            if (!spinnerBtn || !qtyInput) return;
+
+            spinnerBtn.addEventListener('click', function () {
+                const before = qtyInput.value;
+                if (autoUpdateTimer) clearTimeout(autoUpdateTimer);
+
+                autoUpdateTimer = setTimeout(function () {
+                    if (qtyInput.value !== before) {
+                        form.requestSubmit();
+                    }
+                }, 10);
             });
         });
     });
@@ -421,15 +629,17 @@ $total = cart_total();
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            const itemId = form.querySelector('[name="item_id"]').value;
-            const row    = document.getElementById('cart-row-' + itemId);
-
-            // Confirm dialog (re-use data-confirm pattern from main.js)
+            const itemDomKey = form.querySelector('[name="cart_key"]').value;
+            const row    = document.getElementById('cart-row-' + itemDomKey);
             const btn = form.querySelector('button[type="submit"]');
-            const msg = btn ? btn.dataset.confirm : 'Remove this item?';
-            if (!confirm(msg)) return;
+            const rowName = row ? row.querySelector('.ld-cart-name') : null;
+            const itemName = rowName ? rowName.textContent.trim() : 'this item';
+            const msg = 'Remove ' + itemName + ' from your cart?';
 
-            postForm(form.action, new FormData(form))
+            openConfirmModal(msg).then(function (confirmed) {
+                if (!confirmed) return;
+
+                postForm(form.action, new FormData(form))
             .then(function (data) {
                 if (data.success) {
                     // Fade out and remove the row
@@ -453,7 +663,8 @@ $total = cart_total();
                 }
             })
             .catch(function () {
-                alert('Something went wrong. Please try again.');
+                submitFormNormally(form);
+            });
             });
         });
     });
