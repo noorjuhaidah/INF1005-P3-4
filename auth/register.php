@@ -49,9 +49,13 @@ unset($_SESSION['field_errors']);
                     <label class="form-label" for="phone">
                         Phone <span class="text-muted">(optional)</span>
                     </label>
-                    <input class="form-control" type="tel" id="phone" name="phone"
+                    <input class="form-control <?= !empty($field_errors['phone']) ? 'is-invalid' : '' ?>" type="tel" id="phone" name="phone"
                            autocomplete="tel" placeholder="+65 9123 4567"
+                           pattern="^\+?[0-9\s\-()]{8,20}$"
+                           aria-describedby="<?= !empty($field_errors['phone']) ? 'phone_error' : 'phone_help' ?>"
                            value="<?= e(old_input('phone')) ?>">
+                    <div id="phone_help" class="form-text">Use 8-20 characters. Digits, spaces, +, -, and parentheses are allowed.</div>
+                    <?php if (!empty($field_errors['phone'])): ?><div id="phone_error" class="invalid-feedback d-block"><?= e($field_errors['phone']) ?></div><?php endif; ?>
                 </div>
 
                 <div class="mb-3">

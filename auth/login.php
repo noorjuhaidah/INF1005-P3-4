@@ -18,7 +18,7 @@ unset($_SESSION['field_errors']);
         <?php show_flash(); ?>
 
         <div class="ld-form-card">
-            <form method="post" action="<?= APP_URL ?>/auth/process_login.php">
+            <form method="post" action="<?= APP_URL ?>/auth/process_login.php" class="needs-validation" data-inline-validate="true" novalidate>
                 <?php csrf_field(); ?>
 
                 <div class="mb-3">

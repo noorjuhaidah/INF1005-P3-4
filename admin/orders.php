@@ -15,8 +15,9 @@ if (!is_logged_in() || !is_admin()) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/admin/orders.php');
 
-    $order_id = $_POST['order_id'] ?? '';
-    $status = $_POST['status'] ?? '';
+    $order_id = filter_input(INPUT_POST, 'order_id', FILTER_VALIDATE_INT);
+    $statusRaw = filter_input(INPUT_POST, 'status', FILTER_UNSAFE_RAW);
+    $status = is_string($statusRaw) ? trim($statusRaw) : '';
 
     $allowed_status = [
         'submitted',
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'cancelled'
     ];
 
-    if ($order_id !== '' && is_numeric($order_id) && in_array($status, $allowed_status, true)) {
+    if ($order_id !== false && $order_id > 0 && in_array($status, $allowed_status, true)) {
         try {
             $stmt = $pdo->prepare("
                 UPDATE orders
@@ -34,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE order_id = ?
             ");
 
-            $stmt->execute([$status, $order_id]);
+            $stmt->execute([$status, (int)$order_id]);
 
             if ($stmt->rowCount() > 0) {
                 set_flash('success', 'Order status updated successfully.');
@@ -128,7 +129,6 @@ try {
 <th scope="col">Update status</th>
 </tr>
 </thead>
-
 <tbody>
 
 <?php if (empty($orders)): ?>

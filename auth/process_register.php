@@ -44,6 +44,12 @@ if ($full_name === '' || $email === '' || $password === '') {
     redirect(APP_URL . '/auth/register.php');
 }
 
+if (mb_strlen($full_name) > 120) {
+    $_SESSION['field_errors']['full_name'] = 'Full name must be 120 characters or fewer.';
+    set_flash('danger', 'Please shorten your full name and try again.');
+    redirect(APP_URL . '/auth/register.php');
+}
+
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $_SESSION['field_errors']['email'] = 'Please enter a valid email.';
     set_flash('danger', 'Please enter a valid email address.');
@@ -59,6 +65,12 @@ if (strlen($password) < 8) {
 if ($password !== $confirm_password) {
     $_SESSION['field_errors']['confirm_password'] = 'Passwords do not match.';
     set_flash('danger', 'Passwords do not match.');
+    redirect(APP_URL . '/auth/register.php');
+}
+
+if ($phone !== '' && !preg_match('/^\+?[0-9\s\-()]{8,20}$/', $phone)) {
+    $_SESSION['field_errors']['phone'] = 'Please enter a valid phone number.';
+    set_flash('danger', 'Please enter a valid phone number.');
     redirect(APP_URL . '/auth/register.php');
 }
 

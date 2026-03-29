@@ -41,13 +41,90 @@ window.ldShowNotice = function (message, level) {
 //    on submit, triggering Bootstrap's built-in error styles.
 // -------------------------------------------------------------
 (function () {
-    const forms = document.querySelectorAll('.needs-validation');
+    const forms = document.querySelectorAll('.needs-validation, form[data-inline-validate="true"]');
+
+    function getFeedbackElement(field) {
+        let feedback = field.nextElementSibling;
+        if (feedback && feedback.classList.contains('invalid-feedback')) {
+            return feedback;
+        }
+
+        const group = field.closest('.input-group');
+        if (group && group.nextElementSibling && group.nextElementSibling.classList.contains('invalid-feedback')) {
+            return group.nextElementSibling;
+        }
+
+        const created = document.createElement('div');
+        created.className = 'invalid-feedback';
+        created.dataset.runtimeFeedback = 'true';
+
+        if (group) {
+            group.insertAdjacentElement('afterend', created);
+        } else {
+            field.insertAdjacentElement('afterend', created);
+        }
+
+        return created;
+    }
+
+    function setFieldValidityUI(field, forceShow) {
+        if (!field.willValidate) return;
+
+        const feedback = getFeedbackElement(field);
+        const isValid = field.checkValidity();
+        if (isValid) {
+            field.classList.remove('is-invalid');
+            if (feedback.dataset.runtimeFeedback === 'true') {
+                feedback.textContent = '';
+            }
+            return;
+        }
+
+        if (!forceShow && !field.dataset.touched) return;
+
+        field.classList.add('is-invalid');
+        feedback.textContent = field.validationMessage || 'Please check this field.';
+    }
+
     forms.forEach(function (form) {
+        if (form.dataset.inlineValidate === 'true') {
+            form.setAttribute('novalidate', 'novalidate');
+        }
+
+        const fields = form.querySelectorAll('input, select, textarea');
+        fields.forEach(function (field) {
+            field.addEventListener('input', function () {
+                field.dataset.touched = 'true';
+                setFieldValidityUI(field, false);
+            });
+
+            field.addEventListener('change', function () {
+                field.dataset.touched = 'true';
+                setFieldValidityUI(field, false);
+            });
+
+            field.addEventListener('blur', function () {
+                field.dataset.touched = 'true';
+                setFieldValidityUI(field, true);
+            });
+        });
+
         form.addEventListener('submit', function (event) {
-            if (!form.checkValidity()) {
+            let invalidCount = 0;
+
+            fields.forEach(function (field) {
+                field.dataset.touched = 'true';
+                setFieldValidityUI(field, true);
+                if (field.willValidate && !field.checkValidity()) {
+                    invalidCount += 1;
+                }
+            });
+
+            if (invalidCount > 0 || !form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
             }
+
             form.classList.add('was-validated');
         }, false);
     });

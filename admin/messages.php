@@ -58,7 +58,8 @@ try {
         verify_csrf(APP_URL . '/admin/messages.php');
 
         $id = filter_input(INPUT_POST, 'id', FILTER_VALIDATE_INT);
-        $action = $_POST['mark_action'] ?? '';
+        $actionRaw = filter_input(INPUT_POST, 'mark_action', FILTER_UNSAFE_RAW);
+        $action = is_string($actionRaw) ? trim($actionRaw) : '';
         if ($id && in_array($action, ['read', 'unread'], true)) {
             $newValue = $action === 'read' ? 1 : 0;
             $updateStmt = $pdo->prepare("

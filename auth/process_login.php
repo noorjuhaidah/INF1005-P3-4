@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // CSRF protection
 verify_csrf(APP_URL . '/auth/login.php');
 
-$email = trim($_POST['email'] ?? '');
-$password = $_POST['password'] ?? '';
+$email = clean_input(trim((string)($_POST['email'] ?? '')));
+$password = (string)($_POST['password'] ?? '');
 
 // Save old input using helper
 set_old_input([
@@ -35,6 +35,18 @@ if ($email === '' || $password === '') {
         $_SESSION['field_errors']['password'] = 'Please enter your password.';
     }
     set_flash('danger', 'Email and password are required.');
+    redirect(APP_URL . '/auth/login.php');
+}
+
+if (mb_strlen($email) > 254) {
+    $_SESSION['field_errors']['email'] = 'Please enter a valid email address.';
+    set_flash('danger', 'Please enter a valid email address.');
+    redirect(APP_URL . '/auth/login.php');
+}
+
+if (mb_strlen($password) > 255) {
+    $_SESSION['field_errors']['password'] = 'Password is too long.';
+    set_flash('danger', 'Password is too long.');
     redirect(APP_URL . '/auth/login.php');
 }
 

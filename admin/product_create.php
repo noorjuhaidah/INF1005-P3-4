@@ -30,21 +30,28 @@ try {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $name = trim($_POST['name'] ?? '');
-    $description = trim($_POST['description'] ?? '');
-    $price = trim($_POST['price'] ?? '');
-    $category_id = $_POST['category_id'] ?? '';
+    verify_csrf(APP_URL . '/admin/product_create.php');
+
+    $name = clean_input((string)($_POST['name'] ?? ''));
+    $description = clean_input((string)($_POST['description'] ?? ''));
+    $priceRaw = filter_input(INPUT_POST, 'price', FILTER_UNSAFE_RAW);
+    $price = is_string($priceRaw) ? filter_var(trim($priceRaw), FILTER_VALIDATE_FLOAT) : false;
+    $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
     $is_available = isset($_POST['is_available']) ? 1 : 0;
 
-    if ($name === '') {
-        $fieldErrors['name'] = 'Product name is required.';
+    if ($name === '' || mb_strlen($name) > 120) {
+        $fieldErrors['name'] = 'Product name is required and must be 120 characters or fewer.';
     }
 
-    if ($category_id === '') {
-        $fieldErrors['category_id'] = 'Category is required.';
+    if ($description !== '' && mb_strlen($description) > 2000) {
+        $fieldErrors['description'] = 'Description must be 2000 characters or fewer.';
     }
 
-    if ($price === '' || !is_numeric($price) || (float)$price < 0) {
+    if ($category_id === false || $category_id < 1) {
+        $fieldErrors['category_id'] = 'Valid category is required.';
+    }
+
+    if ($price === false || $price < 0 || $price > 9999.99) {
         $fieldErrors['price'] = 'Valid price is required.';
     }
 
@@ -53,14 +60,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!empty($_FILES['image']['name'])) {
 
-        $uploadDir = __DIR__ . '/../uploads/';
-        $filename = time() . '_' . basename($_FILES['image']['name']);
-        $targetFile = $uploadDir . $filename;
-
-        if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-            $image_path = $filename;
-        } else {
+        if (!isset($_FILES['image']['error']) || is_array($_FILES['image']['error'])) {
+            $fieldErrors['image'] = 'Invalid upload payload.';
+        } elseif ((int)$_FILES['image']['error'] !== UPLOAD_ERR_OK) {
             $fieldErrors['image'] = 'Image upload failed. Please try a different file.';
+        } else {
+            $maxBytes = 2 * 1024 * 1024;
+            if ((int)$_FILES['image']['size'] > $maxBytes) {
+                $fieldErrors['image'] = 'Image must be 2MB or smaller.';
+            } else {
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mimeType = (string)$finfo->file($_FILES['image']['tmp_name']);
+                $allowedTypes = [
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/webp' => 'webp',
+                ];
+
+                if (!isset($allowedTypes[$mimeType])) {
+                    $fieldErrors['image'] = 'Only JPG, PNG, or WEBP files are allowed.';
+                } else {
+                    $uploadDir = __DIR__ . '/../uploads/';
+                    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                        $fieldErrors['image'] = 'Unable to prepare upload directory.';
+                    } else {
+                        $filename = bin2hex(random_bytes(16)) . '.' . $allowedTypes[$mimeType];
+                        $targetFile = $uploadDir . $filename;
+
+                        if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
+                            $image_path = $filename;
+                        } else {
+                            $fieldErrors['image'] = 'Image upload failed. Please try a different file.';
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -77,8 +111,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([
                 $name,
                 $description,
-                $price,
-                $category_id,
+                (float)$price,
+                (int)$category_id,
                 $image_path,
                 $is_available
             ]);
@@ -113,7 +147,8 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 <?php endif; ?>
 
-<form method="post" enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data" class="needs-validation" data-inline-validate="true" novalidate>
+<?php csrf_field(); ?>
 
 <div class="mb-3">
 <label class="form-label" for="name">Product Name <span class="text-danger" aria-hidden="true">*</span></label>
@@ -124,6 +159,7 @@ require_once __DIR__ . '/../includes/header.php';
 <div class="mb-3">
 <label class="form-label" for="description">Description</label>
 <textarea id="description" class="form-control" name="description" aria-label="Product description"><?= e($description) ?></textarea>
+<?php if (!empty($fieldErrors['description'])): ?><div class="invalid-feedback d-block"><?= e($fieldErrors['description']) ?></div><?php endif; ?>
 </div>
 
 <div class="mb-3">

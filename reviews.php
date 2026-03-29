@@ -41,11 +41,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
     $reviewText = clean_input($_POST['review'] ?? '');
     $rating = filter_input(INPUT_POST, 'rating', FILTER_VALIDATE_INT);
-    $reviewerName = trim($_SESSION['full_name'] ?? 'Customer');
+    $reviewerName = clean_input((string)($_SESSION['full_name'] ?? 'Customer'));
 
     if (empty($reviewText)) {
         set_flash('warning', 'Please enter a review before submitting.');
         redirect(APP_URL . '/reviews.php');
+    }
+
+    if (mb_strlen($reviewText) > 1000) {
+        set_flash('warning', 'Review must be 1000 characters or fewer.');
+        redirect(APP_URL . '/reviews.php');
+    }
+
+    if (mb_strlen($reviewerName) > 120) {
+        $reviewerName = mb_substr($reviewerName, 0, 120);
     }
 
     if (!$rating || $rating < 1 || $rating > 5) {
@@ -155,7 +164,7 @@ try {
                     <div class="card mb-4">
                         <div class="card-body">
                             <h2 class="h5 mb-3">Leave a review</h2>
-                            <form method="POST" action="<?= APP_URL ?>/reviews.php">
+                            <form method="POST" action="<?= APP_URL ?>/reviews.php" class="needs-validation" data-inline-validate="true" novalidate>
                                 <?php csrf_field(); ?>
                                 <div class="mb-3">
                                     <label class="form-label" for="rating">Rating</label>
@@ -170,7 +179,7 @@ try {
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label" for="review">Your review</label>
-                                    <textarea id="review" name="review" class="form-control" rows="4" required></textarea>
+                                    <textarea id="review" name="review" class="form-control" rows="4" maxlength="1000" required></textarea>
                                 </div>
                                 <button type="submit" class="ld-btn-primary">Submit review</button>
                             </form>
