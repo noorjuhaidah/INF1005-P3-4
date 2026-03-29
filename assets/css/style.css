@@ -51,7 +51,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     position: sticky;
     top: 0;
     z-index: 1020;
-    background-color: var(--ld-white) !important;
+    background-color: var(--ld-white);
     border-bottom: 1px solid rgba(0,0,0,0.06);
     box-shadow: var(--ld-shadow);
 }
