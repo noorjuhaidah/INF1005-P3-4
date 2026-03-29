@@ -269,7 +269,7 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed p-0 bg-transparent shadow-none fw-semibold small"
+                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
                                         type="button"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#faq1"
@@ -290,7 +290,7 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed p-0 bg-transparent shadow-none fw-semibold small"
+                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
                                         type="button"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#faq2"
@@ -311,7 +311,7 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed p-0 bg-transparent shadow-none fw-semibold small"
+                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
                                         type="button"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#faq3"

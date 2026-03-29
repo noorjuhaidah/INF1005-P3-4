@@ -298,6 +298,8 @@ $total = cart_total();
 /* Qty buttons */
 .ld-qty-btn {
     background: none; border: none; padding: 0 0.25rem;
+    min-width: 44px;
+    min-height: 44px;
     color: var(--ld-muted); cursor: pointer;
     font-size: 1rem; line-height: 1; transition: color 0.15s;
 }
@@ -314,7 +316,10 @@ $total = cart_total();
 .ld-remove-btn {
     background: none; border: none;
     color: #ccc; cursor: pointer;
-    font-size: 1.1rem; padding: 0.25rem;
+    font-size: 1.1rem;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.25rem;
     transition: color 0.2s;
 }
 .ld-remove-btn:hover { color: #e74c3c; }
@@ -434,7 +439,15 @@ $total = cart_total();
 
 @media (max-width: 576px) {
     .ld-cart-row { gap: 0.5rem; }
+    .ld-cart-info { min-width: 0; }
     .ld-cart-subtotal { min-width: auto; }
+}
+
+@media (max-width: 991.98px) {
+    .ld-summary-card {
+        position: static;
+        top: auto;
+    }
 }
 </style>
 

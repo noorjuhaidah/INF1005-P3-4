@@ -25,7 +25,7 @@ require_once __DIR__ . '/includes/header.php';
                     coffee without the wait. Order ahead, pick up on Grab, and
                     get on with your day — or slow it right down.
                 </p>
-                <div class="d-flex gap-3 mt-4">
+                <div class="d-flex gap-3 mt-4 flex-wrap">
                     <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary">Browse our menu</a>
                     <a href="<?= APP_URL ?>/contact.php" class="ld-btn-outline">Get in touch</a>
                 </div>
@@ -57,7 +57,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="row justify-content-center">
             <div class="col-lg-8 text-center">
                 <h2 class="ld-section-title">What is LazyDrip?</h2>
-                <p class="ld-section-subtitle mx-auto" style="max-width: 560px;">
+                <p class="ld-section-subtitle mx-auto" style="width: min(100%, 35rem);">
                     We are a small-batch, self-pickup café based in Singapore.
                     No queues at the counter, no table service — just honest
                     coffee and thoughtfully sourced tea, ready when you arrive.

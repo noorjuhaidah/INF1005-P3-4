@@ -125,7 +125,7 @@ foreach ($all_items as $item) {
                 $catSlug = strtolower($item['category_name']);
             ?>
             <div
-                class="col-sm-6 col-lg-4 menu-item-col"
+                class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 menu-item-col"
                 data-category="<?= e($catSlug) ?>"
                 data-name="<?= e(strtolower($item['item_name'])) ?>"
             >
@@ -217,7 +217,7 @@ foreach ($all_items as $item) {
     background: linear-gradient(135deg, var(--ld-blue-light) 0%, #fff 70%);
     padding: 4rem 0 2.5rem;
 }
-.ld-search-wrap { position: relative; max-width: 420px; }
+.ld-search-wrap { position: relative; width: min(100%, 26.25rem); }
 .ld-search-icon {
     position: absolute; left: 1rem; top: 50%;
     transform: translateY(-50%); color: var(--ld-muted); pointer-events: none;
@@ -239,11 +239,18 @@ foreach ($all_items as $item) {
 .ld-filter-btn:hover, .ld-filter-btn.active {
     background: #1F6F93; border-color: #1F6F93; color: #fff;
 }
-.ld-menu-img { height: 200px; object-fit: cover; background-color: var(--ld-blue-light); }
+.ld-menu-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background-color: var(--ld-blue-light);
+}
 .ld-menu-item-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
 .ld-price { font-size: 1.2rem; font-weight: 700; color: var(--ld-charcoal); }
 .ld-qty-btn {
     background: none; border: none; padding: 0 0.25rem;
+    min-width: 44px; min-height: 44px;
     color: var(--ld-muted); cursor: pointer; font-size: 1rem; line-height: 1; transition: color 0.15s;
 }
 .ld-qty-btn:hover { color: var(--ld-blue-dark); }

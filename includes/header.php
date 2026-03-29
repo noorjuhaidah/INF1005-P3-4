@@ -21,7 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= isset($page_title) ? e($page_title) . ' — ' . APP_NAME : APP_NAME ?></title>
 
     <!-- Bootstrap 5 CSS -->
