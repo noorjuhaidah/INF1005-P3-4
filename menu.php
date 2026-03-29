@@ -125,7 +125,7 @@ foreach ($all_items as $item) {
                 $catSlug = strtolower($item['category_name']);
             ?>
             <div
-                class="col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 menu-item-col"
+                class="col-12 col-sm-6 col-lg-4 col-xl-4 col-xxl-3 menu-item-col"
                 data-category="<?= e($catSlug) ?>"
                 data-name="<?= e(strtolower($item['item_name'])) ?>"
             >
@@ -150,7 +150,7 @@ foreach ($all_items as $item) {
                             <?= e($item['description']) ?>
                         </p>
 
-                        <div class="d-flex align-items-center justify-content-between mt-3">
+                        <div class="ld-menu-actions mt-3">
                             <span class="ld-price">
                                 <?= format_price((float)$item['price']) ?>
                             </span>
@@ -248,6 +248,20 @@ foreach ($all_items as $item) {
 }
 .ld-menu-item-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
 .ld-price { font-size: 1.2rem; font-weight: 700; color: var(--ld-charcoal); }
+.ld-menu-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+.ld-menu-actions .ld-price {
+    flex: 0 0 auto;
+}
+.add-to-cart-form {
+    margin-left: auto;
+    max-width: 100%;
+}
 .ld-qty-btn {
     background: none; border: none; padding: 0 0.25rem;
     min-width: 44px; min-height: 44px;
@@ -257,6 +271,24 @@ foreach ($all_items as $item) {
 .ld-add-btn { font-size: 0.85rem; padding: 0.4rem 1rem; white-space: nowrap; }
 .menu-item-col { transition: opacity 0.25s, transform 0.25s; }
 .menu-item-col.hidden { display: none; }
+
+@media (max-width: 1399.98px) {
+    .ld-menu-actions {
+        align-items: stretch;
+    }
+    .ld-menu-actions .ld-price {
+        width: 100%;
+    }
+    .add-to-cart-form {
+        width: 100%;
+        justify-content: space-between;
+        margin-left: 0;
+    }
+    .ld-menu-actions > .ld-add-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
 </style>
 
 <!-- ============================================================
