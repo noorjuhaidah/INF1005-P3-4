@@ -18,10 +18,7 @@ require_once __DIR__ . '/includes/header.php';
 // -------------------------------------------------------------
 // CSRF token — one per session, embedded in every cart form
 // -------------------------------------------------------------
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrf = $_SESSION['csrf_token'];
+$csrf = csrf_token();
 
 // -------------------------------------------------------------
 // Fetch menu items joined with their category name

@@ -14,10 +14,7 @@ $field_errors = $_SESSION['field_errors'] ?? [];
 unset($_SESSION['field_errors']);
 
 // Ensure CSRF token exists
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrf = $_SESSION['csrf_token'];
+$csrf = csrf_token();
 
 // Helper to fetch current user data
 function fetchUserData(PDO $pdo, int $userId): array {
@@ -35,7 +32,7 @@ $fullName  = old_input('full_name', $userData['full_name'] ?? '');
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submittedToken = $_POST['csrf_token'] ?? '';
-    if (!hash_equals($_SESSION['csrf_token'] ?? '', $submittedToken)) {
+    if (!hash_equals(csrf_token(), $submittedToken)) {
         set_flash('danger', 'Invalid request. Please try again.');
         redirect(APP_URL . '/customer/profile_edit.php');
     }
@@ -54,6 +51,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['field_errors']['email'] = 'Please provide a valid email address.';
     }
 
+<<<<<<< Updated upstream
+=======
+    if (empty($_SESSION['field_errors']['email'])) {
+        $dupStmt = $pdo->prepare("SELECT user_id FROM users WHERE email = ? AND user_id <> ? LIMIT 1");
+        $dupStmt->execute([$email, (int)$_SESSION['user_id']]);
+        if ($dupStmt->fetch()) {
+            $_SESSION['field_errors']['email'] = 'That email is already in use by another account.';
+        }
+    }
+
+    if ($phone !== '' && !preg_match('/^\+?[0-9\s\-()]{8,20}$/', $phone)) {
+        $_SESSION['field_errors']['phone'] = 'Please enter a valid phone number.';
+    }
+
+>>>>>>> Stashed changes
     if (!empty($_SESSION['field_errors'])) {
         set_old_input([
             'email' => $email,
@@ -81,6 +93,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         set_flash('success', 'Profile updated!');
         redirect(APP_URL . '/customer/dashboard.php');
     } catch (PDOException $e) {
+        if ((string)$e->getCode() === '23000') {
+            $_SESSION['field_errors']['email'] = 'That email is already in use by another account.';
+            set_old_input([
+                'email' => $email,
+                'phone' => $phone,
+                'full_name' => $fullName,
+            ]);
+            set_flash('danger', 'Please correct the highlighted fields.');
+            redirect(APP_URL . '/customer/profile_edit.php');
+        }
         set_old_input([
             'email' => $email,
             'phone' => $phone,
@@ -101,8 +123,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="row">
             <div class="col-md-8">
+<<<<<<< Updated upstream
                 <form method="POST" action="<?= APP_URL ?>/customer/profile_edit.php" class="ld-form">
                     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
+=======
+                <form method="POST" action="<?= APP_URL ?>/customer/profile_edit.php" class="ld-form needs-validation" data-inline-validate="true" novalidate>
+                    <?php csrf_field(); ?>
+>>>>>>> Stashed changes
 
                     <div class="mb-3">
                         <label class="form-label" for="full_name">Full name <span class="text-danger" aria-hidden="true">*</span></label>

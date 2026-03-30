@@ -51,7 +51,7 @@ if (!is_logged_in()) {
 // CSRF validation — prevents cross-site request forgery
 // -------------------------------------------------------------
 $submitted_token = $_POST['csrf_token'] ?? '';
-if (!hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
+if (!hash_equals(csrf_token(), $submitted_token)) {
     if ($is_ajax) json_response(false, 'Invalid request. Please refresh and try again.');
     set_flash('danger', 'Invalid request. Please try again.');
     redirect(APP_URL . '/menu.php');

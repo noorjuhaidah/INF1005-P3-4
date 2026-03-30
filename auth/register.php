@@ -59,7 +59,9 @@ unset($_SESSION['field_errors']);
                     <div class="input-group">
                         <input type="password" id="password" name="password"
                                required minlength="8" autocomplete="new-password"
+                               pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}"
                                placeholder="Min. 8 characters"
+                               title="Use at least 8 characters, including uppercase, lowercase, and a number."
                                aria-describedby="<?= !empty($field_errors['password']) ? 'password_error' : '' ?>"
                                class="form-control <?= !empty($field_errors['password']) ? 'is-invalid' : '' ?>">
                         <button class="btn btn-outline-secondary" type="button"
@@ -68,6 +70,7 @@ unset($_SESSION['field_errors']);
                         </button>
                     </div>
                     <div id="password_error" class="invalid-feedback d-block"><?= e($field_errors['password'] ?? '') ?></div>
+                    <div class="form-text">Use at least 8 characters with uppercase, lowercase, and a number.</div>
                 </div>
 
                 <div class="mb-4">

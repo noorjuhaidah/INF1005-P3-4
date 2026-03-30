@@ -56,6 +56,12 @@ if (strlen($password) < 8) {
     redirect(APP_URL . '/auth/register.php');
 }
 
+if (!preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/', $password)) {
+    $_SESSION['field_errors']['password'] = 'Use at least 8 characters with uppercase, lowercase, and a number.';
+    set_flash('danger', 'Password must include uppercase, lowercase, and at least one number.');
+    redirect(APP_URL . '/auth/register.php');
+}
+
 if ($password !== $confirm_password) {
     $_SESSION['field_errors']['confirm_password'] = 'Passwords do not match.';
     set_flash('danger', 'Passwords do not match.');
@@ -106,6 +112,7 @@ try {
     $_SESSION['full_name'] = $full_name;
     $_SESSION['role']      = 'customer';
     $_SESSION['points']    = POINTS_SIGNUP_BONUS;
+    $_SESSION['last_activity_at'] = time();
 
     set_flash('success', 'Welcome to LazyDrip, ' . $full_name . '! You\'ve earned ' . POINTS_SIGNUP_BONUS . ' bonus points.');
     redirect(APP_URL . '/customer/dashboard.php');

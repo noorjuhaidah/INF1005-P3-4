@@ -251,9 +251,14 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     color: #D7DEE3 !important;
 }
 .ld-footer a {
-    color: #aaa;
+    color: #D7DEE3;
+    text-decoration: underline;
+    text-underline-offset: 2px;
 }
-.ld-footer a:hover { color: var(--ld-blue); }
+.ld-footer a:hover,
+.ld-footer a:focus {
+    color: #fff;
+}
 
 .ld-footer-brand {
     font-family: var(--font-head);

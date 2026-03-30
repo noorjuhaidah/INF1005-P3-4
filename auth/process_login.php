@@ -63,6 +63,7 @@ try {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['full_name'] = $user['full_name'];
         $_SESSION['role'] = $user['role'];
+        $_SESSION['last_activity_at'] = time();
 
         if ($user['role'] === 'admin') {
             redirect(APP_URL . '/admin/dashboard.php');

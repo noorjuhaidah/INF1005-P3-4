@@ -10,6 +10,12 @@
 // Always use this before echoing any user-supplied value.
 // Prevents XSS (Cross-Site Scripting) attacks.
 // -------------------------------------------------------------
+function ensure_session_started(): void {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+}
+
 function e(string $value): string {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
@@ -21,6 +27,7 @@ function e(string $value): string {
 // Messages are stored in $_SESSION and shown once, then cleared.
 // -------------------------------------------------------------
 function set_flash(string $type, string $message): void {
+    ensure_session_started();
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
@@ -37,14 +44,17 @@ function show_flash(): void {
 }
 
 function set_old_input(array $data): void {
+    ensure_session_started();
     $_SESSION['old_input'] = $data;
 }
 
 function old_input(string $key, string $default = ''): string {
+    ensure_session_started();
     return $_SESSION['old_input'][$key] ?? $default;
 }
 
 function clear_old_input(): void {
+    ensure_session_started();
     unset($_SESSION['old_input']);
 }
 
@@ -62,7 +72,41 @@ function redirect(string $url): void {
 // AUTH CHECKS
 // Use these at the top of any page that requires login.
 // -------------------------------------------------------------
+function enforce_session_idle_timeout(): void {
+    ensure_session_started();
+    if (empty($_SESSION['user_id'])) {
+        return;
+    }
+
+    $now = time();
+    $lastActivity = (int)($_SESSION['last_activity_at'] ?? 0);
+    $idleLimit = defined('SESSION_IDLE_TIMEOUT_SECONDS') ? SESSION_IDLE_TIMEOUT_SECONDS : 1800;
+
+    if ($lastActivity > 0 && ($now - $lastActivity) > $idleLimit) {
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                $params['secure'],
+                $params['httponly']
+            );
+        }
+        session_destroy();
+        session_start();
+        set_flash('warning', 'Your session expired due to inactivity. Please log in again.');
+        redirect(APP_URL . '/auth/login.php');
+    }
+
+    $_SESSION['last_activity_at'] = $now;
+}
+
 function require_login(): void {
+    enforce_session_idle_timeout();
     if (empty($_SESSION['user_id'])) {
         set_flash('warning', 'Please log in to continue.');
         redirect(APP_URL . '/auth/login.php');
@@ -70,6 +114,7 @@ function require_login(): void {
 }
 
 function require_admin(): void {
+    enforce_session_idle_timeout();
     if (empty($_SESSION['user_id']) || (($_SESSION['role'] ?? '') !== 'admin')) {
         set_flash('danger', 'Access denied.');
         redirect(APP_URL . '/auth/login.php');
@@ -85,6 +130,7 @@ function is_admin(): bool {
 }
 
 function redirect_if_logged_in(): void {
+    enforce_session_idle_timeout();
     if (is_logged_in()) {
         if (is_admin()) {
             redirect(APP_URL . '/admin/dashboard.php');
