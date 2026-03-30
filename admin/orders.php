@@ -9,9 +9,7 @@ if (!is_logged_in() || !is_admin()) {
     exit;
 }
 
-/* -------------------------------
-   Handle status update
---------------------------------*/
+/* Handle status update*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/admin/orders.php');
 
@@ -35,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 WHERE order_id = ?
             ");
 
-            $stmt->execute([$status, (int)$order_id]);
+            $stmt->execute([$status, (int) $order_id]);
 
             if ($stmt->rowCount() > 0) {
                 set_flash('success', 'Order status updated successfully.');
@@ -54,9 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-/* -------------------------------
-   Fetch orders with pagination
---------------------------------*/
+// Fetch orders with pagination
 $orders = [];
 $totalOrders = 0;
 $perPage = 10;
@@ -69,9 +65,9 @@ $totalPages = 1;
 try {
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM orders");
     $countStmt->execute();
-    $totalOrders = (int)$countStmt->fetchColumn();
+    $totalOrders = (int) $countStmt->fetchColumn();
 
-    $totalPages = max(1, (int)ceil($totalOrders / $perPage));
+    $totalPages = max(1, (int) ceil($totalOrders / $perPage));
     if ($currentPage > $totalPages) {
         $currentPage = $totalPages;
     }
@@ -104,119 +100,130 @@ try {
 ?>
 
 <section class="ld-section">
-<div class="container">
+    <div class="container">
 
-<h1 class="ld-section-title">Manage Orders</h1>
-<p class="ld-section-subtitle">Update customer order statuses.</p>
+        <h1 class="ld-section-title">Manage Orders</h1>
+        <p class="ld-section-subtitle">Update customer order statuses.</p>
 
-<?php show_flash(); ?>
+                <?php show_flash(); ?>
 
-<div class="card ld-card p-4">
+        <div class="card ld-card p-4">
 
-<div class="table-responsive">
+            <div class="table-responsive">
 
-<table class="table align-middle">
+                <table class="table align-middle">
 
-<caption class="visually-hidden">Orders table listing order ID, customer, total, status, created date, and status update action.</caption>
+                    <caption class="visually-hidden">Orders table listing order ID, customer, total, status, created
+                        date, and status update action.</caption>
 
-<thead>
-<tr>
-<th scope="col">Order ID</th>
-<th scope="col">Customer</th>
-<th scope="col">Total</th>
-<th scope="col">Status</th>
-<th scope="col">Created At</th>
-<th scope="col">Update status</th>
-</tr>
-</thead>
-<tbody>
+                    <thead>
+                        <tr>
+                            <th scope="col">Order ID</th>
+                            <th scope="col">Customer</th>
+                            <th scope="col">Total</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Created At</th>
+                            <th scope="col">Update status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
 
-<?php if (empty($orders)): ?>
+                                                <?php if (empty($orders)): ?>
 
-<tr>
-<td colspan="6">No orders found.</td>
-</tr>
+                            <tr>
+                                <td colspan="6">No orders found.</td>
+                            </tr>
 
-<?php else: ?>
+                                                <?php else: ?>
 
-<?php foreach ($orders as $order): ?>
+                                                        <?php foreach ($orders as $order): ?>
 
-<tr>
+                                <tr>
 
-<th scope="row"><?= e((string)$order['order_id']) ?></th>
+                                    <th scope="row"><?= e((string) $order['order_id']) ?></th>
 
-<td><?= e($order['full_name']) ?></td>
+                                    <td><?= e($order['full_name']) ?></td>
 
-<td>$<?= number_format((float)$order['total_amount'], 2) ?></td>
+                                    <td>$<?= number_format((float) $order['total_amount'], 2) ?></td>
 
-<td><?= e(ucwords(str_replace('_', ' ', $order['status']))) ?></td>
+                                    <td><?= e(ucwords(str_replace('_', ' ', $order['status']))) ?></td>
 
-<td><?= e($order['created_at']) ?></td>
+                                    <td><?= e($order['created_at']) ?></td>
 
-<td>
+                                    <td>
 
-<form method="post" class="d-flex gap-2" aria-label="Update status for order <?= e((string)$order['order_id']) ?>">
+                                        <form method="post" class="d-flex gap-2"
+                                            aria-label="Update status for order <?= e((string) $order['order_id']) ?>">
 
-<?php csrf_field(); ?>
+                                                                                        <?php csrf_field(); ?>
 
-<input type="hidden" name="order_id" value="<?= e((string)$order['order_id']) ?>">
+                                            <input type="hidden" name="order_id" value="<?= e((string) $order['order_id']) ?>">
 
-<label class="visually-hidden" for="status-<?= e((string)$order['order_id']) ?>">Order status for order <?= e((string)$order['order_id']) ?></label>
+                                            <label class="visually-hidden"
+                                                for="status-<?= e((string) $order['order_id']) ?>">Order status for order
+                                                <?= e((string) $order['order_id']) ?></label>
 
-<select id="status-<?= e((string)$order['order_id']) ?>" name="status" class="form-select form-select-sm" aria-label="Order status for order <?= e((string)$order['order_id']) ?>">
+                                            <select id="status-<?= e((string) $order['order_id']) ?>" name="status"
+                                                class="form-select form-select-sm"
+                                                aria-label="Order status for order <?= e((string) $order['order_id']) ?>">
 
-    <option value="submitted" <?= $order['status'] === 'submitted' ? 'selected' : '' ?>>Submitted</option>
+                                                <option value="submitted" <?= $order['status'] === 'submitted' ? 'selected' : '' ?>>Submitted</option>
 
-    <option value="preparing" <?= $order['status'] === 'preparing' ? 'selected' : '' ?>>Preparing</option>
+                                                <option value="preparing" <?= $order['status'] === 'preparing' ? 'selected' : '' ?>>Preparing</option>
 
-    <option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>Ready For Pickup</option>
+                                                <option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>Ready For Pickup</option>
 
-    <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
+                                                <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
 
-    <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+                                                <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
 
-</select>
+                                            </select>
 
-<button type="submit" class="btn btn-sm btn-primary" aria-label="Save status update for order <?= e((string)$order['order_id']) ?>">Save</button>
+                                            <button type="submit" class="btn btn-sm btn-primary"
+                                                aria-label="Save status update for order <?= e((string) $order['order_id']) ?>">Save</button>
 
-</form>
+                                        </form>
 
-</td>
+                                    </td>
 
-</tr>
+                                </tr>
 
-<?php endforeach; ?>
+                                                        <?php endforeach; ?>
 
-<?php endif; ?>
+                                                <?php endif; ?>
 
-</tbody>
+                    </tbody>
 
-</table>
+                </table>
 
-</div>
+            </div>
 
-<?php if ($totalPages > 1): ?>
-<nav aria-label="Orders pagination" class="mt-4">
-    <ul class="pagination mb-0">
-        <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
-            <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= max(1, $currentPage - 1) ?>" aria-label="Previous page">Previous</a>
-        </li>
+                        <?php if ($totalPages > 1): ?>
+                <nav aria-label="Orders pagination" class="mt-4">
+                    <ul class="pagination mb-0">
+                        <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+                            <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= max(1, $currentPage - 1) ?>"
+                                aria-label="Previous page">Previous</a>
+                        </li>
 
-        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
-            <li class="page-item <?= $page === $currentPage ? 'active' : '' ?>">
-                <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= $page ?>" aria-label="Go to page <?= $page ?>"><?= $page ?></a>
-            </li>
-        <?php endfor; ?>
+                                        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+                            <li class="page-item <?= $page === $currentPage ? 'active' : '' ?>">
+                                <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= $page ?>"
+                                    aria-label="Go to page <?= $page ?>"><?= $page ?></a>
+                            </li>
+                                        <?php endfor; ?>
 
-        <li class="page-item <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">
-            <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= min($totalPages, $currentPage + 1) ?>" aria-label="Next page">Next</a>
-        </li>
-    </ul>
-</nav>
-<?php endif; ?>
+                        <li class="page-item <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">
+                            <a class="page-link"
+                                href="<?= APP_URL ?>/admin/orders.php?page=<?= min($totalPages, $currentPage + 1) ?>"
+                                aria-label="Next page">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+                        <?php endif; ?>
 
-</div>
-</div>
+        </div>
+    </div>
 </section>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

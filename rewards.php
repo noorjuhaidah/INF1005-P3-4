@@ -5,7 +5,7 @@
 // current logged-in user's balance.
 // =============================================================
 
-$page_title   = 'Rewards';
+$page_title = 'Rewards';
 $current_page = 'rewards';
 require_once __DIR__ . '/includes/header.php';
 
@@ -17,7 +17,7 @@ if (is_logged_in()) {
         $stmt->execute([$_SESSION['user_id']]);
         $row = $stmt->fetch();
         if ($row !== false) {
-            $userPoints = (int)$row['points'];
+            $userPoints = (int) $row['points'];
         }
     } catch (PDOException $e) {
         // Non-critical — just hide the balance widget
@@ -27,13 +27,13 @@ if (is_logged_in()) {
 
 // How many full redemptions the user can make right now
 $redeemable = ($userPoints !== null && POINTS_REDEEM_AMOUNT > 0)
-            ? intdiv($userPoints, POINTS_REDEEM_AMOUNT)
-            : 0;
+    ? intdiv($userPoints, POINTS_REDEEM_AMOUNT)
+    : 0;
 
 // Points needed for the next redemption
 $pointsToNext = ($userPoints !== null)
-              ? max(0, POINTS_REDEEM_AMOUNT - ($userPoints % POINTS_REDEEM_AMOUNT))
-              : POINTS_REDEEM_AMOUNT;
+    ? max(0, POINTS_REDEEM_AMOUNT - ($userPoints % POINTS_REDEEM_AMOUNT))
+    : POINTS_REDEEM_AMOUNT;
 ?>
 
 <!-- Hero -->
@@ -49,12 +49,12 @@ $pointsToNext = ($userPoints !== null)
                     in your account.
                 </p>
                 <?php if (!is_logged_in()): ?>
-                <div class="d-flex gap-3 justify-content-center mt-4">
-                    <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-primary">
-                        Join &amp; get <?= POINTS_SIGNUP_BONUS ?> free points
-                    </a>
-                    <a href="<?= APP_URL ?>/auth/login.php" class="ld-btn-outline">Log in</a>
-                </div>
+                    <div class="d-flex gap-3 justify-content-center mt-4">
+                        <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-primary">
+                            Join &amp; get <?= POINTS_SIGNUP_BONUS ?> free points
+                        </a>
+                        <a href="<?= APP_URL ?>/auth/login.php" class="ld-btn-outline">Log in</a>
+                    </div>
                 <?php endif; ?>
             </div>
         </div>
@@ -63,71 +63,71 @@ $pointsToNext = ($userPoints !== null)
 
 <!-- Points balance card (logged-in users only) -->
 <?php if ($userPoints !== null): ?>
-<section class="ld-section-sm">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card ld-card p-4">
-                    <div class="row align-items-center gy-3">
-                        <div class="col-sm-6">
-                            <p class="text-muted small mb-1">Your current balance</p>
-                            <p class="mb-0" style="font-size: 2.8rem; font-weight: 700; font-family: var(--font-head); color: var(--ld-charcoal);">
-                                <?= number_format($userPoints) ?>
-                                <span style="font-size: 1rem; font-weight: 400; color: var(--ld-muted);">pts</span>
-                            </p>
+    <section class="ld-section-sm">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card ld-card p-4">
+                        <div class="row align-items-center gy-3">
+                            <div class="col-sm-6">
+                                <p class="text-muted small mb-1">Your current balance</p>
+                                <p class="mb-0"
+                                    style="font-size: 2.8rem; font-weight: 700; font-family: var(--font-head); color: var(--ld-charcoal);">
+                                    <?= number_format($userPoints) ?>
+                                    <span style="font-size: 1rem; font-weight: 400; color: var(--ld-muted);">pts</span>
+                                </p>
+                            </div>
+                            <div class="col-sm-6 text-sm-end">
+                                <?php if ($redeemable >= 1): ?>
+                                    <p class="text-success fw-semibold mb-1">
+                                        <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
+                                        You can redeem <?= format_price($redeemable * POINTS_REDEEM_VALUE) ?> right now!
+                                    </p>
+                                    <p class="text-muted small mb-2">
+                                        Apply your points discount at checkout.
+                                    </p>
+                                <?php else: ?>
+                                    <p class="text-muted small mb-1">
+                                        <?= number_format($pointsToNext) ?> more points until your next
+                                        <?= format_price(POINTS_REDEEM_VALUE) ?> reward.
+                                    </p>
+                                <?php endif; ?>
+                                <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary btn-sm">
+                                    Order now
+                                </a>
+                            </div>
                         </div>
-                        <div class="col-sm-6 text-sm-end">
-                            <?php if ($redeemable >= 1): ?>
-                                <p class="text-success fw-semibold mb-1">
-                                    <i class="bi bi-check-circle me-1" aria-hidden="true"></i>
-                                    You can redeem <?= format_price($redeemable * POINTS_REDEEM_VALUE) ?> right now!
-                                </p>
-                                <p class="text-muted small mb-2">
-                                    Apply your points discount at checkout.
-                                </p>
-                            <?php else: ?>
-                                <p class="text-muted small mb-1">
-                                    <?= number_format($pointsToNext) ?> more points until your next
-                                    <?= format_price(POINTS_REDEEM_VALUE) ?> reward.
-                                </p>
-                            <?php endif; ?>
-                            <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary btn-sm">
-                                Order now
-                            </a>
-                        </div>
-                    </div>
 
-                    <?php if ($userPoints > 0): ?>
-                    <!-- Progress bar toward next redemption -->
-                    <?php
-                        $progressPct = min(100, round(
-                            (($userPoints % POINTS_REDEEM_AMOUNT) / POINTS_REDEEM_AMOUNT) * 100
-                        ));
-                        // If evenly divisible and > 0, bar is full
-                        if ($userPoints % POINTS_REDEEM_AMOUNT === 0) {
-                            $progressPct = 100;
-                        }
-                    ?>
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between small text-muted mb-1">
-                            <span>Progress to next reward</span>
-                            <span><?= $progressPct ?>%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;" role="progressbar"
-                             aria-valuenow="<?= $progressPct ?>"
-                             aria-valuemin="0" aria-valuemax="100"
-                             aria-label="Points progress toward next reward">
-                            <div class="progress-bar"
-                                 style="width: <?= $progressPct ?>%; background-color: var(--ld-blue-dark);"></div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
+                        <?php if ($userPoints > 0): ?>
+                            <!-- Progress bar toward next redemption -->
+                            <?php
+                            $progressPct = min(100, round(
+                                (($userPoints % POINTS_REDEEM_AMOUNT) / POINTS_REDEEM_AMOUNT) * 100
+                            ));
+                            // If evenly divisible and > 0, bar is full
+                            if ($userPoints % POINTS_REDEEM_AMOUNT === 0) {
+                                $progressPct = 100;
+                            }
+                            ?>
+                            <div class="mt-4">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span>Progress to next reward</span>
+                                    <span><?= $progressPct ?>%</span>
+                                </div>
+                                <div class="progress" style="height: 8px;" role="progressbar"
+                                    aria-valuenow="<?= $progressPct ?>" aria-valuemin="0" aria-valuemax="100"
+                                    aria-label="Points progress toward next reward">
+                                    <div class="progress-bar"
+                                        style="width: <?= $progressPct ?>%; background-color: var(--ld-blue-dark);"></div>
+                                </div>
+                            </div>
+                        <?php endif; ?>
 
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 <?php endif; ?>
 
 <!-- How points work -->
@@ -200,7 +200,8 @@ $pointsToNext = ($userPoints !== null)
         <div class="row justify-content-center">
             <div class="col-lg-6">
                 <h2 class="h5 text-center fw-bold mb-4">At a glance</h2>
-                <table class="table table-borderless bg-white rounded" style="border-radius: var(--ld-radius); overflow: hidden;">
+                <table class="table table-borderless bg-white rounded"
+                    style="border-radius: var(--ld-radius); overflow: hidden;">
                     <caption class="visually-hidden">Rewards program summary values at a glance.</caption>
                     <tbody>
                         <tr>
@@ -217,7 +218,8 @@ $pointsToNext = ($userPoints !== null)
                         </tr>
                         <tr class="table-light">
                             <th scope="row" class="fw-semibold ps-4 py-3">Redemption value</th>
-                            <td class="py-3 pe-4 text-end text-muted"><?= format_price(POINTS_REDEEM_VALUE) ?> off order</td>
+                            <td class="py-3 pe-4 text-end text-muted"><?= format_price(POINTS_REDEEM_VALUE) ?> off order
+                            </td>
                         </tr>
                         <tr>
                             <th scope="row" class="fw-semibold ps-4 py-3">Expiry</th>
@@ -270,7 +272,8 @@ $pointsToNext = ($userPoints !== null)
                     <ul class="list-unstyled text-muted small mb-0">
                         <li class="mb-1">
                             <i class="bi bi-check2 me-1 text-success" aria-hidden="true"></i>
-                            Apply <?= POINTS_REDEEM_AMOUNT ?> points → <strong><?= format_price(POINTS_REDEEM_VALUE) ?> off</strong>
+                            Apply <?= POINTS_REDEEM_AMOUNT ?> points → <strong><?= format_price(POINTS_REDEEM_VALUE) ?>
+                                off</strong>
                         </li>
                         <li class="mb-1">
                             <i class="bi bi-check2 me-1 text-success" aria-hidden="true"></i>
@@ -278,7 +281,8 @@ $pointsToNext = ($userPoints !== null)
                         </li>
                         <li>
                             <i class="bi bi-check2 me-1 text-success" aria-hidden="true"></i>
-                            You earn <strong><?= (int)((20 - POINTS_REDEEM_VALUE) * POINTS_PER_DOLLAR) ?> new points</strong> on that order
+                            You earn <strong><?= (int) ((20 - POINTS_REDEEM_VALUE) * POINTS_PER_DOLLAR) ?> new
+                                points</strong> on that order
                         </li>
                     </ul>
                 </div>
@@ -289,24 +293,24 @@ $pointsToNext = ($userPoints !== null)
 
 <!-- CTA -->
 <?php if (!is_logged_in()): ?>
-<section class="ld-section-sm" style="background: var(--ld-blue-light);">
-    <div class="container text-center py-3">
-        <h2 class="h4 fw-bold mb-2">Start earning today</h2>
-        <p class="text-muted mb-4">
-            Sign up for free and collect your <?= POINTS_SIGNUP_BONUS ?> welcome points immediately.
-        </p>
-        <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-primary me-3">Create an account</a>
-        <a href="<?= APP_URL ?>/menu.php" class="ld-btn-outline">Browse the menu</a>
-    </div>
-</section>
+    <section class="ld-section-sm" style="background: var(--ld-blue-light);">
+        <div class="container text-center py-3">
+            <h2 class="h4 fw-bold mb-2">Start earning today</h2>
+            <p class="text-muted mb-4">
+                Sign up for free and collect your <?= POINTS_SIGNUP_BONUS ?> welcome points immediately.
+            </p>
+            <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-primary me-3">Create an account</a>
+            <a href="<?= APP_URL ?>/menu.php" class="ld-btn-outline">Browse the menu</a>
+        </div>
+    </section>
 <?php else: ?>
-<section class="ld-section-sm" style="background: var(--ld-blue-light);">
-    <div class="container text-center py-3">
-        <h2 class="h4 fw-bold mb-2">Ready to order?</h2>
-        <p class="text-muted mb-4">Browse the menu and keep those points rolling in.</p>
-        <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary">Browse the menu</a>
-    </div>
-</section>
+    <section class="ld-section-sm" style="background: var(--ld-blue-light);">
+        <div class="container text-center py-3">
+            <h2 class="h4 fw-bold mb-2">Ready to order?</h2>
+            <p class="text-muted mb-4">Browse the menu and keep those points rolling in.</p>
+            <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary">Browse the menu</a>
+        </div>
+    </section>
 <?php endif; ?>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
