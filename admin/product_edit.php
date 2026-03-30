@@ -51,10 +51,10 @@ $fieldErrors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    verify_csrf(APP_URL . '/admin/product_edit.php?id=' . (int)$id);
+    verify_csrf(APP_URL . '/admin/product_edit.php?id=' . (int) $id);
 
-    $name = clean_input((string)($_POST['name'] ?? ''));
-    $description = clean_input((string)($_POST['description'] ?? ''));
+    $name = clean_input((string) ($_POST['name'] ?? ''));
+    $description = clean_input((string) ($_POST['description'] ?? ''));
     $priceRaw = filter_input(INPUT_POST, 'price', FILTER_UNSAFE_RAW);
     $price = is_string($priceRaw) ? filter_var(trim($priceRaw), FILTER_VALIDATE_FLOAT) : false;
     $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
@@ -81,15 +81,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!isset($_FILES['image']['error']) || is_array($_FILES['image']['error'])) {
             $fieldErrors['image'] = 'Invalid upload payload.';
-        } elseif ((int)$_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+        } elseif ((int) $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
             $fieldErrors['image'] = 'Image upload failed. Please try a different file.';
         } else {
             $maxBytes = 2 * 1024 * 1024;
-            if ((int)$_FILES['image']['size'] > $maxBytes) {
+            if ((int) $_FILES['image']['size'] > $maxBytes) {
                 $fieldErrors['image'] = 'Image must be 2MB or smaller.';
             } else {
                 $finfo = new finfo(FILEINFO_MIME_TYPE);
-                $mimeType = (string)$finfo->file($_FILES['image']['tmp_name']);
+                $mimeType = (string) $finfo->file($_FILES['image']['tmp_name']);
                 $allowedTypes = [
                     'image/jpeg' => 'jpg',
                     'image/png' => 'png',
@@ -129,8 +129,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([
                 $name,
                 $description,
-                (float)$price,
-                (int)$category_id,
+                (float) $price,
+                (int) $category_id,
                 $image_path,
                 $is_available,
                 $id
@@ -146,88 +146,115 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <section class="ld-section">
-<div class="container">
+    <div class="container">
 
-<h1 class="ld-section-title">Edit Product</h1>
+        <h1 class="ld-section-title">Edit Product</h1>
 
-<div class="ld-form-card">
+        <div class="ld-form-card">
 
-<?php if (!empty($fieldErrors)): ?>
-<div class="alert alert-danger" role="status" aria-live="polite" aria-atomic="true">
-    <strong>Please fix the following:</strong>
-    <ul class="mb-0 mt-2">
-        <?php foreach ($fieldErrors as $msg): ?>
-            <li><?= e($msg) ?></li>
-        <?php endforeach; ?>
-    </ul>
-</div>
-<?php endif; ?>
+            <?php if (!empty($fieldErrors)): ?>
+                <div class="alert alert-danger" role="status" aria-live="polite" aria-atomic="true">
+                    <strong>Please fix the following:</strong>
+                    <ul class="mb-0 mt-2">
+                        <?php foreach ($fieldErrors as $msg): ?>
+                            <li><?= e($msg) ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+            <?php endif; ?>
 
-<form method="post" enctype="multipart/form-data" class="needs-validation" data-inline-validate="true" novalidate>
-<?php csrf_field(); ?>
+            <form method="post" enctype="multipart/form-data" class="needs-validation" data-inline-validate="true"
+                novalidate>
+                <?php csrf_field(); ?>
 
-<?php if (!empty($image_path)): ?>
+                <?php if (!empty($image_path)): ?>
 
-<img src="<?= APP_URL ?>/uploads/<?= e($image_path) ?>" alt="Current image for <?= e($name) ?>" title="Current image for <?= e($name) ?>" style="max-width:120px;margin-bottom:10px;">
+                    <img src="<?= APP_URL ?>/uploads/<?= e($image_path) ?>" alt="Current image for <?= e($name) ?>"
+                        title="Current image for <?= e($name) ?>" style="max-width:120px;margin-bottom:10px;">
 
-<?php endif; ?>
+                <?php endif; ?>
 
-<div class="mb-3">
-<label class="form-label" for="name">Product Name <span class="text-danger" aria-hidden="true">*</span></label>
-<input id="name" type="text" class="form-control <?= !empty($fieldErrors['name']) ? 'is-invalid' : '' ?>" name="name" value="<?= e($name) ?>" aria-label="Product name" aria-describedby="<?= !empty($fieldErrors['name']) ? 'name_error' : '' ?>" required>
-<?php if (!empty($fieldErrors['name'])): ?><div id="name_error" class="invalid-feedback"><?= e($fieldErrors['name']) ?></div><?php endif; ?>
-</div>
+                <div class="mb-3">
+                    <label class="form-label" for="name">Product Name <span class="text-danger"
+                            aria-hidden="true">*</span></label>
+                    <input id="name" type="text"
+                        class="form-control <?= !empty($fieldErrors['name']) ? 'is-invalid' : '' ?>" name="name"
+                        value="<?= e($name) ?>" aria-label="Product name"
+                        aria-describedby="<?= !empty($fieldErrors['name']) ? 'name_error' : '' ?>" required>
+                    <?php if (!empty($fieldErrors['name'])): ?>
+                        <div id="name_error" class="invalid-feedback"><?= e($fieldErrors['name']) ?></div><?php endif; ?>
+                </div>
 
-<div class="mb-3">
-<label class="form-label" for="description">Description</label>
-<textarea id="description" class="form-control" name="description" aria-label="Product description"><?= e($description) ?></textarea>
-<?php if (!empty($fieldErrors['description'])): ?><div class="invalid-feedback d-block"><?= e($fieldErrors['description']) ?></div><?php endif; ?>
-</div>
+                <div class="mb-3">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea id="description" class="form-control" name="description"
+                        aria-label="Product description"><?= e($description) ?></textarea>
+                    <?php if (!empty($fieldErrors['description'])): ?>
+                        <div class="invalid-feedback d-block"><?= e($fieldErrors['description']) ?></div><?php endif; ?>
+                </div>
 
-<div class="mb-3">
-<label class="form-label" for="price">Price <span class="text-danger" aria-hidden="true">*</span></label>
-<input id="price" type="number" step="0.01" min="0" class="form-control <?= !empty($fieldErrors['price']) ? 'is-invalid' : '' ?>" name="price" value="<?= e($price) ?>" aria-label="Price" aria-describedby="price_hint<?= !empty($fieldErrors['price']) ? ' price_error' : '' ?>" required>
-<div id="price_hint" class="form-text">Use numbers only, for example 4.50.</div>
-<?php if (!empty($fieldErrors['price'])): ?><div id="price_error" class="invalid-feedback"><?= e($fieldErrors['price']) ?></div><?php endif; ?>
-</div>
+                <div class="mb-3">
+                    <label class="form-label" for="price">Price <span class="text-danger"
+                            aria-hidden="true">*</span></label>
+                    <input id="price" type="number" step="0.01" min="0"
+                        class="form-control <?= !empty($fieldErrors['price']) ? 'is-invalid' : '' ?>" name="price"
+                        value="<?= e($price) ?>" aria-label="Price"
+                        aria-describedby="price_hint<?= !empty($fieldErrors['price']) ? ' price_error' : '' ?>"
+                        required>
+                    <div id="price_hint" class="form-text">Use numbers only, for example 4.50.</div>
+                    <?php if (!empty($fieldErrors['price'])): ?>
+                        <div id="price_error" class="invalid-feedback"><?= e($fieldErrors['price']) ?></div><?php endif; ?>
+                </div>
 
-<div class="mb-3">
-<label class="form-label" for="category_id">Category <span class="text-danger" aria-hidden="true">*</span></label>
-<select id="category_id" class="form-control <?= !empty($fieldErrors['category_id']) ? 'is-invalid' : '' ?>" name="category_id" aria-label="Category" aria-describedby="<?= !empty($fieldErrors['category_id']) ? 'category_error' : '' ?>" required>
+                <div class="mb-3">
+                    <label class="form-label" for="category_id">Category <span class="text-danger"
+                            aria-hidden="true">*</span></label>
+                    <select id="category_id"
+                        class="form-control <?= !empty($fieldErrors['category_id']) ? 'is-invalid' : '' ?>"
+                        name="category_id" aria-label="Category"
+                        aria-describedby="<?= !empty($fieldErrors['category_id']) ? 'category_error' : '' ?>" required>
 
-<option value="">Select category</option>
+                        <option value="">Select category</option>
 
-<?php foreach ($categories as $cat): ?>
+                        <?php foreach ($categories as $cat): ?>
 
-<option value="<?= $cat['category_id'] ?>" <?= $category_id == $cat['category_id'] ? 'selected' : '' ?>>
-<?= e($cat['category_name']) ?>
-</option>
+                            <option value="<?= $cat['category_id'] ?>" <?= $category_id == $cat['category_id'] ? 'selected' : '' ?>>
+                                <?= e($cat['category_name']) ?>
+                            </option>
 
-<?php endforeach; ?>
+                        <?php endforeach; ?>
 
-</select>
-<?php if (!empty($fieldErrors['category_id'])): ?><div id="category_error" class="invalid-feedback"><?= e($fieldErrors['category_id']) ?></div><?php endif; ?>
-</div>
+                    </select>
+                    <?php if (!empty($fieldErrors['category_id'])): ?>
+                        <div id="category_error" class="invalid-feedback"><?= e($fieldErrors['category_id']) ?></div>
+                    <?php endif; ?>
+                </div>
 
-<div class="mb-3">
-<label class="form-label" for="image">Change Image</label>
-<input id="image" type="file" class="form-control <?= !empty($fieldErrors['image']) ? 'is-invalid' : '' ?>" name="image" accept="image/*" aria-label="Change product image" aria-describedby="image_help<?= !empty($fieldErrors['image']) ? ' image_error' : '' ?>">
-<div id="image_help" class="form-text">Upload a clear replacement image. Ensure customer-facing pages include descriptive alt text or mark decorative images with empty alt text.</div>
-<?php if (!empty($fieldErrors['image'])): ?><div id="image_error" class="invalid-feedback"><?= e($fieldErrors['image']) ?></div><?php endif; ?>
-</div>
+                <div class="mb-3">
+                    <label class="form-label" for="image">Change Image</label>
+                    <input id="image" type="file"
+                        class="form-control <?= !empty($fieldErrors['image']) ? 'is-invalid' : '' ?>" name="image"
+                        accept="image/*" aria-label="Change product image"
+                        aria-describedby="image_help<?= !empty($fieldErrors['image']) ? ' image_error' : '' ?>">
+                    <div id="image_help" class="form-text">Upload a clear replacement image. Ensure customer-facing
+                        pages include descriptive alt text or mark decorative images with empty alt text.</div>
+                    <?php if (!empty($fieldErrors['image'])): ?>
+                        <div id="image_error" class="invalid-feedback"><?= e($fieldErrors['image']) ?></div><?php endif; ?>
+                </div>
 
-<div class="form-check mb-3">
-<input id="is_available" class="form-check-input" type="checkbox" name="is_available" aria-label="Available" <?= $is_available ? 'checked' : '' ?>>
-<label class="form-check-label" for="is_available">Available</label>
-</div>
+                <div class="form-check mb-3">
+                    <input id="is_available" class="form-check-input" type="checkbox" name="is_available"
+                        aria-label="Available" <?= $is_available ? 'checked' : '' ?>>
+                    <label class="form-check-label" for="is_available">Available</label>
+                </div>
 
-<button type="submit" class="ld-btn-primary">Save Changes</button>
-<a href="<?= APP_URL ?>/admin/products.php" class="ld-btn-outline ms-2">Cancel</a>
+                <button type="submit" class="ld-btn-primary">Save Changes</button>
+                <a href="<?= APP_URL ?>/admin/products.php" class="ld-btn-outline ms-2">Cancel</a>
 
-</form>
+            </form>
 
-</div>
-</div>
+        </div>
+    </div>
 </section>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

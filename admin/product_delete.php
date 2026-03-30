@@ -21,12 +21,12 @@ if (!$id) {
     redirect(APP_URL . '/admin/products.php#flash-container');
 }
 
-// Fetch product details for confirmation context.
+/* Fetch product details for confirmation context */
 $productName = '';
 try {
     $stmt = $pdo->prepare('SELECT item_name FROM menu_items WHERE item_id = ? LIMIT 1');
     $stmt->execute([$id]);
-    $productName = (string)($stmt->fetchColumn() ?: '');
+    $productName = (string) ($stmt->fetchColumn() ?: '');
 } catch (PDOException $e) {
     error_log('Product delete lookup failed: ' . $e->getMessage());
 }
@@ -37,7 +37,7 @@ if ($productName === '') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    verify_csrf(APP_URL . '/admin/product_delete.php?id=' . (int)$id);
+    verify_csrf(APP_URL . '/admin/product_delete.php?id=' . (int) $id);
 
     try {
         $stmt = $pdo->prepare('DELETE FROM menu_items WHERE item_id = ?');
@@ -85,9 +85,10 @@ require_once __DIR__ . '/../includes/header.php';
             <p class="mb-2"><strong>Product:</strong> <?= e($productName) ?></p>
             <p class="text-danger mb-4">This action cannot be undone.</p>
 
-            <form method="POST" action="<?= APP_URL ?>/admin/product_delete.php?id=<?= (int)$id ?>" class="d-flex gap-2 flex-wrap">
+            <form method="POST" action="<?= APP_URL ?>/admin/product_delete.php?id=<?= (int) $id ?>"
+                class="d-flex gap-2 flex-wrap">
                 <?php csrf_field(); ?>
-                <input type="hidden" name="id" value="<?= (int)$id ?>">
+                <input type="hidden" name="id" value="<?= (int) $id ?>">
 
                 <button type="submit" class="btn btn-danger" aria-label="Confirm delete product <?= e($productName) ?>">
                     Confirm Delete Product

@@ -23,9 +23,9 @@ $totalPages = 1;
 try {
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM menu_items");
     $countStmt->execute();
-    $totalProducts = (int)$countStmt->fetchColumn();
+    $totalProducts = (int) $countStmt->fetchColumn();
 
-    $totalPages = max(1, (int)ceil($totalProducts / $perPage));
+    $totalPages = max(1, (int) ceil($totalProducts / $perPage));
     if ($currentPage > $totalPages) {
         $currentPage = $totalPages;
     }
@@ -71,7 +71,8 @@ require_once __DIR__ . '/../includes/header.php';
         <div class="card ld-card p-4">
             <div class="table-responsive">
                 <table class="table align-middle">
-                    <caption class="visually-hidden">Products table listing product details and row actions for edit and delete.</caption>
+                    <caption class="visually-hidden">Products table listing product details and row actions for edit and
+                        delete.</caption>
                     <thead>
                         <tr>
                             <th scope="col">ID</th>
@@ -83,25 +84,29 @@ require_once __DIR__ . '/../includes/header.php';
                         </tr>
                     </thead>
                     <tbody>
-                    <?php if (empty($products)): ?>
-                        <tr>
-                            <td colspan="6">No products found.</td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($products as $product): ?>
+                        <?php if (empty($products)): ?>
                             <tr>
-                                <th scope="row"><?= e((string)$product['item_id']) ?></th>
-                                <td><?= e($product['item_name']) ?></td>
-                                <td><?= e($product['category_name']) ?></td>
-                                <td>$<?= number_format((float)$product['price'], 2) ?></td>
-                                <td><?= $product['is_available'] ? 'Yes' : 'No' ?></td>
-                                <td>
-                                    <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-primary" aria-label="Edit product <?= e($product['item_name']) ?>">Edit</a>
-                                    <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string)$product['item_id']) ?>" class="btn btn-sm btn-outline-danger" aria-label="Delete product <?= e($product['item_name']) ?>">Delete</a>
-                                </td>
+                                <td colspan="6">No products found.</td>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
+                        <?php else: ?>
+                            <?php foreach ($products as $product): ?>
+                                <tr>
+                                    <th scope="row"><?= e((string) $product['item_id']) ?></th>
+                                    <td><?= e($product['item_name']) ?></td>
+                                    <td><?= e($product['category_name']) ?></td>
+                                    <td>$<?= number_format((float) $product['price'], 2) ?></td>
+                                    <td><?= $product['is_available'] ? 'Yes' : 'No' ?></td>
+                                    <td>
+                                        <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string) $product['item_id']) ?>"
+                                            class="btn btn-sm btn-outline-primary"
+                                            aria-label="Edit product <?= e($product['item_name']) ?>">Edit</a>
+                                        <a href="<?= APP_URL ?>/admin/product_delete.php?id=<?= e((string) $product['item_id']) ?>"
+                                            class="btn btn-sm btn-outline-danger"
+                                            aria-label="Delete product <?= e($product['item_name']) ?>">Delete</a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -110,17 +115,22 @@ require_once __DIR__ . '/../includes/header.php';
                 <nav aria-label="Products pagination" class="mt-4">
                     <ul class="pagination mb-0">
                         <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
-                            <a class="page-link" href="<?= APP_URL ?>/admin/products.php?page=<?= max(1, $currentPage - 1) ?>" aria-label="Previous page">Previous</a>
+                            <a class="page-link"
+                                href="<?= APP_URL ?>/admin/products.php?page=<?= max(1, $currentPage - 1) ?>"
+                                aria-label="Previous page">Previous</a>
                         </li>
 
                         <?php for ($page = 1; $page <= $totalPages; $page++): ?>
                             <li class="page-item <?= $page === $currentPage ? 'active' : '' ?>">
-                                <a class="page-link" href="<?= APP_URL ?>/admin/products.php?page=<?= $page ?>" aria-label="Go to page <?= $page ?>"><?= $page ?></a>
+                                <a class="page-link" href="<?= APP_URL ?>/admin/products.php?page=<?= $page ?>"
+                                    aria-label="Go to page <?= $page ?>"><?= $page ?></a>
                             </li>
                         <?php endfor; ?>
 
                         <li class="page-item <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">
-                            <a class="page-link" href="<?= APP_URL ?>/admin/products.php?page=<?= min($totalPages, $currentPage + 1) ?>" aria-label="Next page">Next</a>
+                            <a class="page-link"
+                                href="<?= APP_URL ?>/admin/products.php?page=<?= min($totalPages, $currentPage + 1) ?>"
+                                aria-label="Next page">Next</a>
                         </li>
                     </ul>
                 </nav>
