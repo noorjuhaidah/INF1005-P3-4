@@ -122,7 +122,7 @@ foreach ($all_items as $item) {
                 $catSlug = strtolower($item['category_name']);
             ?>
             <div
-                class="col-sm-6 col-lg-4 menu-item-col"
+                class="col-12 col-sm-6 col-lg-4 col-xl-4 col-xxl-3 menu-item-col"
                 data-category="<?= e($catSlug) ?>"
                 data-name="<?= e(strtolower($item['item_name'])) ?>"
             >
@@ -147,7 +147,7 @@ foreach ($all_items as $item) {
                             <?= e($item['description']) ?>
                         </p>
 
-                        <div class="d-flex align-items-center justify-content-between mt-3">
+                        <div class="ld-menu-actions mt-3">
                             <span class="ld-price">
                                 <?= format_price((float)$item['price']) ?>
                             </span>
@@ -214,7 +214,7 @@ foreach ($all_items as $item) {
     background: linear-gradient(135deg, var(--ld-blue-light) 0%, #fff 70%);
     padding: 4rem 0 2.5rem;
 }
-.ld-search-wrap { position: relative; max-width: 420px; }
+.ld-search-wrap { position: relative; width: min(100%, 26.25rem); }
 .ld-search-icon {
     position: absolute; left: 1rem; top: 50%;
     transform: translateY(-50%); color: var(--ld-muted); pointer-events: none;
@@ -234,19 +234,58 @@ foreach ($all_items as $item) {
     font-weight: 600; font-size: 0.85rem; color: var(--ld-muted); cursor: pointer; transition: all 0.2s;
 }
 .ld-filter-btn:hover, .ld-filter-btn.active {
-    background: var(--ld-blue-dark); border-color: var(--ld-blue-dark); color: #fff;
+    background: #1F6F93; border-color: #1F6F93; color: #fff;
 }
-.ld-menu-img { height: 200px; object-fit: cover; background-color: var(--ld-blue-light); }
+.ld-menu-img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background-color: var(--ld-blue-light);
+}
 .ld-menu-item-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
 .ld-price { font-size: 1.2rem; font-weight: 700; color: var(--ld-charcoal); }
+.ld-menu-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+.ld-menu-actions .ld-price {
+    flex: 0 0 auto;
+}
+.add-to-cart-form {
+    margin-left: auto;
+    max-width: 100%;
+}
 .ld-qty-btn {
     background: none; border: none; padding: 0 0.25rem;
+    min-width: 44px; min-height: 44px;
     color: var(--ld-muted); cursor: pointer; font-size: 1rem; line-height: 1; transition: color 0.15s;
 }
 .ld-qty-btn:hover { color: var(--ld-blue-dark); }
 .ld-add-btn { font-size: 0.85rem; padding: 0.4rem 1rem; white-space: nowrap; }
 .menu-item-col { transition: opacity 0.25s, transform 0.25s; }
 .menu-item-col.hidden { display: none; }
+
+@media (max-width: 1399.98px) {
+    .ld-menu-actions {
+        align-items: stretch;
+    }
+    .ld-menu-actions .ld-price {
+        width: 100%;
+    }
+    .add-to-cart-form {
+        width: 100%;
+        justify-content: space-between;
+        margin-left: 0;
+    }
+    .ld-menu-actions > .ld-add-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
 </style>
 
 <!-- ============================================================
@@ -321,7 +360,16 @@ foreach ($all_items as $item) {
                 body: new FormData(form),
                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
             })
-            .then(function (res) { return res.json(); })
+            .then(function (res) {
+                const contentType = res.headers.get('content-type') || '';
+                if (!res.ok) {
+                    throw new Error('Request failed with status ' + res.status);
+                }
+                if (!contentType.includes('application/json')) {
+                    throw new Error('Unexpected response format');
+                }
+                return res.json();
+            })
             .then(function (data) {
                 if (data.success) {
                     // Update navbar cart badge
@@ -341,12 +389,13 @@ foreach ($all_items as $item) {
                         }, 1500);
                     }
                 } else {
-                    alert(data.message || 'Could not add item. Please try again.');
+                    window.ldShowNotice(data.message || 'Could not add item. Please try again.', 'warning');
                     if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
                 }
             })
-            .catch(function () {
-                alert('Something went wrong. Please try again.');
+            .catch(function (err) {
+                console.error('Add to cart failed:', err);
+                window.ldShowNotice('Something went wrong. Please try again.', 'danger');
                 if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
             });
         });

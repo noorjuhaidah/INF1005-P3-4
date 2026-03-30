@@ -32,6 +32,13 @@ try {
         return '';
     };
 
+    $quoteIdent = static function (string $identifier): string {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+            throw new RuntimeException('Unsafe SQL identifier: ' . $identifier);
+        }
+        return '`' . $identifier . '`';
+    };
+
     $reviewIdColumn = $pickColumn(['id', 'review_id'], $reviewColumns);
     $reviewTextColumn = $pickColumn(['comment', 'review_text', 'review', 'feedback'], $reviewColumns);
     $reviewNameColumn = $pickColumn(['name', 'reviewer_name', 'full_name'], $reviewColumns);
@@ -58,32 +65,32 @@ try {
         throw new RuntimeException('No supported review ID/text columns found in reviews table.');
     }
 
-    $selectParts = ["r.{$reviewIdColumn} AS review_id"];
-    $selectParts[] = "r.{$reviewTextColumn} AS review_text";
-    $selectParts[] = $reviewCreatedAtColumn !== '' ? "r.{$reviewCreatedAtColumn} AS created_at" : "NULL AS created_at";
+    $selectParts = ["r." . $quoteIdent($reviewIdColumn) . " AS review_id"];
+    $selectParts[] = "r." . $quoteIdent($reviewTextColumn) . " AS review_text";
+    $selectParts[] = $reviewCreatedAtColumn !== '' ? "r." . $quoteIdent($reviewCreatedAtColumn) . " AS created_at" : "NULL AS created_at";
 
     if ($reviewNameColumn !== '') {
-        $selectParts[] = "r.{$reviewNameColumn} AS reviewer_name";
+        $selectParts[] = "r." . $quoteIdent($reviewNameColumn) . " AS reviewer_name";
     } elseif ($reviewUserIdColumn !== '') {
-        $selectParts[] = "u.full_name AS reviewer_name";
+        $selectParts[] = "u.`full_name` AS reviewer_name";
     } else {
         $selectParts[] = "'Anonymous' AS reviewer_name";
     }
 
     if ($reviewRatingColumn !== '') {
-        $selectParts[] = "r.{$reviewRatingColumn} AS rating";
+        $selectParts[] = "r." . $quoteIdent($reviewRatingColumn) . " AS rating";
     } else {
         $selectParts[] = "NULL AS rating";
     }
 
     $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
-        $sql .= " LEFT JOIN users u ON u.{$userPrimaryKeyColumn} = r.{$reviewUserIdColumn}";
+        $sql .= " LEFT JOIN users u ON u." . $quoteIdent($userPrimaryKeyColumn) . " = r." . $quoteIdent($reviewUserIdColumn);
     }
     if ($reviewCreatedAtColumn !== '') {
-        $sql .= " ORDER BY r.{$reviewCreatedAtColumn} DESC";
+        $sql .= " ORDER BY r." . $quoteIdent($reviewCreatedAtColumn) . " DESC";
     } else {
-        $sql .= " ORDER BY r.{$reviewIdColumn} DESC";
+        $sql .= " ORDER BY r." . $quoteIdent($reviewIdColumn) . " DESC";
     }
 
     $reviewsStmt = $pdo->query($sql);

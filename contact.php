@@ -49,10 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($name === '') {
         $name_error = 'Your name is required.';
         $errors[] = $name_error;
+    } elseif (mb_strlen($name) > 120) {
+        $name_error = 'Your name must be 120 characters or fewer.';
+        $errors[] = $name_error;
     }
 
     if ($email === '') {
         $email_error = 'Email address is required.';
+        $errors[] = $email_error;
+    } elseif (mb_strlen($email) > 254) {
+        $email_error = 'Email address is too long.';
         $errors[] = $email_error;
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $email_error = 'Please enter a valid email address.';
@@ -62,6 +68,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($subject === '') {
         $subject_error = 'A subject is required.';
         $errors[] = $subject_error;
+    } elseif (mb_strlen($subject) > 150) {
+        $subject_error = 'Subject must be 150 characters or fewer.';
+        $errors[] = $subject_error;
     }
 
     if ($message === '') {
@@ -69,6 +78,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = $message_error;
     } elseif (mb_strlen($message) < 10) {
         $message_error = 'Your message is a bit short — please give us a little more detail.';
+        $errors[] = $message_error;
+    } elseif (mb_strlen($message) > 2000) {
+        $message_error = 'Message must be 2000 characters or fewer.';
         $errors[] = $message_error;
     }
 
@@ -124,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         } catch (PDOException $e) {
             error_log('Contact form DB error: ' . $e->getMessage());
-            set_flash('danger', 'Contact form error: ' . $e->getMessage());
+            set_flash('danger', 'Unable to send your message right now. Please try again in a moment.');
             redirect(APP_URL . '/contact.php');
         }
     }
@@ -167,7 +179,7 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ---- Contact form ---- -->
             <div class="col-lg-7">
 
-                <form method="POST" action="<?= APP_URL ?>/contact.php" novalidate>
+                <form method="POST" action="<?= APP_URL ?>/contact.php" class="needs-validation" data-inline-validate="true" novalidate>
                     <?php csrf_field(); ?>
 
                     <div class="row g-3">
@@ -180,6 +192,7 @@ require_once __DIR__ . '/includes/header.php';
                                    class="form-control <?= $name_error ? 'is-invalid' : '' ?>"
                                    value="<?= e($name) ?>"
                                    autocomplete="name"
+                                   maxlength="120"
                                    required
                                    aria-describedby="<?= $name_error ? 'name-error' : '' ?>">
                             <?php if ($name_error): ?>
@@ -195,6 +208,7 @@ require_once __DIR__ . '/includes/header.php';
                                    class="form-control <?= $email_error ? 'is-invalid' : '' ?>"
                                    value="<?= e($email) ?>"
                                    autocomplete="email"
+                                   maxlength="254"
                                    required
                                    aria-describedby="<?= $email_error ? 'email-error' : '' ?>">
                             <?php if ($email_error): ?>
@@ -210,6 +224,7 @@ require_once __DIR__ . '/includes/header.php';
                                    class="form-control <?= $subject_error ? 'is-invalid' : '' ?>"
                                    value="<?= e($subject) ?>"
                                    placeholder="e.g. Question about my order"
+                                   maxlength="150"
                                    required
                                    aria-describedby="<?= $subject_error ? 'subject-error' : '' ?>">
                             <?php if ($subject_error): ?>
@@ -224,6 +239,7 @@ require_once __DIR__ . '/includes/header.php';
                                       class="form-control <?= $message_error ? 'is-invalid' : '' ?>"
                                       rows="6"
                                       placeholder="Tell us what is on your mind…"
+                                      maxlength="2000"
                                       required
                                       aria-describedby="<?= $message_error ? 'message-error' : '' ?>"><?= e($message) ?></textarea>
                             <?php if ($message_error): ?>
@@ -250,7 +266,7 @@ require_once __DIR__ . '/includes/header.php';
                     <ul class="list-unstyled text-muted small mb-0">
                         <li class="mb-2">
                             <i class="bi bi-envelope me-2" aria-hidden="true"></i>
-                            <a href="mailto:hello@lazydrip.sg">hello@lazydrip.sg</a>
+                            <a class="ld-contact-email" href="mailto:hello@lazydrip.sg">hello@lazydrip.sg</a>
                         </li>
                         <li class="mb-2">
                             <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>
@@ -269,7 +285,7 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed p-0 bg-transparent shadow-none fw-semibold small"
+                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
                                         type="button"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#faq1"
@@ -290,7 +306,7 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed p-0 bg-transparent shadow-none fw-semibold small"
+                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
                                         type="button"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#faq2"
@@ -311,7 +327,7 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed p-0 bg-transparent shadow-none fw-semibold small"
+                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
                                         type="button"
                                         data-bs-toggle="collapse"
                                         data-bs-target="#faq3"

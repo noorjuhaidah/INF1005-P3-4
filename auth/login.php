@@ -2,9 +2,13 @@
 $page_title = 'Login';
 $current_page = '';
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 
+enforce_https();
 redirect_if_logged_in();
+
+require_once __DIR__ . '/../includes/header.php';
 
 $field_errors = $_SESSION['field_errors'] ?? [];
 unset($_SESSION['field_errors']);
@@ -18,7 +22,7 @@ unset($_SESSION['field_errors']);
         <?php show_flash(); ?>
 
         <div class="ld-form-card">
-            <form method="post" action="<?= APP_URL ?>/auth/process_login.php">
+            <form method="post" action="<?= APP_URL ?>/auth/process_login.php" class="needs-validation" data-inline-validate="true" novalidate>
                 <?php csrf_field(); ?>
 
                 <div class="mb-3">
@@ -53,23 +57,28 @@ unset($_SESSION['field_errors']);
 
             <p class="mt-3 text-center">
                 Don’t have an account?
-                <a href="<?= APP_URL ?>/auth/register.php">Register here</a>.
+                <a class="ld-auth-link" href="<?= APP_URL ?>/auth/register.php">Register here</a>.
             </p>
         </div>
     </div>
 </section>
 
 <script>
-document.getElementById('togglePassword').addEventListener('click', function() {
-    const password = document.getElementById('password');
-    const icon = this.querySelector('i');
-    const isVisible = password.type === 'text';
-    
-    password.type = isVisible ? 'password' : 'text';
-    icon.className = isVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
-    this.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
-    this.setAttribute('aria-pressed', !isVisible);
-});
+const togglePasswordBtn = document.getElementById('togglePassword');
+if (togglePasswordBtn) {
+    togglePasswordBtn.addEventListener('click', function () {
+        const password = document.getElementById('password');
+        const icon = this.querySelector('i');
+        if (!password || !icon) return;
+
+        const isVisible = password.type === 'text';
+
+        password.type = isVisible ? 'password' : 'text';
+        icon.className = isVisible ? 'bi bi-eye' : 'bi bi-eye-slash';
+        this.setAttribute('aria-label', isVisible ? 'Show password' : 'Hide password');
+        this.setAttribute('aria-pressed', !isVisible);
+    });
+}
 </script>
 
 <?php clear_old_input(); ?>

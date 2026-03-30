@@ -22,6 +22,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- Drop tables in safe order (child → parent)
 -- -------------------------------------------------------------
 DROP TABLE IF EXISTS contact_messages;
+DROP TABLE IF EXISTS login_attempts;
 DROP TABLE IF EXISTS points_transactions;
 DROP TABLE IF EXISTS order_items;
 DROP TABLE IF EXISTS orders;
@@ -47,6 +48,21 @@ CREATE TABLE users (
     points        INT UNSIGNED  NOT NULL DEFAULT 0,
     is_active     TINYINT(1)    NOT NULL DEFAULT 1,
     created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================================
+-- LOGIN ATTEMPTS
+-- Brute-force protection for authentication.
+-- Tracks failed login attempts by email + IP combination.
+-- =============================================================
+CREATE TABLE login_attempts (
+    email        VARCHAR(255) NOT NULL,
+    ip_address   VARCHAR(45)  NOT NULL,
+    attempts     INT UNSIGNED NOT NULL DEFAULT 0,
+    last_attempt DATETIME     NOT NULL,
+    locked_until DATETIME     DEFAULT NULL,
+    PRIMARY KEY (email, ip_address),
+    INDEX idx_locked_until (locked_until)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =============================================================

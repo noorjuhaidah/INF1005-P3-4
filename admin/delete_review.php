@@ -27,6 +27,13 @@ try {
         }
     }
 
+    $quoteIdent = static function (string $identifier): string {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+            throw new RuntimeException('Unsafe SQL identifier: ' . $identifier);
+        }
+        return '`' . $identifier . '`';
+    };
+
     $reviewIdColumn = '';
     if (in_array('id', $reviewColumns, true)) {
         $reviewIdColumn = 'id';
@@ -59,12 +66,12 @@ try {
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $selectParts = ["{$reviewIdColumn} AS review_id"];
-        $selectParts[] = $reviewTextColumn !== '' ? "{$reviewTextColumn} AS review_text" : "'' AS review_text";
-        $selectParts[] = $reviewerNameColumn !== '' ? "{$reviewerNameColumn} AS reviewer_name" : "'' AS reviewer_name";
+        $selectParts = [$quoteIdent($reviewIdColumn) . " AS review_id"];
+        $selectParts[] = $reviewTextColumn !== '' ? $quoteIdent($reviewTextColumn) . " AS review_text" : "'' AS review_text";
+        $selectParts[] = $reviewerNameColumn !== '' ? $quoteIdent($reviewerNameColumn) . " AS reviewer_name" : "'' AS reviewer_name";
 
         $lookupStmt = $pdo->prepare(
-            "SELECT " . implode(', ', $selectParts) . " FROM reviews WHERE {$reviewIdColumn} = ? LIMIT 1"
+            "SELECT " . implode(', ', $selectParts) . " FROM reviews WHERE " . $quoteIdent($reviewIdColumn) . " = ? LIMIT 1"
         );
         $lookupStmt->execute([$id]);
         $review = $lookupStmt->fetch();
@@ -114,7 +121,7 @@ try {
 
     verify_csrf(APP_URL . '/admin/delete_review.php?id=' . (int)$id);
 
-    $stmt = $pdo->prepare("DELETE FROM reviews WHERE {$reviewIdColumn} = ?");
+    $stmt = $pdo->prepare("DELETE FROM reviews WHERE " . $quoteIdent($reviewIdColumn) . " = ?");
     $stmt->execute([$id]);
 
     if ($stmt->rowCount() > 0) {

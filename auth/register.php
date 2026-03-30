@@ -2,9 +2,13 @@
 $page_title = 'Register';
 $current_page = '';
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/config.php';
+require_once __DIR__ . '/../includes/functions.php';
 
+enforce_https();
 redirect_if_logged_in();
+
+require_once __DIR__ . '/../includes/header.php';
 
 $field_errors = $_SESSION['field_errors'] ?? [];
 unset($_SESSION['field_errors']);
@@ -49,9 +53,13 @@ unset($_SESSION['field_errors']);
                     <label class="form-label" for="phone">
                         Phone <span class="text-muted">(optional)</span>
                     </label>
-                    <input class="form-control" type="tel" id="phone" name="phone"
+                    <input class="form-control <?= !empty($field_errors['phone']) ? 'is-invalid' : '' ?>" type="tel" id="phone" name="phone"
                            autocomplete="tel" placeholder="+65 9123 4567"
+                           pattern="^\+?[0-9\s\-()]{8,20}$"
+                           aria-describedby="<?= !empty($field_errors['phone']) ? 'phone_error' : 'phone_help' ?>"
                            value="<?= e(old_input('phone')) ?>">
+                    <div id="phone_help" class="form-text">Use 8-20 characters. Digits, spaces, +, -, and parentheses are allowed.</div>
+                    <?php if (!empty($field_errors['phone'])): ?><div id="phone_error" class="invalid-feedback d-block"><?= e($field_errors['phone']) ?></div><?php endif; ?>
                 </div>
 
                 <div class="mb-3">
@@ -95,7 +103,7 @@ unset($_SESSION['field_errors']);
             <hr class="mt-4">
             <p class="text-center text-muted small mb-0">
                 Already have an account?
-                <a href="<?= APP_URL ?>/auth/login.php" class="fw-semibold">Log in</a>
+                <a href="<?= APP_URL ?>/auth/login.php" class="fw-semibold ld-auth-link">Log in</a>
             </p>
         </div>
     </div>
@@ -128,19 +136,6 @@ if (toggleConfirmBtn) {
         this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
         this.setAttribute('aria-pressed', !isPassword);
     });
-}
-
-function validatePasswordMatch() {
-    if (confirmPasswordInput.value !== passwordInput.value) {
-        confirmPasswordInput.setCustomValidity('Passwords do not match');
-    } else {
-        confirmPasswordInput.setCustomValidity('');
-    }
-}
-
-if (passwordInput && confirmPasswordInput) {
-    passwordInput.addEventListener('input', validatePasswordMatch);
-    confirmPasswordInput.addEventListener('input', validatePasswordMatch);
 }
 </script>
 

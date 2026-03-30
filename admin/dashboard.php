@@ -80,30 +80,30 @@ try {
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
-                    <h5><i class="fa-solid fa-box-open me-2"></i>Total Products</h5>
-                    <h2><?= e((string) $totalProducts) ?></h2>
+                    <h2 class="h5"><i class="fa-solid fa-box-open me-2"></i>Total Products</h2>
+                    <p class="h2 mb-0"><?= e((string) $totalProducts) ?></p>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
-                    <h5><i class="fa-solid fa-receipt me-2"></i>Total Orders</h5>
-                    <h2><?= e((string) $totalOrders) ?></h2>
+                    <h2 class="h5"><i class="fa-solid fa-receipt me-2"></i>Total Orders</h2>
+                    <p class="h2 mb-0"><?= e((string) $totalOrders) ?></p>
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
-                    <h5><i class="fa-solid fa-dollar-sign me-2"></i>Total Revenue</h5>
-                    <h2>$<?= number_format($totalRevenue, 2) ?></h2>
+                    <h2 class="h5"><i class="fa-solid fa-dollar-sign me-2"></i>Total Revenue</h2>
+                    <p class="h2 mb-0">$<?= number_format($totalRevenue, 2) ?></p>
                 </div>
             </div>
         </div>
 
         <div class="card ld-card p-4 mb-4">
-            <h4 class="mb-3">
+            <h2 class="h4 mb-3">
                 <i class="fa-solid fa-chart-pie me-2"></i>Orders by Status
-            </h4>
+            </h2>
             <p class="text-muted small mb-3">
                 Overview of current order distribution.
             </p>
@@ -115,9 +115,9 @@ try {
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
-                    <h4 class="mb-3">
+                    <h2 class="h4 mb-3">
                         <i class="fa-solid fa-mug-hot me-2"></i>Product Management
-                    </h4>
+                    </h2>
                     <p class="text-muted">Add, edit, or delete menu items.</p>
                     <div class="d-flex gap-2 flex-wrap">
                         <a href="<?= APP_URL ?>/admin/products.php" class="ld-btn-primary">
@@ -132,9 +132,9 @@ try {
 
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
-                    <h4 class="mb-3">
+                    <h2 class="h4 mb-3">
                         <i class="fa-solid fa-bag-shopping me-2"></i>Order Management
-                    </h4>
+                    </h2>
                     <p class="text-muted">View and update customer orders.</p>
                     <div class="d-flex gap-2 flex-wrap">
                         <a href="<?= APP_URL ?>/admin/orders.php" class="ld-btn-primary">
@@ -146,9 +146,9 @@ try {
 
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
-                    <h4 class="mb-3">
+                    <h2 class="h4 mb-3">
                         <i class="fa-solid fa-star me-2"></i>Review Management
-                    </h4>
+                    </h2>
                     <p class="text-muted">View, edit, or delete customer reviews.</p>
                     <div class="d-flex gap-2 flex-wrap">
                         <a href="<?= APP_URL ?>/admin/reviews.php" class="ld-btn-primary">
@@ -160,9 +160,9 @@ try {
 
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
-                    <h4 class="mb-3">
+                    <h2 class="h4 mb-3">
                         <i class="fa-solid fa-envelope-open-text me-2"></i>Customer Inquiries
-                    </h4>
+                    </h2>
                     <p class="text-muted mb-2">Access messages submitted from Contact Us.</p>
                     <p class="small text-muted mb-3">
                         Total: <?= e((string) $totalMessages) ?>
@@ -189,10 +189,10 @@ if (statusChartCtx) {
     new Chart(statusChartCtx, {
         type: 'doughnut',
         data: {
-            labels: <?= json_encode($orderStatusLabels) ?>,
+            labels: <?= json_encode($orderStatusLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
             datasets: [{
                 label: 'Orders by Status',
-                data: <?= json_encode($orderStatusCounts) ?>
+                data: <?= json_encode($orderStatusCounts, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
             }]
         },
         options: {

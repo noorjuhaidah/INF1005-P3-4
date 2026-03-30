@@ -13,9 +13,11 @@ if (!is_logged_in() || !is_admin()) {
    Handle status update
 --------------------------------*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    verify_csrf(APP_URL . '/admin/orders.php');
 
-    $order_id = $_POST['order_id'] ?? '';
-    $status = $_POST['status'] ?? '';
+    $order_id = filter_input(INPUT_POST, 'order_id', FILTER_VALIDATE_INT);
+    $statusRaw = filter_input(INPUT_POST, 'status', FILTER_UNSAFE_RAW);
+    $status = is_string($statusRaw) ? trim($statusRaw) : '';
 
     $allowed_status = [
         'submitted',
@@ -25,15 +27,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'cancelled'
     ];
 
-    if ($order_id !== '' && is_numeric($order_id) && in_array($status, $allowed_status, true)) {
+    if ($order_id !== false && $order_id > 0 && in_array($status, $allowed_status, true)) {
+        try {
+            $stmt = $pdo->prepare("
+                UPDATE orders
+                SET status = ?
+                WHERE order_id = ?
+            ");
 
-        $stmt = $pdo->prepare("
-            UPDATE orders
-            SET status = ?
-            WHERE order_id = ?
-        ");
+            $stmt->execute([$status, (int)$order_id]);
 
-        $stmt->execute([$status, $order_id]);
+            if ($stmt->rowCount() > 0) {
+                set_flash('success', 'Order status updated successfully.');
+            } else {
+                set_flash('warning', 'Order not found or status unchanged.');
+            }
+        } catch (PDOException $e) {
+            error_log('Admin orders status update error: ' . $e->getMessage());
+            set_flash('danger', 'Unable to update order status right now.');
+        }
+    } else {
+        set_flash('warning', 'Invalid order update request.');
     }
 
     header('Location: ' . APP_URL . '/admin/orders.php');
@@ -41,14 +55,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 /* -------------------------------
-   Fetch orders
+   Fetch orders with pagination
 --------------------------------*/
 $orders = [];
+$totalOrders = 0;
+$perPage = 10;
+$currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+if (!$currentPage || $currentPage < 1) {
+    $currentPage = 1;
+}
+$totalPages = 1;
 
 try {
+    $countStmt = $pdo->prepare("SELECT COUNT(*) FROM orders");
+    $countStmt->execute();
+    $totalOrders = (int)$countStmt->fetchColumn();
 
-    $stmt = $pdo->query("
-        SELECT 
+    $totalPages = max(1, (int)ceil($totalOrders / $perPage));
+    if ($currentPage > $totalPages) {
+        $currentPage = $totalPages;
+    }
+
+    $offset = ($currentPage - 1) * $perPage;
+
+    $stmt = $pdo->prepare("
+        SELECT
             o.order_id,
             o.total_amount,
             o.status,
@@ -57,12 +88,18 @@ try {
         FROM orders o
         JOIN users u ON o.user_id = u.user_id
         ORDER BY o.created_at DESC
+        LIMIT :limit OFFSET :offset
     ");
-
+    $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
     $orders = $stmt->fetchAll();
-
 } catch (PDOException $e) {
+    error_log('Admin orders load error: ' . $e->getMessage());
     $orders = [];
+    $totalOrders = 0;
+    $totalPages = 1;
+    $currentPage = 1;
 }
 ?>
 
@@ -71,6 +108,8 @@ try {
 
 <h1 class="ld-section-title">Manage Orders</h1>
 <p class="ld-section-subtitle">Update customer order statuses.</p>
+
+<?php show_flash(); ?>
 
 <div class="card ld-card p-4">
 
@@ -90,7 +129,6 @@ try {
 <th scope="col">Update status</th>
 </tr>
 </thead>
-
 <tbody>
 
 <?php if (empty($orders)): ?>
@@ -119,19 +157,23 @@ try {
 
 <form method="post" class="d-flex gap-2" aria-label="Update status for order <?= e((string)$order['order_id']) ?>">
 
+<?php csrf_field(); ?>
+
 <input type="hidden" name="order_id" value="<?= e((string)$order['order_id']) ?>">
 
-<select name="status" class="form-select form-select-sm" aria-label="Order status for order <?= e((string)$order['order_id']) ?>">
+<label class="visually-hidden" for="status-<?= e((string)$order['order_id']) ?>">Order status for order <?= e((string)$order['order_id']) ?></label>
 
-<option value="submitted" <?= $order['status'] === 'submitted' ? 'selected' : '' ?>>submitted</option>
+<select id="status-<?= e((string)$order['order_id']) ?>" name="status" class="form-select form-select-sm" aria-label="Order status for order <?= e((string)$order['order_id']) ?>">
 
-<option value="preparing" <?= $order['status'] === 'preparing' ? 'selected' : '' ?>>preparing</option>
+    <option value="submitted" <?= $order['status'] === 'submitted' ? 'selected' : '' ?>>Submitted</option>
 
-<option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>Ready for pickup</option>
+    <option value="preparing" <?= $order['status'] === 'preparing' ? 'selected' : '' ?>>Preparing</option>
 
-<option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>completed</option>
+    <option value="ready_for_pickup" <?= $order['status'] === 'ready_for_pickup' ? 'selected' : '' ?>>Ready For Pickup</option>
 
-<option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>cancelled</option>
+    <option value="completed" <?= $order['status'] === 'completed' ? 'selected' : '' ?>>Completed</option>
+
+    <option value="cancelled" <?= $order['status'] === 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
 
 </select>
 
@@ -152,6 +194,27 @@ try {
 </table>
 
 </div>
+
+<?php if ($totalPages > 1): ?>
+<nav aria-label="Orders pagination" class="mt-4">
+    <ul class="pagination mb-0">
+        <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
+            <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= max(1, $currentPage - 1) ?>" aria-label="Previous page">Previous</a>
+        </li>
+
+        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+            <li class="page-item <?= $page === $currentPage ? 'active' : '' ?>">
+                <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= $page ?>" aria-label="Go to page <?= $page ?>"><?= $page ?></a>
+            </li>
+        <?php endfor; ?>
+
+        <li class="page-item <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">
+            <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= min($totalPages, $currentPage + 1) ?>" aria-label="Next page">Next</a>
+        </li>
+    </ul>
+</nav>
+<?php endif; ?>
+
 </div>
 </div>
 </section>

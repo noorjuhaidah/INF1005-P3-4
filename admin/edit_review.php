@@ -42,6 +42,13 @@ try {
         return '';
     };
 
+    $quoteIdent = static function (string $identifier): string {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+            throw new RuntimeException('Unsafe SQL identifier: ' . $identifier);
+        }
+        return '`' . $identifier . '`';
+    };
+
     $reviewIdColumn = $pickColumn(['id', 'review_id'], $reviewColumns);
     $reviewTextColumn = $pickColumn(['comment', 'review_text', 'review', 'feedback'], $reviewColumns);
     $reviewNameColumn = $pickColumn(['name', 'reviewer_name', 'full_name'], $reviewColumns);
@@ -67,27 +74,27 @@ try {
         throw new RuntimeException('No supported review ID/text columns found in reviews table.');
     }
 
-    $selectParts = ["r.{$reviewIdColumn} AS review_id", "r.{$reviewTextColumn} AS review_text"];
+    $selectParts = ["r." . $quoteIdent($reviewIdColumn) . " AS review_id", "r." . $quoteIdent($reviewTextColumn) . " AS review_text"];
 
     if ($reviewNameColumn !== '') {
-        $selectParts[] = "r.{$reviewNameColumn} AS reviewer_name";
+        $selectParts[] = "r." . $quoteIdent($reviewNameColumn) . " AS reviewer_name";
     } elseif ($reviewUserIdColumn !== '') {
-        $selectParts[] = "u.full_name AS reviewer_name";
+        $selectParts[] = "u.`full_name` AS reviewer_name";
     } else {
         $selectParts[] = "'Anonymous' AS reviewer_name";
     }
 
     if ($reviewRatingColumn !== '') {
-        $selectParts[] = "r.{$reviewRatingColumn} AS rating";
+        $selectParts[] = "r." . $quoteIdent($reviewRatingColumn) . " AS rating";
     } else {
         $selectParts[] = "NULL AS rating";
     }
 
     $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
-        $sql .= " LEFT JOIN users u ON u.{$userPrimaryKeyColumn} = r.{$reviewUserIdColumn}";
+        $sql .= " LEFT JOIN users u ON u." . $quoteIdent($userPrimaryKeyColumn) . " = r." . $quoteIdent($reviewUserIdColumn);
     }
-    $sql .= " WHERE r.{$reviewIdColumn} = ?";
+    $sql .= " WHERE r." . $quoteIdent($reviewIdColumn) . " = ?";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$id]);
@@ -122,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($newReviewerName === '') {
             $newReviewerName = 'Anonymous';
         }
-        $setParts[] = "{$reviewNameColumn} = ?";
+        $setParts[] = $quoteIdent($reviewNameColumn) . " = ?";
         $params[] = $newReviewerName;
     }
 
@@ -132,11 +139,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             set_flash('warning', 'Rating must be between 1 and 5.');
             redirect(APP_URL . '/admin/edit_review.php?id=' . $id);
         }
-        $setParts[] = "{$reviewRatingColumn} = ?";
+        $setParts[] = $quoteIdent($reviewRatingColumn) . " = ?";
         $params[] = $newRating;
     }
 
-    $setParts[] = "{$reviewTextColumn} = ?";
+    $setParts[] = $quoteIdent($reviewTextColumn) . " = ?";
     $params[] = $newReviewText;
 
     if (empty($setParts)) {
@@ -147,7 +154,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $params[] = $id;
 
     try {
-        $sql = "UPDATE reviews SET " . implode(', ', $setParts) . " WHERE {$reviewIdColumn} = ?";
+        $sql = "UPDATE reviews SET " . implode(', ', $setParts) . " WHERE " . $quoteIdent($reviewIdColumn) . " = ?";
         $updateStmt = $pdo->prepare($sql);
         $updateStmt->execute($params);
 
@@ -175,12 +182,12 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php if ($reviewNameColumn !== ''): ?>
                     <div class="mb-3">
                         <label class="form-label" for="name">Name</label>
-                        <input type="text" id="name" name="name" class="form-control" value="<?= e((string) ($review['reviewer_name'] ?? '')) ?>" required>
+                        <input type="text" id="name" name="name" class="form-control" value="<?= e((string) ($review['reviewer_name'] ?? '')) ?>" aria-label="Reviewer name" title="Reviewer name" required>
                     </div>
                 <?php else: ?>
                     <div class="mb-3">
                         <label class="form-label" for="reviewer_name_readonly">Name</label>
-                        <input id="reviewer_name_readonly" type="text" class="form-control" value="<?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?>" readonly aria-readonly="true">
+                        <input id="reviewer_name_readonly" type="text" class="form-control" value="<?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?>" aria-label="Reviewer name" title="Reviewer name" readonly aria-readonly="true">
                         <small class="text-muted">Name comes from the linked user account in this schema.</small>
                     </div>
                 <?php endif; ?>

@@ -23,6 +23,18 @@
 
 html { scroll-behavior: smooth; }
 
+html,
+body {
+    max-width: 100%;
+    overflow-x: clip;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
 body {
     background-color: var(--ld-white);
     color: var(--ld-charcoal);
@@ -57,9 +69,9 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 .ld-navbar {
-    background-color: transparent;
-    border-bottom: none;
-    box-shadow: none;
+    background-color: var(--ld-white); 
+    border-bottom: 1px solid rgba(0,0,0,0.06); 
+    box-shadow: var(--ld-shadow); 
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
 }
@@ -71,13 +83,13 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     color: var(--ld-charcoal) !important;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
 }
 
 .ld-logo-dot {
     display: inline-block;
-    width: 10px;
-    height: 10px;
+    width: 0.625rem;
+    height: 0.625rem;
     border-radius: 50%;
     background-color: var(--ld-blue-dark);
 }
@@ -87,7 +99,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     font-size: 0.95rem;
     color: var(--ld-charcoal);
     padding: 0.6rem 1rem;
-    border-radius: 6px;
+    border-radius: 0.375rem;
     transition: background 0.2s, color 0.2s;
 }
 
@@ -129,8 +141,8 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 .ld-btn-outline {
-    border: 2px solid var(--ld-blue-dark);
-    color: var(--ld-blue-dark);
+    border: 2px solid #1F6F93;
+    color: #1F6F93;
     font-weight: 600;
     border-radius: var(--ld-radius);
     padding: 0.5rem 1.4rem;
@@ -139,7 +151,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     background: transparent;
 }
 .ld-btn-outline:hover {
-    background-color: var(--ld-blue-dark);
+    background-color: #185A79;
     color: #fff;
     text-decoration: none;
 }
@@ -159,7 +171,9 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 }
 
 .ld-card .card-img-top {
-    height: 200px;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
     background-color: var(--ld-blue-light);
 }
@@ -199,7 +213,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 .ld-hero-subtitle {
     font-size: 1.1rem;
     color: var(--ld-muted);
-    max-width: 480px;
+    width: min(100%, 30rem);
 }
 
 /* --- Forms -------------------------------------------------- */
@@ -208,7 +222,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     border-radius: var(--ld-radius);
     box-shadow: var(--ld-shadow);
     padding: 2.5rem;
-    max-width: 480px;
+    width: min(100%, 30rem);
     margin: 0 auto;
 }
 
@@ -216,6 +230,15 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
 .form-select:focus {
     border-color: var(--ld-blue-dark);
     box-shadow: 0 0 0 0.2rem rgba(126,200,227,0.35);
+}
+
+.ld-contact-email {
+    color: #1F6F93;
+}
+
+.ld-contact-email:hover,
+.ld-contact-email:focus {
+    color: #185A79;
 }
 
 /* --- Badges & Chips ---------------------------------------- */
@@ -226,7 +249,7 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     font-size: 0.78rem;
     font-weight: 600;
     background-color: var(--ld-blue-light);
-    color: #3a9abf;
+    color: #185A79;
 }
 
 /* Order status chips */
@@ -283,13 +306,60 @@ a:hover { color: var(--ld-blue-dark); text-decoration: underline; }
     color: var(--ld-charcoal);
 }
 
+/* Minimum touch target for common interactive controls */
+.navbar-nav .nav-link,
+.ld-btn-primary,
+.btn.ld-btn-primary,
+.ld-btn-outline,
+.ld-qty-btn {
+    min-width: 44px;
+    min-height: 44px;
+}
+
 /* --- Responsive tweaks ------------------------------------- */
 @media (max-width: 576px) {
+    html { font-size: 15px; }
     .ld-form-card { padding: 1.5rem; }
     .ld-hero { padding: 3rem 0 2rem; }
+    .ld-section-title { font-size: 1.5rem; }
+    .ld-section-subtitle { font-size: 0.95rem; }
+    .navbar-nav .nav-link { font-size: 1rem; }
 }
 
 /* --- Accessibility ----------------------------------------- */
+.alert a {
+    color: #185A79;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+}
+.alert a:hover,
+.alert a:focus {
+    color: #0f4a5f;
+}
+
+.ld-auth-link {
+    color: #1F6F93;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ld-auth-link:hover,
+.ld-auth-link:focus {
+    color: #185A79;
+}
+
+.ld-back-link {
+    color: #1F6F93;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.ld-back-link:hover,
+.ld-back-link:focus {
+    color: #185A79;
+}
+
 /* Visible focus ring for keyboard users */
 :focus-visible {
     outline: 3px solid var(--ld-blue-dark);

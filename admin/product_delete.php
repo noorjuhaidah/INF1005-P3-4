@@ -2,7 +2,12 @@
 $page_title = 'Delete Product - Admin';
 $current_page = 'admin';
 
-require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_admin();
 
@@ -44,12 +49,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             set_flash('warning', 'Product not found or already deleted.');
         }
     } catch (PDOException $e) {
-        error_log('Product delete failed: ' . $e->getMessage());
-        set_flash('danger', 'Unable to delete product right now.');
+        // If historical order rows reference this item, fall back to hiding it.
+        if ($e->getCode() === '23000') {
+            try {
+                $archive = $pdo->prepare('UPDATE menu_items SET is_available = 0 WHERE item_id = ?');
+                $archive->execute([$id]);
+
+                if ($archive->rowCount() > 0) {
+                    set_flash('warning', 'Product has order history, so it was hidden from the menu instead of being permanently deleted.');
+                } else {
+                    set_flash('warning', 'Product could not be permanently deleted because it has order history, and it was already hidden.');
+                }
+            } catch (PDOException $archiveError) {
+                error_log('Product archive fallback failed: ' . $archiveError->getMessage());
+                set_flash('danger', 'Unable to delete product right now.');
+            }
+        } else {
+            error_log('Product delete failed: ' . $e->getMessage());
+            set_flash('danger', 'Unable to delete product right now.');
+        }
     }
 
     redirect(APP_URL . '/admin/products.php#flash-container');
 }
+
+require_once __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="ld-section">
