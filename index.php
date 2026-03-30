@@ -1,11 +1,12 @@
 <?php
-// =============================================================
 // index.php - LazyDrip Home / Landing Page
-// =============================================================
 
 $page_title = 'Home';
 $current_page = 'home';
 require_once __DIR__ . '/includes/header.php';
+
+$heroVideoFile = __DIR__ . '/assets/videos/lazydrip.mp4';
+$heroVideoVersion = time() . '-' . (file_exists($heroVideoFile) ? substr(hash_file('sha1', $heroVideoFile), 0, 12) : 'missing');
 ?>
 
 <style>
@@ -118,7 +119,7 @@ require_once __DIR__ . '/includes/header.php';
 
 <section class="ld-video-hero">
     <video id="heroVideo" autoplay muted loop playsinline aria-hidden="true">
-        <source src="<?= APP_URL ?>/assets/videos/lazydrip.mp4" type="video/mp4">
+        <source src="<?= APP_URL ?>/assets/videos/lazydrip.mp4?v=<?= $heroVideoVersion ?>" type="video/mp4">
         <!-- Fallback for when video doesn't load -->
         <img src="<?= APP_URL ?>/assets/images/placeholder.png" alt="Coffee shop interior with warm lighting and minimalist decor">
     </video>
@@ -140,7 +141,7 @@ require_once __DIR__ . '/includes/header.php';
                             Browse Menu
                         </a>
                         <?php if (!is_logged_in()): ?>
-                        <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-outline">
+                        <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-primary">
                             Join for Free
                         </a>
                         <?php endif; ?>
@@ -157,10 +158,21 @@ require_once __DIR__ . '/includes/header.php';
 </section>
 
 <script>
+
+    
 (function () {
     const video = document.getElementById('heroVideo');
     const toggle = document.getElementById('heroVideoToggle');
     if (!video || !toggle) return;
+
+    function autoplayVideo() {
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+            playPromise.then(finishAutoplayAttempt).catch(finishAutoplayAttempt);
+        } else {
+            finishAutoplayAttempt();
+        }
+    }
 
     function setButtonState() {
         const isPaused = video.paused;
@@ -168,17 +180,24 @@ require_once __DIR__ . '/includes/header.php';
         toggle.textContent = isPaused ? 'Play background video' : 'Pause background video';
     }
 
-    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) {
-        video.pause();
+    function finishAutoplayAttempt() {
+        setButtonState();
     }
-    setButtonState();
+
+    // Wait for video metadata to load before attempting autoplay
+    if (video.readyState >= 1) {
+        // Metadata is already loaded
+        autoplayVideo();
+    } else {
+        // Wait for metadata to load
+        video.addEventListener('loadedmetadata', autoplayVideo, { once: true });
+    }
 
     toggle.addEventListener('click', function () {
         if (video.paused) {
             const playPromise = video.play();
             if (playPromise && typeof playPromise.then === 'function') {
-                playPromise.then(setButtonState).catch(setButtonState);
+                playPromise.catch(setButtonState);
             } else {
                 setButtonState();
             }
