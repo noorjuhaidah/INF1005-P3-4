@@ -5,7 +5,7 @@
 // Uses the shared CSRF helpers from includes/functions.php.
 // =============================================================
 
-$page_title   = 'Reviews';
+$page_title = 'Reviews';
 $current_page = 'reviews';
 
 // Load DB + helpers BEFORE header so POST/redirect logic can run safely.
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
     $reviewText = clean_input($_POST['review'] ?? '');
     $rating = filter_input(INPUT_POST, 'rating', FILTER_VALIDATE_INT);
-    $reviewerName = clean_input((string)($_SESSION['full_name'] ?? 'Customer'));
+    $reviewerName = clean_input((string) ($_SESSION['full_name'] ?? 'Customer'));
 
     if (empty($reviewText)) {
         set_flash('warning', 'Please enter a review before submitting.');
@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
         if ($reviewUserIdColumn !== '') {
             $insertColumns[] = $reviewUserIdColumn;
             $insertValues[] = '?';
-            $insertParams[] = (int)$_SESSION['user_id'];
+            $insertParams[] = (int) $_SESSION['user_id'];
         }
 
         if ($reviewTextColumn === '') {
@@ -172,7 +172,8 @@ try {
                     <div class="card mb-4">
                         <div class="card-body">
                             <h2 class="h5 mb-3">Leave a review</h2>
-                            <form method="POST" action="<?= APP_URL ?>/reviews.php" class="needs-validation" data-inline-validate="true" novalidate>
+                            <form method="POST" action="<?= APP_URL ?>/reviews.php" class="needs-validation"
+                                data-inline-validate="true" novalidate>
                                 <?php csrf_field(); ?>
                                 <div class="mb-3">
                                     <label class="form-label" for="rating">Rating</label>
@@ -187,7 +188,8 @@ try {
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label" for="review">Your review</label>
-                                    <textarea id="review" name="review" class="form-control" rows="4" maxlength="1000" required></textarea>
+                                    <textarea id="review" name="review" class="form-control" rows="4" maxlength="1000"
+                                        required></textarea>
                                 </div>
                                 <button type="submit" class="ld-btn-primary">Submit review</button>
                             </form>
@@ -209,9 +211,9 @@ try {
                     <div class="list-group">
                         <?php foreach ($reviews as $review):
                             $author = $review['full_name'] ?? 'Anonymous';
-                            $date   = $review['created_at'] ?? null;
-                            $date   = $date ? format_date($date) : '';
-                        ?>
+                            $date = $review['created_at'] ?? null;
+                            $date = $date ? format_date($date) : '';
+                            ?>
                             <article class="list-group-item" aria-label="Customer review by <?= e($author) ?>">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
@@ -221,7 +223,7 @@ try {
                                         <?php endif; ?>
                                     </div>
                                     <?php if (!empty($review['rating'])): ?>
-                                        <span class="ld-chip"><?= (int)$review['rating'] ?>/5</span>
+                                        <span class="ld-chip"><?= (int) $review['rating'] ?>/5</span>
                                     <?php endif; ?>
                                 </div>
                                 <p class="mt-2 mb-0"><?= nl2br(e($review['review_text'] ?? '')) ?></p>
