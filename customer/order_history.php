@@ -24,7 +24,8 @@ try {
     $orders = [];
 }
 
-function pickField(array $row, array $keys) {
+function pickField(array $row, array $keys)
+{
     foreach ($keys as $key) {
         if (!empty($row[$key]) || (isset($row[$key]) && $row[$key] === '0')) {
             return $row[$key];
@@ -70,19 +71,18 @@ function pickField(array $row, array $keys) {
                             $status = pickField($order, ['status', 'order_status', 'status_label']) ?? 'Unknown';
                             $statusSlug = strtolower(str_replace(' ', '_', $status));
                         ?>
-                        <tr id="<?= $rowAnchor !== null ? e($rowAnchor) : '' ?>">
-                            <td><?= e($date) ?></td>
-                            <td><?= e($total) ?></td>
-                            <td><span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span></td>
-                            <td>
-                                <a
-                                    href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
-                                    aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($date) ?>"
-                                >
-                                    View order
-                                </a>
-                            </td>
-                        </tr>
+                            <tr id="<?= $rowAnchor !== null ? e($rowAnchor) : '' ?>">
+                                <td><?= e($date) ?></td>
+                                <td><?= e($total) ?></td>
+                                <td><span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span></td>
+                                <td>
+                                    <a
+                                        href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
+                                        aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($date) ?>">
+                                        View order
+                                    </a>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>

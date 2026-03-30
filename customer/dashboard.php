@@ -41,7 +41,8 @@ try {
 }
 
 // Helper to pick the first available key from a record
-function pickField(array $row, array $keys) {
+function pickField(array $row, array $keys)
+{
     foreach ($keys as $key) {
         if (!empty($row[$key])) {
             return $row[$key];
@@ -54,8 +55,8 @@ function pickField(array $row, array $keys) {
 
 <section class="ld-section">
     <div class="container">
-         <?php show_flash(); ?>
-         
+        <?php show_flash(); ?>
+
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-4">
 
             <div class="card w-100" style="max-width: 28rem;">
@@ -94,22 +95,21 @@ function pickField(array $row, array $keys) {
                                 $status = pickField($order, ['status', 'order_status', 'status_label']) ?? 'Unknown';
                                 $statusSlug = strtolower(str_replace(' ', '_', $status));
                             ?>
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold"><?= e($orderDate) ?></div>
-                                        <div class="text-muted small">Total: <?= $total ?></div>
-                                        <a
-                                            href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
-                                            class="small"
-                                            aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($orderDate) ?>"
-                                        >
-                                            View order
-                                        </a>
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-semibold"><?= e($orderDate) ?></div>
+                                            <div class="text-muted small">Total: <?= $total ?></div>
+                                            <a
+                                                href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
+                                                class="small"
+                                                aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($orderDate) ?>">
+                                                View order
+                                            </a>
+                                        </div>
+                                        <span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span>
                                     </div>
-                                    <span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span>
                                 </div>
-                            </div>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>

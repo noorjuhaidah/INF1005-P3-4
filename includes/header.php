@@ -86,11 +86,11 @@ header(
             <!-- Left links -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?= (($current_page ?? '') === 'home')    ? 'active' : '' ?>"
+                    <a class="nav-link <?= (($current_page ?? '') === 'home') ? 'active' : '' ?>"
                        href="<?= APP_URL ?>/index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= (($current_page ?? '') === 'menu')    ? 'active' : '' ?>"
+                    <a class="nav-link <?= (($current_page ?? '') === 'menu') ? 'active' : '' ?>"
                        href="<?= APP_URL ?>/menu.php">Menu</a>
                 </li>
                 <li class="nav-item">
@@ -102,7 +102,7 @@ header(
                        href="<?= APP_URL ?>/reviews.php">Reviews</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= (($current_page ?? '') === 'about')   ? 'active' : '' ?>"
+                    <a class="nav-link <?= (($current_page ?? '') === 'about') ? 'active' : '' ?>"
                        href="<?= APP_URL ?>/about.php">About</a>
                 </li>
                 <li class="nav-item">

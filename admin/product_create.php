@@ -38,14 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate and sanitise inputs
     $name = clean_input((string) ($_POST['name'] ?? ''));
     $description = clean_input((string) ($_POST['description'] ?? ''));
-    
+
     // Validate price input
     $priceRaw = filter_input(INPUT_POST, 'price', FILTER_UNSAFE_RAW);
     $price = is_string($priceRaw) ? filter_var(trim($priceRaw), FILTER_VALIDATE_FLOAT) : false;
-    
+
     // Validate category ID
     $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
-    
+
     // Determine availability
     $is_available = isset($_POST['is_available']) ? 1 : 0;
 
@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ((int) $_FILES['image']['size'] > $maxBytes) {
                 $fieldErrors['image'] = 'Image must be 2MB or smaller.';
             } else {
-                
+
                 // Check file type
                 $finfo = new finfo(FILEINFO_MIME_TYPE);
                 $mimeType = (string) $finfo->file($_FILES['image']['tmp_name']);

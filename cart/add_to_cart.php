@@ -1,4 +1,5 @@
 <?php
+
 // =============================================================
 // cart/add_to_cart.php — Add Item to Cart Handler
 // Accepts POST from menu.php add-to-cart forms.
@@ -35,8 +36,9 @@ $is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
 // Must be POST
 // -------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Invalid request method.');
+    }
     redirect(APP_URL . '/menu.php');
 }
 
@@ -44,8 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 // Must be logged in
 // -------------------------------------------------------------
 if (!is_logged_in()) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Please log in to add items to your cart.');
+    }
     set_flash('warning', 'Please log in to add items to your cart.');
     redirect(APP_URL . '/auth/login.php');
 }
@@ -55,8 +58,9 @@ if (!is_logged_in()) {
 // -------------------------------------------------------------
 $submitted_token = $_POST['csrf_token'] ?? '';
 if (!hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Invalid request. Please refresh and try again.');
+    }
     set_flash('danger', 'Invalid request. Please try again.');
     redirect(APP_URL . '/menu.php');
 }
@@ -68,8 +72,9 @@ $item_id = filter_input(INPUT_POST, 'item_id', FILTER_VALIDATE_INT);
 $qty = filter_input(INPUT_POST, 'qty', FILTER_VALIDATE_INT);
 
 if (!$item_id || !$qty || $qty < 1 || $qty > 10) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Invalid item data. Please try again.');
+    }
     set_flash('danger', 'Invalid item data.');
     redirect(APP_URL . '/menu.php');
 }
@@ -89,15 +94,17 @@ try {
     $db_item = $stmt->fetch();
 } catch (PDOException $e) {
     error_log('Cart DB error: ' . $e->getMessage());
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Could not add item right now. Please try again.');
+    }
     set_flash('danger', 'Could not add item right now. Please try again.');
     redirect(APP_URL . '/menu.php');
 }
 
 if (!$db_item || !$db_item['is_available']) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'This item is no longer available.');
+    }
     set_flash('warning', 'Sorry, that item is no longer available.');
     redirect(APP_URL . '/menu.php');
 }

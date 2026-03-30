@@ -1,14 +1,5 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/functions.php';
-
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Restrict access to admins only
-require_admin();
+require_once __DIR__ . '/../includes/admin_bootstrap.php';
 
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -95,7 +86,7 @@ try {
         $page_title = 'Delete Review - Admin';
         $current_page = 'admin';
         require_once __DIR__ . '/../includes/header.php';
-        ?>
+?>
 
         <!-- Delete confirmation UI -->
         <section class="ld-section">
@@ -134,7 +125,7 @@ try {
         </section>
 
         <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-        <?php
+<?php
         exit;
     }
 

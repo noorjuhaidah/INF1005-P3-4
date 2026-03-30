@@ -18,7 +18,8 @@ if (empty($_SESSION['csrf_token'])) {
 $csrf = $_SESSION['csrf_token'];
 
 // Helper to fetch current user data
-function fetchUserData(PDO $pdo, int $userId): array {
+function fetchUserData(PDO $pdo, int $userId): array
+{
     $stmt = $pdo->prepare("SELECT email, phone, full_name FROM users WHERE user_id = ? LIMIT 1");
     $stmt->execute([$userId]);
     return (array)$stmt->fetch();
@@ -120,10 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?= e($fullName) ?>"
                             autocomplete="name"
                             aria-describedby="<?= !empty($field_errors['full_name']) ? 'full_name_error' : '' ?>"
-                            required
-                        >
+                            required>
                         <?php if (!empty($field_errors['full_name'])): ?>
-                        <div id="full_name_error" class="invalid-feedback"><?= e($field_errors['full_name']) ?></div>
+                            <div id="full_name_error" class="invalid-feedback"><?= e($field_errors['full_name']) ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -137,10 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?= e($email) ?>"
                             autocomplete="email"
                             aria-describedby="<?= !empty($field_errors['email']) ? 'email_error' : '' ?>"
-                            required
-                        >
+                            required>
                         <?php if (!empty($field_errors['email'])): ?>
-                        <div id="email_error" class="invalid-feedback"><?= e($field_errors['email']) ?></div>
+                            <div id="email_error" class="invalid-feedback"><?= e($field_errors['email']) ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -154,11 +153,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?= e($phone) ?>"
                             autocomplete="tel"
                             pattern="^\+?[0-9\s\-()]{8,20}$"
-                            aria-describedby="<?= !empty($field_errors['phone']) ? 'phone_error' : 'phone_help' ?>"
-                        >
+                            aria-describedby="<?= !empty($field_errors['phone']) ? 'phone_error' : 'phone_help' ?>">
                         <div id="phone_help" class="form-text">Use 8-20 characters. Digits, spaces, +, -, and parentheses are allowed.</div>
                         <?php if (!empty($field_errors['phone'])): ?>
-                        <div id="phone_error" class="invalid-feedback d-block"><?= e($field_errors['phone']) ?></div>
+                            <div id="phone_error" class="invalid-feedback d-block"><?= e($field_errors['phone']) ?></div>
                         <?php endif; ?>
                     </div>
 

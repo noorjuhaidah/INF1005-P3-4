@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Update rating if column exists
     if ($reviewRatingColumn !== '') {
         $newRating = filter_var($newRatingRaw, FILTER_VALIDATE_INT);
-        
+
         // Validate rating value
         if ($newRating === false || $newRating < 1 || $newRating > 5) {
             set_flash('warning', 'Rating must be between 1 and 5.');

@@ -101,7 +101,7 @@ try {
 } catch (PDOException $e) {
     // Handle database error
     error_log('Admin orders load error: ' . $e->getMessage());
-    
+
     // Reset values to defaults to prevent further issues
     $orders = [];
     $totalOrders = 0;

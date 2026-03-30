@@ -1,4 +1,5 @@
 <?php
+
 // =============================================================
 // cart/update_cart.php — Update or Remove Cart Items
 // Accepts POST from cart.php (update qty or remove item).
@@ -28,22 +29,25 @@ $is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
 
 // Must be POST and logged in
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Invalid request.');
+    }
     redirect('cart.php');
 }
 
 if (!is_logged_in()) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Please log in.');
+    }
     redirect('../auth/login.php');
 }
 
 // CSRF check
 $submitted_token = $_POST['csrf_token'] ?? '';
 if (!hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Invalid request. Please refresh and try again.');
+    }
     set_flash('danger', 'Invalid request.');
     redirect('cart.php');
 }
@@ -56,8 +60,9 @@ $posted_cart_key = (string) ($_POST['cart_key'] ?? '');
 $action = clean_input((string) ($_POST['action'] ?? ''));
 
 if (!in_array($action, ['update', 'remove'])) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Invalid request data.');
+    }
     redirect('cart.php');
 }
 
@@ -81,8 +86,9 @@ if ($posted_cart_key !== '' && array_key_exists($posted_cart_key, $_SESSION['car
 // -------------------------------------------------------------
 if ($action === 'remove') {
     if ($cart_key === null || !isset($_SESSION['cart'][$cart_key])) {
-        if ($is_ajax)
+        if ($is_ajax) {
             json_response(false, 'Item not found in cart.');
+        }
         set_flash('warning', 'Item is no longer in your cart.');
         redirect('cart.php');
     }
@@ -113,15 +119,17 @@ if ($action === 'remove') {
 $qty = filter_var($_POST['qty'] ?? null, FILTER_VALIDATE_INT);
 
 if (!$qty || $qty < 1 || $qty > 10) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Quantity must be between 1 and 10.');
+    }
     set_flash('danger', 'Invalid quantity.');
     redirect('cart.php');
 }
 
 if ($cart_key === null || !isset($_SESSION['cart'][$cart_key])) {
-    if ($is_ajax)
+    if ($is_ajax) {
         json_response(false, 'Item not found in cart.');
+    }
     redirect('cart.php');
 }
 
