@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-/* Fetch orders with pagination*/
+// Fetch orders with pagination
 $orders = [];
 $totalOrders = 0;
 $perPage = 10;

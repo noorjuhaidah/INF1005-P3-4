@@ -19,7 +19,7 @@
                 <h2 class="ld-footer-brand">LazyDrip</h2>
                 <p class="text-muted small">
                     Minimalist coffee &amp; tea, brewed for slow mornings.
-                    Self-pickup via Grab — order ahead, skip the wait.
+                    Order ahead through our website and skip the wait.
                 </p>
             </div>
 
@@ -39,12 +39,12 @@
                 <h2 class="ld-footer-heading">Account</h2>
                 <ul class="list-unstyled small">
                     <?php if (is_logged_in()): ?>
-                    <li><a href="<?= APP_URL ?>/customer/dashboard.php">Dashboard</a></li>
-                    <li><a href="<?= APP_URL ?>/customer/order_history.php">Orders</a></li>
-                    <li><a href="<?= APP_URL ?>/auth/logout.php">Logout</a></li>
+                        <li><a href="<?= APP_URL ?>/customer/dashboard.php">Dashboard</a></li>
+                        <li><a href="<?= APP_URL ?>/customer/order_history.php">Orders</a></li>
+                        <li><a href="<?= APP_URL ?>/auth/logout.php">Logout</a></li>
                     <?php else: ?>
-                    <li><a href="<?= APP_URL ?>/auth/login.php">Log In</a></li>
-                    <li><a href="<?= APP_URL ?>/auth/register.php">Sign Up</a></li>
+                        <li><a href="<?= APP_URL ?>/auth/login.php">Log In</a></li>
+                        <li><a href="<?= APP_URL ?>/auth/register.php">Sign Up</a></li>
                     <?php endif; ?>
                 </ul>
             </div>
@@ -58,7 +58,8 @@
                 </p>
                 <p class="text-muted small">
                     <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>
-                    Somewhere cosy in Singapore
+                    1 Punggol Coast Road,
+                    Singapore 828608
                 </p>
                 <a href="<?= APP_URL ?>/contact.php" class="btn ld-btn-outline btn-sm mt-2">
                     Contact Us
@@ -80,4 +81,5 @@
 <!-- LazyDrip custom scripts -->
 <script src="<?= APP_URL ?>/assets/js/main.js"></script>
 </body>
+
 </html>

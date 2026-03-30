@@ -6,7 +6,7 @@
 // contact_messages for admin reference.
 // =============================================================
 
-$page_title   = 'Contact Us';
+$page_title = 'Contact Us';
 $current_page = 'contact';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
@@ -37,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/contact.php');
 
     // 2. Collect + sanitise inputs
-    $name    = clean_input($_POST['name']    ?? '');
-    $email   = clean_input($_POST['email']   ?? '');
+    $name = clean_input($_POST['name'] ?? '');
+    $email = clean_input($_POST['email'] ?? '');
     $subject = clean_input($_POST['subject'] ?? '');
     $message = clean_input($_POST['message'] ?? '');
 
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (in_array('user_id', $contactColumns, true)) {
                 $insertColumns[] = 'user_id';
                 $insertValues[] = '?';
-                $insertParams[] = is_logged_in() ? (int)$_SESSION['user_id'] : null;
+                $insertParams[] = is_logged_in() ? (int) $_SESSION['user_id'] : null;
             }
 
             if (in_array('name', $contactColumns, true)) {
@@ -148,16 +148,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Prefill fields from logged-in user if this is a fresh GET
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_logged_in()) {
-    $name  = $name  ?? e($_SESSION['full_name'] ?? '');
+    $name = $name ?? e($_SESSION['full_name'] ?? '');
     $email = $email ?? '';  // do not pre-fill email — let user type it
 }
 
 // Safe defaults for all form fields (in case of validation re-render)
-$name    = $name    ?? '';
-$email   = $email   ?? '';
+$name = $name ?? '';
+$email = $email ?? '';
 $subject = $subject ?? '';
 $message = $message ?? '';
-$errors  = $errors  ?? [];
+$errors = $errors ?? [];
 
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -179,69 +179,55 @@ require_once __DIR__ . '/includes/header.php';
             <!-- ---- Contact form ---- -->
             <div class="col-lg-7">
 
-                <form method="POST" action="<?= APP_URL ?>/contact.php" class="needs-validation" data-inline-validate="true" novalidate>
+                <form method="POST" action="<?= APP_URL ?>/contact.php" class="needs-validation"
+                    data-inline-validate="true" novalidate>
                     <?php csrf_field(); ?>
 
                     <div class="row g-3">
 
                         <div class="col-sm-6">
-                            <label class="form-label" for="name">Your name <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="text"
-                                   id="name"
-                                   name="name"
-                                   class="form-control <?= $name_error ? 'is-invalid' : '' ?>"
-                                   value="<?= e($name) ?>"
-                                   autocomplete="name"
-                                   maxlength="120"
-                                   required
-                                   aria-describedby="<?= $name_error ? 'name-error' : '' ?>">
+                            <label class="form-label" for="name">Your name <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <input type="text" id="name" name="name"
+                                class="form-control <?= $name_error ? 'is-invalid' : '' ?>" value="<?= e($name) ?>"
+                                autocomplete="name" maxlength="120" required
+                                aria-describedby="<?= $name_error ? 'name-error' : '' ?>">
                             <?php if ($name_error): ?>
                                 <div id="name-error" class="invalid-feedback"><?= e($name_error) ?></div>
                             <?php endif; ?>
                         </div>
 
                         <div class="col-sm-6">
-                            <label class="form-label" for="email">Email address <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="email"
-                                   id="email"
-                                   name="email"
-                                   class="form-control <?= $email_error ? 'is-invalid' : '' ?>"
-                                   value="<?= e($email) ?>"
-                                   autocomplete="email"
-                                   maxlength="254"
-                                   required
-                                   aria-describedby="<?= $email_error ? 'email-error' : '' ?>">
+                            <label class="form-label" for="email">Email address <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <input type="email" id="email" name="email"
+                                class="form-control <?= $email_error ? 'is-invalid' : '' ?>" value="<?= e($email) ?>"
+                                autocomplete="email" maxlength="254" required
+                                aria-describedby="<?= $email_error ? 'email-error' : '' ?>">
                             <?php if ($email_error): ?>
                                 <div id="email-error" class="invalid-feedback"><?= e($email_error) ?></div>
                             <?php endif; ?>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label" for="subject">Subject <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input type="text"
-                                   id="subject"
-                                   name="subject"
-                                   class="form-control <?= $subject_error ? 'is-invalid' : '' ?>"
-                                   value="<?= e($subject) ?>"
-                                   placeholder="e.g. Question about my order"
-                                   maxlength="150"
-                                   required
-                                   aria-describedby="<?= $subject_error ? 'subject-error' : '' ?>">
+                            <label class="form-label" for="subject">Subject <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <input type="text" id="subject" name="subject"
+                                class="form-control <?= $subject_error ? 'is-invalid' : '' ?>"
+                                value="<?= e($subject) ?>" placeholder="e.g. Question about my order" maxlength="150"
+                                required aria-describedby="<?= $subject_error ? 'subject-error' : '' ?>">
                             <?php if ($subject_error): ?>
                                 <div id="subject-error" class="invalid-feedback"><?= e($subject_error) ?></div>
                             <?php endif; ?>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label" for="message">Message <span class="text-danger" aria-hidden="true">*</span></label>
-                            <textarea id="message"
-                                      name="message"
-                                      class="form-control <?= $message_error ? 'is-invalid' : '' ?>"
-                                      rows="6"
-                                      placeholder="Tell us what is on your mind…"
-                                      maxlength="2000"
-                                      required
-                                      aria-describedby="<?= $message_error ? 'message-error' : '' ?>"><?= e($message) ?></textarea>
+                            <label class="form-label" for="message">Message <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <textarea id="message" name="message"
+                                class="form-control <?= $message_error ? 'is-invalid' : '' ?>" rows="6"
+                                placeholder="Tell us what is on your mind…" maxlength="2000" required
+                                aria-describedby="<?= $message_error ? 'message-error' : '' ?>"><?= e($message) ?></textarea>
                             <?php if ($message_error): ?>
                                 <div id="message-error" class="invalid-feedback"><?= e($message_error) ?></div>
                             <?php endif; ?>
@@ -270,7 +256,7 @@ require_once __DIR__ . '/includes/header.php';
                         </li>
                         <li class="mb-2">
                             <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>
-                            Somewhere cosy in Singapore
+                            1 Punggol Coast Road, Singapore 828608
                         </li>
                         <li>
                             <i class="bi bi-clock me-2" aria-hidden="true"></i>
@@ -285,18 +271,17 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#faq1"
-                                        aria-expanded="false"
-                                        aria-controls="faq1">
+                                <button
+                                    class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="false"
+                                    aria-controls="faq1">
                                     How do I track my order?
                                 </button>
                             </h3>
                             <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <p class="accordion-body px-0 text-muted small">
-                                    Log in and visit <a href="<?= APP_URL ?>/customer/order_history.php">Order History</a>.
+                                    Log in and visit <a href="<?= APP_URL ?>/customer/order_history.php">Order
+                                        History</a>.
                                     Your order status updates as we prepare it.
                                 </p>
                             </div>
@@ -306,19 +291,17 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#faq2"
-                                        aria-expanded="false"
-                                        aria-controls="faq2">
+                                <button
+                                    class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false"
+                                    aria-controls="faq2">
                                     How does self-pickup work?
                                 </button>
                             </h3>
                             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <p class="accordion-body px-0 text-muted small">
-                                    Order on LazyDrip, then collect via Grab when the status shows
-                                    "Ready for pickup". No delivery charges apply.
+                                    Place your order on LazyDrip and track its status in your order history.
+                                    Once it shows "Ready for pickup", you can collect it. No delivery fees required.
                                 </p>
                             </div>
                         </div>
@@ -327,12 +310,10 @@ require_once __DIR__ . '/includes/header.php';
 
                         <div class="accordion-item border-0">
                             <h3 class="accordion-header">
-                                <button class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
-                                        type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#faq3"
-                                        aria-expanded="false"
-                                        aria-controls="faq3">
+                                <button
+                                    class="accordion-button collapsed py-2 px-0 bg-transparent shadow-none fw-semibold small"
+                                    type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false"
+                                    aria-controls="faq3">
                                     How do I earn &amp; redeem points?
                                 </button>
                             </h3>

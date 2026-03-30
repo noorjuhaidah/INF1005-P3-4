@@ -167,7 +167,7 @@ require_once __DIR__ . '/includes/header.php';
                          aria-hidden="true">3</div>
                     <h3 class="h6 fw-semibold">Collect via Grab</h3>
                     <p class="text-muted small mb-0">
-                        We prepare your order; you collect it on Grab.
+                        We prepare your order; just drop by and collect.
                         No queue, no fuss.
                     </p>
                 </div>
