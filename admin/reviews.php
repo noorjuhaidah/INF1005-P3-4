@@ -116,7 +116,7 @@ try {
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-// Admin review management page
+<!-- Admin review management page -->
 <section class="ld-section">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -127,12 +127,12 @@ require_once __DIR__ . '/../includes/header.php';
             <a href="<?= APP_URL ?>/admin/dashboard.php" class="ld-btn-outline">Back to Dashboard</a>
         </div>
 
-        // Show any loading errors encountered while fetching reviews
+        <!-- Show any loading errors encountered while fetching reviews -->
         <?php if ($loadError !== ''): ?>
             <div class="alert alert-danger"><?= e($loadError) ?></div>
         <?php endif; ?>
 
-        // Reviews table with actions
+        <!-- Reviews table with actions -->
         <div class="card ld-card p-4">
             <div class="table-responsive">
                 <table class="table align-middle">
@@ -148,7 +148,7 @@ require_once __DIR__ . '/../includes/header.php';
                         </tr>
                     </thead>
                     <tbody>
-                        // If no reviews found, show a message instead of empty table
+                        <!-- If no reviews found, show a message instead of empty table -->
                     <?php if (empty($reviews)): ?>
                         <tr>
                             <td colspan="6">No reviews found.</td>
@@ -162,7 +162,7 @@ require_once __DIR__ . '/../includes/header.php';
                             }
                             ?>
                             <tr>
-                                // Use detected column names to display review data
+                                <!-- Use detected column names to display review data -->
                                 <th scope="row"><?= e((string) $review['review_id']) ?></th>
                                 <td><?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?></td>
                                 <td><?= $review['rating'] !== null ? e((string) $review['rating']) . '/5' : '-' ?></td>

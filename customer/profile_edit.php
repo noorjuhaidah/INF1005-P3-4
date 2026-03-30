@@ -1,7 +1,5 @@
 <?php
-// =============================================================
-// customer/profile_edit.php — User profile editing form.
-// =============================================================
+// customer/profile_edit.php — User profile editing form
 
 $page_title   = 'Edit Profile';
 $current_page = 'profile';
@@ -32,7 +30,7 @@ $email     = old_input('email', $userData['email'] ?? '');
 $phone     = old_input('phone', $userData['phone'] ?? '');
 $fullName  = old_input('full_name', $userData['full_name'] ?? '');
 
-// Handle form submission
+// Form submission - handle POST request to update profile
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submittedToken = $_POST['csrf_token'] ?? '';
     if (!hash_equals($_SESSION['csrf_token'] ?? '', $submittedToken)) {

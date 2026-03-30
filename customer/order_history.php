@@ -1,7 +1,5 @@
 <?php
-// =============================================================
-// customer/order_history.php — Past orders list for logged-in users.
-// =============================================================
+// customer/order_history.php — Past orders list for logged-in users
 
 $page_title   = 'Order History';
 $current_page = 'orders';
@@ -22,7 +20,7 @@ try {
     $stmt->execute([$_SESSION['user_id']]);
     $orders = $stmt->fetchAll();
 } catch (PDOException $e) {
-    // If the table / columns don't exist, we'll just show an empty list
+    // if the table or columns don't exist, it willshow an empty list
     $orders = [];
 }
 

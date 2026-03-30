@@ -63,7 +63,7 @@ try {
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-// Admin products management page 
+<!-- Admin products management page -->
 <section class="ld-section">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -71,10 +71,13 @@ require_once __DIR__ . '/../includes/header.php';
                 <h1 class="ld-section-title">Manage Products</h1>
                 <p class="ld-section-subtitle">View all menu items.</p>
             </div>
-            <a href="<?= APP_URL ?>/admin/product_create.php" class="ld-btn-primary">Add Product</a>
+            <div class="d-flex gap-2">
+                <a href="<?= APP_URL ?>/admin/dashboard.php" class="ld-btn-outline">Back to Dashboard</a>
+                <a href="<?= APP_URL ?>/admin/product_create.php" class="ld-btn-primary">Add Product</a>
+            </div>
         </div>
 
-        // Display any flash messages (success/error) from previous actions
+        <!-- Display any flash messages (success/error) from previous actions -->
         <div class="card ld-card p-4">
             <div class="table-responsive">
                 <table class="table align-middle">
@@ -82,7 +85,7 @@ require_once __DIR__ . '/../includes/header.php';
                         delete.</caption>
                     <thead>
                         <tr>
-                            // Table headers with scope for clear labelling
+                            <!-- Table headers with scope for clear labelling -->
                             <th scope="col">ID</th>
                             <th scope="col">Name</th>
                             <th scope="col">Category</th>
@@ -92,7 +95,7 @@ require_once __DIR__ . '/../includes/header.php';
                         </tr>
                     </thead>
                     <tbody>
-                        // If no products, show a message instead of empty table
+                        <!-- If no products, show a message instead of empty table -->
                         <?php if (empty($products)): ?>
                             <tr>
                                 <td colspan="6">No products found.</td>
@@ -106,7 +109,7 @@ require_once __DIR__ . '/../includes/header.php';
                                     <td>$<?= number_format((float) $product['price'], 2) ?></td>
                                     <td><?= $product['is_available'] ? 'Yes' : 'No' ?></td>
                                     <td>
-                                        // Action buttons with aria-labels for accessibility
+                                        <!-- Action buttons with aria-labels for accessibility -->
                                         <a href="<?= APP_URL ?>/admin/product_edit.php?id=<?= e((string) $product['item_id']) ?>"
                                             class="btn btn-sm btn-outline-primary"
                                             aria-label="Edit product <?= e($product['item_name']) ?>">Edit</a>
@@ -130,7 +133,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 aria-label="Previous page">Previous</a>
                         </li>
 
-                        // Loop through pages and create page links with active state
+                        <!-- Loop through pages and create page links with active state -->
                         <?php for ($page = 1; $page <= $totalPages; $page++): ?>
                             <li class="page-item <?= $page === $currentPage ? 'active' : '' ?>">
                                 <a class="page-link" href="<?= APP_URL ?>/admin/products.php?page=<?= $page ?>"
@@ -138,7 +141,7 @@ require_once __DIR__ . '/../includes/header.php';
                             </li>
                         <?php endfor; ?>
 
-                        // Next page link with disabled state on last page
+                        <!-- Next page link with disabled state on last page -->
                         <li class="page-item <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">
                             <a class="page-link"
                                 href="<?= APP_URL ?>/admin/products.php?page=<?= min($totalPages, $currentPage + 1) ?>"

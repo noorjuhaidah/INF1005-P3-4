@@ -7,7 +7,7 @@ require_once __DIR__ . '/../includes/header.php';
 // Restrict access to admins only
 require_admin();
 
-// Handle status update 
+// Handle status update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/admin/orders.php');
 
@@ -110,22 +110,25 @@ try {
 }
 ?>
 
-// UI for order management
+<!-- UI for order management -->
 <section class="ld-section">
     <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="ld-section-title">Manage Orders</h1>
+                <p class="ld-section-subtitle">Update customer order statuses.</p>
+            </div>
+            <a href="<?= APP_URL ?>/admin/dashboard.php" class="ld-btn-outline">Back to Dashboard</a>
+        </div>
 
-        // Page title
-        <h1 class="ld-section-title">Manage Orders</h1>
-        <p class="ld-section-subtitle">Update customer order statuses.</p>
-
-        // Display flash messages
+        <!-- Display flash messages -->
         <?php show_flash(); ?>
 
         <div class="card ld-card p-4">
 
             <div class="table-responsive">
 
-                // Orders table
+                <!-- Orders table -->
                 <table class="table align-middle">
 
                     <caption class="visually-hidden">Orders table listing order ID, customer, total, status, created
@@ -143,7 +146,7 @@ try {
                     </thead>
                     <tbody>
 
-                        // If no orders
+                        <!-- If no orders -->
                         <?php if (empty($orders)): ?>
 
                             <tr>
@@ -152,43 +155,43 @@ try {
 
                         <?php else: ?>
 
-                            // Loop through each order
+                            <!-- Loop through each order -->
                             <?php foreach ($orders as $order): ?>
 
                                 <tr>
 
-                                    // Order ID
+                                    <!-- Order ID -->
                                     <th scope="row"><?= e((string) $order['order_id']) ?></th>
 
-                                    // Customer name
+                                    <!-- Customer name -->
                                     <td><?= e($order['full_name']) ?></td>
 
-                                    // Order total
+                                    <!-- Order total -->
                                     <td>$<?= number_format((float) $order['total_amount'], 2) ?></td>
 
-                                    // Order status
+                                    <!-- Order status -->
                                     <td><?= e(ucwords(str_replace('_', ' ', $order['status']))) ?></td>
 
-                                    // Created date
+                                    <!-- Created date -->
                                     <td><?= e($order['created_at']) ?></td>
 
                                     <td>
 
-                                        // Status update form
+                                        <!-- Status update form -->
                                         <form method="post" class="d-flex gap-2"
                                             aria-label="Update status for order <?= e((string) $order['order_id']) ?>">
 
                                             <?php csrf_field(); ?>
 
-                                            // Hidden input to identify order
+                                            <!-- Hidden input to identify order -->
                                             <input type="hidden" name="order_id" value="<?= e((string) $order['order_id']) ?>">
 
-                                            // Status select with current status selected
+                                            <!-- Status select with current status selected -->
                                             <label class="visually-hidden"
                                                 for="status-<?= e((string) $order['order_id']) ?>">Order status for order
                                                 <?= e((string) $order['order_id']) ?></label>
 
-                                            // Dropdown to select new status
+                                            <!-- Dropdown to select new status -->
                                             <select id="status-<?= e((string) $order['order_id']) ?>" name="status"
                                                 class="form-select form-select-sm"
                                                 aria-label="Order status for order <?= e((string) $order['order_id']) ?>">
@@ -205,7 +208,7 @@ try {
 
                                             </select>
 
-                                            // Submit button
+                                            <!-- Submit button -->
                                             <button type="submit" class="btn btn-sm btn-primary"
                                                 aria-label="Save status update for order <?= e((string) $order['order_id']) ?>">Save</button>
 

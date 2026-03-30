@@ -1,19 +1,15 @@
 <?php
-// =============================================================
 // customer/dashboard.php — Customer Dashboard
-// Shows a quick summary of loyalty points + recent orders.
-// =============================================================
+// shows a quick summary of loyalty points and their recent orders
 
 $page_title   = 'Dashboard';
 $current_page = 'dashboard';
 require_once __DIR__ . '/../includes/header.php';
 
-// Guest users are redirected to login.
+// Guest users are redirected to login page
 require_login();
 
-// -------------------------------------------------------------
-// Loyalty points 
-// -------------------------------------------------------------
+// Loyalty points (fetch from users table)
 $points = 0;
 try {
     $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
@@ -27,9 +23,7 @@ try {
     $points = 0;
 }
 
-// -------------------------------------------------------------
-// Recent orders (latest 3)
-// -------------------------------------------------------------
+// Recent orders (shows latest 3)
 $recentOrders = [];
 try {
     $stmt = $pdo->prepare(
@@ -42,7 +36,7 @@ try {
     $stmt->execute([$_SESSION['user_id']]);
     $recentOrders = $stmt->fetchAll();
 } catch (PDOException $e) {
-    // If orders table doesn't exist or query fails, show nothing
+    // if orders table does not exist or query fails, show nothing
     $recentOrders = [];
 }
 

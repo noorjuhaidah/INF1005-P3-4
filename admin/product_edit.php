@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'image/webp' => 'webp',
                 ];
 
-                // Validate file types 
+                // Validate file types
                 if (!isset($allowedTypes[$mimeType])) {
                     $fieldErrors['image'] = 'Only JPG, PNG, or WEBP files are allowed.';
                 } else {
@@ -156,16 +156,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-// Load page layout
+<!-- Load page layout -->
 <section class="ld-section">
     <div class="container">
 
-    // Admin dashboard header
+    <!-- Admin dashboard header -->
         <h1 class="ld-section-title">Edit Product</h1>
 
         <div class="ld-form-card">
 
-            // Display form-level errors if any
+            <!-- Display form-level errors if any -->
             <?php if (!empty($fieldErrors)): ?>
                 <div class="alert alert-danger" role="status" aria-live="polite" aria-atomic="true">
                     <strong>Please fix the following:</strong>
@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            // Product edit form
+            <!-- Product edit form -->
             <form method="post" enctype="multipart/form-data" class="needs-validation" data-inline-validate="true"
                 novalidate>
                 <?php csrf_field(); ?>
@@ -189,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <?php endif; ?>
 
-                // Product name field
+                <!-- Product name field -->
                 <div class="mb-3">
                     <label class="form-label" for="name">Product Name <span class="text-danger"
                             aria-hidden="true">*</span></label>
@@ -201,7 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div id="name_error" class="invalid-feedback"><?= e($fieldErrors['name']) ?></div><?php endif; ?>
                 </div>
 
-                // Product description field
+                <!-- Product description field -->
                 <div class="mb-3">
                     <label class="form-label" for="description">Description</label>
                     <textarea id="description" class="form-control" name="description"
@@ -210,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="invalid-feedback d-block"><?= e($fieldErrors['description']) ?></div><?php endif; ?>
                 </div>
 
-                // Product price field
+                <!-- Product price field -->
                 <div class="mb-3">
                     <label class="form-label" for="price">Price <span class="text-danger"
                             aria-hidden="true">*</span></label>
@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div id="price_error" class="invalid-feedback"><?= e($fieldErrors['price']) ?></div><?php endif; ?>
                 </div>
 
-                // Product category dropdown
+                <!-- Product category dropdown -->
                 <div class="mb-3">
                     <label class="form-label" for="category_id">Category <span class="text-danger"
                             aria-hidden="true">*</span></label>
@@ -249,7 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                 </div>
 
-                // Product image upload field
+                <!-- Product image upload field -->
                 <div class="mb-3">
                     <label class="form-label" for="image">Change Image</label>
                     <input id="image" type="file"
@@ -262,14 +262,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div id="image_error" class="invalid-feedback"><?= e($fieldErrors['image']) ?></div><?php endif; ?>
                 </div>
 
-                // Product availability checkbox
+                <!-- Product availability checkbox -->
                 <div class="form-check mb-3">
                     <input id="is_available" class="form-check-input" type="checkbox" name="is_available"
                         aria-label="Available" <?= $is_available ? 'checked' : '' ?>>
                     <label class="form-check-label" for="is_available">Available</label>
                 </div>
 
-                // Form action buttons
+                <!-- Form action buttons -->
                 <button type="submit" class="ld-btn-primary">Save Changes</button>
                 <a href="<?= APP_URL ?>/admin/products.php" class="ld-btn-outline ms-2">Cancel</a>
 

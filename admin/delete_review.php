@@ -97,7 +97,7 @@ try {
         require_once __DIR__ . '/../includes/header.php';
         ?>
 
-        // Delete confirmation UI
+        <!-- Delete confirmation UI -->
         <section class="ld-section">
             <div class="container" style="max-width: 680px;">
                 <h1 class="ld-section-title">Delete Review</h1>
@@ -113,16 +113,16 @@ try {
                             <?= e(mb_strimwidth((string) $review['review_text'], 0, 140, '...')) ?></p>
                     <?php endif; ?>
 
-                    // Warning message
+                    <!-- Warning message -->
                     <p class="text-danger mb-4">This action cannot be undone.</p>
 
-                    // Delete form
+                    <!-- Delete form -->
                     <form method="POST" action="<?= APP_URL ?>/admin/delete_review.php?id=<?= (int) $id ?>"
                         class="d-flex gap-2 flex-wrap">
                         <?php csrf_field(); ?>
                         <input type="hidden" name="id" value="<?= (int) $id ?>">
 
-                        // Confirm delete button
+                        <!-- Confirm delete button -->
                         <button type="submit" class="btn btn-danger"
                             aria-label="Confirm delete review <?= e((string) ($review['review_id'] ?? $id)) ?>">
                             Confirm Delete Review

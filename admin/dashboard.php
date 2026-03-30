@@ -4,7 +4,7 @@ $current_page = 'admin';
 
 require_once __DIR__ . '/../includes/header.php';
 
-// Ensure the user is an admin before proceeding
+//Ensure the user is an admin before proceeding
 require_admin();
 
 // Initialise dashboard metrics
@@ -75,16 +75,16 @@ try {
 
 <section class="ld-section">
     <div class="container">
-        // Admin dashboard header
+        <!-- Admin dashboard header -->
         <h1 class="ld-section-title">
             <i class="fa-solid fa-chart-line me-2"></i>Admin Dashboard
         </h1>
         <p class="ld-section-subtitle">Manage products and orders.</p>
 
-        // Display any flash messages (success/error) from previous actions
+        <!-- Display any flash messages (success/error) from previous actions -->
         <?php show_flash(); ?>
 
-        // Summary cards
+        <!-- Summary cards -->
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
@@ -93,7 +93,7 @@ try {
                 </div>
             </div>
 
-            // Total orders and revenue cards
+            <!-- Total orders and revenue cards -->
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
                     <h2 class="h5"><i class="fa-solid fa-receipt me-2"></i>Total Orders</h2>
@@ -109,7 +109,7 @@ try {
             </div>
         </div>
 
-        // Order status chart
+        <!-- Order status chart -->
         <div class="card ld-card p-4 mb-4">
             <h2 class="h4 mb-3">
                 <i class="fa-solid fa-chart-pie me-2"></i>Orders by Status
@@ -122,7 +122,7 @@ try {
             </div>
         </div>
 
-        // Management sections
+        <!-- Management sections -->
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
@@ -141,7 +141,7 @@ try {
                 </div>
             </div>
 
-            // Order management section
+            <!-- Order management section -->
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
                     <h2 class="h4 mb-3">
@@ -156,7 +156,7 @@ try {
                 </div>
             </div>
 
-            // Review management section
+            <!-- Review management section -->
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
                     <h2 class="h4 mb-3">
@@ -171,7 +171,7 @@ try {
                 </div>
             </div>
 
-            // Customer inquiries section
+            <!-- Customer inquiries section -->
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
                     <h2 class="h4 mb-3">
@@ -195,7 +195,7 @@ try {
     </div>
 </section>
 
-// Load Chart.js library
+<!-- Load Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 const statusChartCtx = document.getElementById('ordersStatusChart');
