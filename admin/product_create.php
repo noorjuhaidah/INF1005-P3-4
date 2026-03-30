@@ -9,8 +9,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Restrict access to admins only
 require_admin();
 
+// Initialise form variables
 $name = '';
 $description = '';
 $price = '';
@@ -18,7 +20,7 @@ $category_id = '';
 $is_available = 1;
 $fieldErrors = [];
 
-/* Fetch categories */
+// Fetch categories
 $categories = [];
 
 try {
@@ -28,47 +30,65 @@ try {
     $categories = [];
 }
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     verify_csrf(APP_URL . '/admin/product_create.php');
 
+    // Validate and sanitise inputs
     $name = clean_input((string) ($_POST['name'] ?? ''));
     $description = clean_input((string) ($_POST['description'] ?? ''));
+    
+    // Validate price input
     $priceRaw = filter_input(INPUT_POST, 'price', FILTER_UNSAFE_RAW);
     $price = is_string($priceRaw) ? filter_var(trim($priceRaw), FILTER_VALIDATE_FLOAT) : false;
+    
+    // Validate category ID
     $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
+    
+    // Determine availability
     $is_available = isset($_POST['is_available']) ? 1 : 0;
 
+    // Validate fields
+    // Product name validation
     if ($name === '' || mb_strlen($name) > 120) {
         $fieldErrors['name'] = 'Product name is required and must be 120 characters or fewer.';
     }
 
+    // Description validation
     if ($description !== '' && mb_strlen($description) > 2000) {
         $fieldErrors['description'] = 'Description must be 2000 characters or fewer.';
     }
 
+    // Category ID validation
     if ($category_id === false || $category_id < 1) {
         $fieldErrors['category_id'] = 'Valid category is required.';
     }
 
+    // Price validation
     if ($price === false || $price < 0 || $price > 9999.99) {
         $fieldErrors['price'] = 'Valid price is required.';
     }
 
-    /* Image upload */
+    // Image upload handling
     $image_path = '';
 
     if (!empty($_FILES['image']['name'])) {
 
+        // Check upload integrity
         if (!isset($_FILES['image']['error']) || is_array($_FILES['image']['error'])) {
             $fieldErrors['image'] = 'Invalid upload payload.';
         } elseif ((int) $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
             $fieldErrors['image'] = 'Image upload failed. Please try a different file.';
         } else {
+
+            // Max file size: 2MB
             $maxBytes = 2 * 1024 * 1024;
             if ((int) $_FILES['image']['size'] > $maxBytes) {
                 $fieldErrors['image'] = 'Image must be 2MB or smaller.';
             } else {
+                
+                // Check file type
                 $finfo = new finfo(FILEINFO_MIME_TYPE);
                 $mimeType = (string) $finfo->file($_FILES['image']['tmp_name']);
                 $allowedTypes = [
@@ -80,10 +100,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (!isset($allowedTypes[$mimeType])) {
                     $fieldErrors['image'] = 'Only JPG, PNG, or WEBP files are allowed.';
                 } else {
+                    // Create uploads folder if it doesn't exist
                     $uploadDir = __DIR__ . '/../uploads/';
                     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
                         $fieldErrors['image'] = 'Unable to prepare upload directory.';
                     } else {
+                        // Generate random filename and move uploaded file
                         $filename = bin2hex(random_bytes(16)) . '.' . $allowedTypes[$mimeType];
                         $targetFile = $uploadDir . $filename;
 
@@ -98,6 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Insert into database
     if (empty($fieldErrors)) {
 
         try {
@@ -117,6 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $is_available
             ]);
 
+            // Success message and redirect
             set_flash('success', 'Product added successfully.');
             redirect(APP_URL . '/admin/products.php#flash-container');
 

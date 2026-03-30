@@ -4,19 +4,18 @@ $current_page = 'admin';
 
 require_once __DIR__ . '/../includes/header.php';
 
-if (!is_logged_in() || !is_admin()) {
-    header('Location: ' . APP_URL . '/auth/login.php');
-    exit;
-}
+// Restrict access to admins only
+require_admin();
 
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 
+// Validate product ID, redirect if invalid ID
 if ($id === false || $id < 1) {
     header('Location: ' . APP_URL . '/admin/products.php');
     exit;
 }
 
-/* Fetch categories */
+// Fetch categories for dropdown
 $categories = [];
 
 try {
@@ -26,7 +25,7 @@ try {
     $categories = [];
 }
 
-/* Fetch product */
+// Fetch product details for editing
 $stmt = $pdo->prepare("
 SELECT item_name, description, price, category_id, image_path, is_available
 FROM menu_items
@@ -40,6 +39,7 @@ if (!$product) {
     exit;
 }
 
+// Initialise form variables with current product data
 $name = $product['item_name'];
 $description = $product['description'];
 $price = $product['price'];
@@ -49,10 +49,12 @@ $is_available = $product['is_available'];
 
 $fieldErrors = [];
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     verify_csrf(APP_URL . '/admin/product_edit.php?id=' . (int) $id);
 
+    // Get and validate form inputs
     $name = clean_input((string) ($_POST['name'] ?? ''));
     $description = clean_input((string) ($_POST['description'] ?? ''));
     $priceRaw = filter_input(INPUT_POST, 'price', FILTER_UNSAFE_RAW);
@@ -60,23 +62,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $category_id = filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT);
     $is_available = isset($_POST['is_available']) ? 1 : 0;
 
+    // Validate inputs and collect errors
     if ($name === '' || mb_strlen($name) > 120) {
         $fieldErrors['name'] = 'Product name is required and must be 120 characters or fewer.';
     }
 
+    // Description is optional
     if ($description !== '' && mb_strlen($description) > 2000) {
         $fieldErrors['description'] = 'Description must be 2000 characters or fewer.';
     }
 
+    // Validate category ID against existing categories
     if ($category_id === false || $category_id < 1) {
         $fieldErrors['category_id'] = 'Valid category is required.';
     }
 
+    // Validate price
     if ($price === false || $price < 0 || $price > 9999.99) {
         $fieldErrors['price'] = 'Valid price is required.';
     }
 
-    /* Handle image upload */
+    // Handle image upload if a new file is provided
     if (!empty($_FILES['image']['name'])) {
 
         if (!isset($_FILES['image']['error']) || is_array($_FILES['image']['error'])) {
@@ -96,6 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'image/webp' => 'webp',
                 ];
 
+                // Validate file types 
                 if (!isset($allowedTypes[$mimeType])) {
                     $fieldErrors['image'] = 'Only JPG, PNG, or WEBP files are allowed.';
                 } else {
@@ -117,15 +124,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // If no validation errors, proceed to update the product
     if (empty($fieldErrors)) {
 
         try {
+            // Update product in database
             $stmt = $pdo->prepare(" 
             UPDATE menu_items
             SET item_name=?, description=?, price=?, category_id=?, image_path=?, is_available=?
             WHERE item_id=?
             ");
 
+            // Bind parameters and execute
             $stmt->execute([
                 $name,
                 $description,
@@ -136,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $id
             ]);
 
+            // Success message and redirect
             header('Location: ' . APP_URL . '/admin/products.php');
             exit;
         } catch (PDOException $e) {
@@ -145,13 +156,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
+// Load page layout
 <section class="ld-section">
     <div class="container">
 
+    // Admin dashboard header
         <h1 class="ld-section-title">Edit Product</h1>
 
         <div class="ld-form-card">
 
+            // Display form-level errors if any
             <?php if (!empty($fieldErrors)): ?>
                 <div class="alert alert-danger" role="status" aria-live="polite" aria-atomic="true">
                     <strong>Please fix the following:</strong>
@@ -163,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
+            // Product edit form
             <form method="post" enctype="multipart/form-data" class="needs-validation" data-inline-validate="true"
                 novalidate>
                 <?php csrf_field(); ?>
@@ -174,6 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <?php endif; ?>
 
+                // Product name field
                 <div class="mb-3">
                     <label class="form-label" for="name">Product Name <span class="text-danger"
                             aria-hidden="true">*</span></label>
@@ -185,6 +201,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div id="name_error" class="invalid-feedback"><?= e($fieldErrors['name']) ?></div><?php endif; ?>
                 </div>
 
+                // Product description field
                 <div class="mb-3">
                     <label class="form-label" for="description">Description</label>
                     <textarea id="description" class="form-control" name="description"
@@ -193,6 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="invalid-feedback d-block"><?= e($fieldErrors['description']) ?></div><?php endif; ?>
                 </div>
 
+                // Product price field
                 <div class="mb-3">
                     <label class="form-label" for="price">Price <span class="text-danger"
                             aria-hidden="true">*</span></label>
@@ -206,6 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div id="price_error" class="invalid-feedback"><?= e($fieldErrors['price']) ?></div><?php endif; ?>
                 </div>
 
+                // Product category dropdown
                 <div class="mb-3">
                     <label class="form-label" for="category_id">Category <span class="text-danger"
                             aria-hidden="true">*</span></label>
@@ -230,6 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endif; ?>
                 </div>
 
+                // Product image upload field
                 <div class="mb-3">
                     <label class="form-label" for="image">Change Image</label>
                     <input id="image" type="file"
@@ -242,12 +262,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div id="image_error" class="invalid-feedback"><?= e($fieldErrors['image']) ?></div><?php endif; ?>
                 </div>
 
+                // Product availability checkbox
                 <div class="form-check mb-3">
                     <input id="is_available" class="form-check-input" type="checkbox" name="is_available"
                         aria-label="Available" <?= $is_available ? 'checked' : '' ?>>
                     <label class="form-check-label" for="is_available">Available</label>
                 </div>
 
+                // Form action buttons
                 <button type="submit" class="ld-btn-primary">Save Changes</button>
                 <a href="<?= APP_URL ?>/admin/products.php" class="ld-btn-outline ms-2">Cancel</a>
 

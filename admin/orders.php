@@ -4,19 +4,19 @@ $current_page = 'admin';
 
 require_once __DIR__ . '/../includes/header.php';
 
-if (!is_logged_in() || !is_admin()) {
-    header('Location: ' . APP_URL . '/auth/login.php');
-    exit;
-}
+// Restrict access to admins only
+require_admin();
 
-/* Handle status update*/
+// Handle status update 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/admin/orders.php');
 
+    // Get form inputs
     $order_id = filter_input(INPUT_POST, 'order_id', FILTER_VALIDATE_INT);
     $statusRaw = filter_input(INPUT_POST, 'status', FILTER_UNSAFE_RAW);
     $status = is_string($statusRaw) ? trim($statusRaw) : '';
 
+    // Allowed order statuses
     $allowed_status = [
         'submitted',
         'preparing',
@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'cancelled'
     ];
 
+    // Validate input before submitting
     if ($order_id !== false && $order_id > 0 && in_array($status, $allowed_status, true)) {
         try {
             $stmt = $pdo->prepare("
@@ -35,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             $stmt->execute([$status, (int) $order_id]);
 
+            // Check if update actually changed anything
             if ($stmt->rowCount() > 0) {
                 set_flash('success', 'Order status updated successfully.');
             } else {
@@ -48,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         set_flash('warning', 'Invalid order update request.');
     }
 
+    // Redirect to refresh page and prevent form resubmission
     header('Location: ' . APP_URL . '/admin/orders.php');
     exit;
 }
@@ -57,16 +60,20 @@ $orders = [];
 $totalOrders = 0;
 $perPage = 10;
 $currentPage = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
+
+// Get current page from URL
 if (!$currentPage || $currentPage < 1) {
     $currentPage = 1;
 }
 $totalPages = 1;
 
 try {
+    // Get total number of orders
     $countStmt = $pdo->prepare("SELECT COUNT(*) FROM orders");
     $countStmt->execute();
     $totalOrders = (int) $countStmt->fetchColumn();
 
+    // Ensure current page is within range
     $totalPages = max(1, (int) ceil($totalOrders / $perPage));
     if ($currentPage > $totalPages) {
         $currentPage = $totalPages;
@@ -74,6 +81,7 @@ try {
 
     $offset = ($currentPage - 1) * $perPage;
 
+    // Fetch paginated orders with user info
     $stmt = $pdo->prepare("
         SELECT
             o.order_id,
@@ -91,7 +99,10 @@ try {
     $stmt->execute();
     $orders = $stmt->fetchAll();
 } catch (PDOException $e) {
+    // Handle database error
     error_log('Admin orders load error: ' . $e->getMessage());
+    
+    // Reset values to defaults to prevent further issues
     $orders = [];
     $totalOrders = 0;
     $totalPages = 1;
@@ -99,18 +110,22 @@ try {
 }
 ?>
 
+// UI for order management
 <section class="ld-section">
     <div class="container">
 
+        // Page title
         <h1 class="ld-section-title">Manage Orders</h1>
         <p class="ld-section-subtitle">Update customer order statuses.</p>
 
-                <?php show_flash(); ?>
+        // Display flash messages
+        <?php show_flash(); ?>
 
         <div class="card ld-card p-4">
 
             <div class="table-responsive">
 
+                // Orders table
                 <table class="table align-middle">
 
                     <caption class="visually-hidden">Orders table listing order ID, customer, total, status, created
@@ -128,41 +143,52 @@ try {
                     </thead>
                     <tbody>
 
-                                                <?php if (empty($orders)): ?>
+                        // If no orders
+                        <?php if (empty($orders)): ?>
 
                             <tr>
                                 <td colspan="6">No orders found.</td>
                             </tr>
 
-                                                <?php else: ?>
+                        <?php else: ?>
 
-                                                        <?php foreach ($orders as $order): ?>
+                            // Loop through each order
+                            <?php foreach ($orders as $order): ?>
 
                                 <tr>
 
+                                    // Order ID
                                     <th scope="row"><?= e((string) $order['order_id']) ?></th>
 
+                                    // Customer name
                                     <td><?= e($order['full_name']) ?></td>
 
+                                    // Order total
                                     <td>$<?= number_format((float) $order['total_amount'], 2) ?></td>
 
+                                    // Order status
                                     <td><?= e(ucwords(str_replace('_', ' ', $order['status']))) ?></td>
 
+                                    // Created date
                                     <td><?= e($order['created_at']) ?></td>
 
                                     <td>
 
+                                        // Status update form
                                         <form method="post" class="d-flex gap-2"
                                             aria-label="Update status for order <?= e((string) $order['order_id']) ?>">
 
-                                                                                        <?php csrf_field(); ?>
+                                            <?php csrf_field(); ?>
 
+                                            // Hidden input to identify order
                                             <input type="hidden" name="order_id" value="<?= e((string) $order['order_id']) ?>">
 
+                                            // Status select with current status selected
                                             <label class="visually-hidden"
                                                 for="status-<?= e((string) $order['order_id']) ?>">Order status for order
                                                 <?= e((string) $order['order_id']) ?></label>
 
+                                            // Dropdown to select new status
                                             <select id="status-<?= e((string) $order['order_id']) ?>" name="status"
                                                 class="form-select form-select-sm"
                                                 aria-label="Order status for order <?= e((string) $order['order_id']) ?>">
@@ -179,6 +205,7 @@ try {
 
                                             </select>
 
+                                            // Submit button
                                             <button type="submit" class="btn btn-sm btn-primary"
                                                 aria-label="Save status update for order <?= e((string) $order['order_id']) ?>">Save</button>
 
@@ -188,9 +215,9 @@ try {
 
                                 </tr>
 
-                                                        <?php endforeach; ?>
+                            <?php endforeach; ?>
 
-                                                <?php endif; ?>
+                        <?php endif; ?>
 
                     </tbody>
 
@@ -198,7 +225,7 @@ try {
 
             </div>
 
-                        <?php if ($totalPages > 1): ?>
+            <?php if ($totalPages > 1): ?>
                 <nav aria-label="Orders pagination" class="mt-4">
                     <ul class="pagination mb-0">
                         <li class="page-item <?= $currentPage <= 1 ? 'disabled' : '' ?>">
@@ -206,12 +233,12 @@ try {
                                 aria-label="Previous page">Previous</a>
                         </li>
 
-                                        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+                        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
                             <li class="page-item <?= $page === $currentPage ? 'active' : '' ?>">
                                 <a class="page-link" href="<?= APP_URL ?>/admin/orders.php?page=<?= $page ?>"
                                     aria-label="Go to page <?= $page ?>"><?= $page ?></a>
                             </li>
-                                        <?php endfor; ?>
+                        <?php endfor; ?>
 
                         <li class="page-item <?= $currentPage >= $totalPages ? 'disabled' : '' ?>">
                             <a class="page-link"
@@ -220,7 +247,7 @@ try {
                         </li>
                     </ul>
                 </nav>
-                        <?php endif; ?>
+            <?php endif; ?>
 
         </div>
     </div>
