@@ -5,7 +5,7 @@
 // and value propositions.
 // =============================================================
 
-$page_title   = 'About Us';
+$page_title = 'About Us';
 $current_page = 'about';
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -70,10 +70,10 @@ require_once __DIR__ . '/includes/header.php';
             <div class="col-md-4">
                 <div class="card ld-card h-100 p-4 text-center">
                     <div class="fs-1 mb-3" aria-hidden="true">🛵</div>
-                    <h3 class="h5">Grab self-pickup</h3>
+                    <h3 class="h5">Self Pickup</h3>
                     <p class="text-muted small mb-0">
-                        Order on LazyDrip, collect via Grab — no delivery fees,
-                        no surprise charges. Just walk in and grab your drink.
+                        Order through LazyDrip and collect your drink when it’s ready.
+                        Enjoy a seamless experience with no delivery or hidden charge
                     </p>
                 </div>
             </div>
@@ -111,20 +111,19 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
 
-        <ol class="row gy-4 justify-content-center list-unstyled mb-0" aria-label="How LazyDrip pickup works in four steps">
+        <ol class="row gy-4 justify-content-center list-unstyled mb-0"
+            aria-label="How LazyDrip pickup works in four steps">
             <!-- Step 1 -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">1</div>
+                         " aria-hidden="true">1</div>
                     <h3 class="h6 fw-semibold">Create an account</h3>
                     <p class="text-muted small mb-0">
                         Sign up in under a minute and get
@@ -135,16 +134,14 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Step 2 -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">2</div>
+                         " aria-hidden="true">2</div>
                     <h3 class="h6 fw-semibold">Pick your drinks</h3>
                     <p class="text-muted small mb-0">
                         Browse our menu, add to cart, and place your order.
@@ -155,17 +152,15 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Step 3 -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">3</div>
-                    <h3 class="h6 fw-semibold">Collect via Grab</h3>
+                         " aria-hidden="true">3</div>
+                    <h3 class="h6 fw-semibold">Self Pickup</h3>
                     <p class="text-muted small mb-0">
                         We prepare your order; just drop by and collect.
                         No queue, no fuss.
@@ -175,16 +170,14 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Step 4 -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">4</div>
+                         " aria-hidden="true">4</div>
                     <h3 class="h6 fw-semibold">Earn &amp; redeem</h3>
                     <p class="text-muted small mb-0">
                         Every dollar you spend earns <?= POINTS_PER_DOLLAR ?> point.
