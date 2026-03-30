@@ -45,12 +45,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $_SESSION['field_errors'] = [];
 
-    $cardName = trim($_POST['card_name'] ?? '');
+    $cardName = clean_input(trim($_POST['card_name'] ?? ''));
     $cardNumber = preg_replace('/\s+/', '', $_POST['card_number'] ?? '');
     $expiry = trim($_POST['expiry'] ?? '');
     $cvv = trim($_POST['cvv'] ?? '');
 
-    if ($cardName === '') {
+    if ($cardName === '' || mb_strlen($cardName) > 120) {
         $_SESSION['field_errors']['card_name'] = 'Please enter the cardholder name.';
     }
 
@@ -79,7 +79,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!empty($_SESSION['field_errors'])) {
         set_old_input([
             'card_name' => $cardName,
-            'card_number' => $_POST['card_number'] ?? '',
             'expiry' => $expiry,
         ]);
         set_flash('danger', 'Please correct the highlighted payment details.');
@@ -213,7 +212,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         set_old_input([
             'card_name' => $cardName,
-            'card_number' => $_POST['card_number'] ?? '',
             'expiry' => $expiry,
         ]);
         $_SESSION['field_errors']['card_number'] = 'We could not process payment right now. Please try again.';
@@ -239,7 +237,7 @@ unset($_SESSION['field_errors']);
                     <h1 class="ld-section-title mb-3">Payment</h1>
                     <p class="text-muted mb-4">Mock payment page for project demo. No real payment is processed.</p>
 
-                    <form method="POST" action="<?= APP_URL ?>/cart/payment.php" class="row g-3">
+                    <form method="POST" action="<?= APP_URL ?>/cart/payment.php" class="row g-3 needs-validation" data-inline-validate="true" novalidate>
                         <?php csrf_field(); ?>
 
                         <div class="col-12">
@@ -266,8 +264,9 @@ unset($_SESSION['field_errors']);
                                 class="form-control <?= !empty($field_errors['card_number']) ? 'is-invalid' : '' ?>"
                                 inputmode="numeric"
                                 maxlength="19"
+                                pattern="^\d{4}\s?\d{4}\s?\d{4}\s?\d{4}$"
                                 placeholder="1234 5678 9012 3456"
-                                value="<?= e(old_input('card_number')) ?>"
+                                value=""
                                 autocomplete="cc-number"
                                 aria-describedby="card_number_help<?= !empty($field_errors['card_number']) ? ' card_number_error' : '' ?>"
                                 required
@@ -285,6 +284,7 @@ unset($_SESSION['field_errors']);
                                 class="form-control <?= !empty($field_errors['expiry']) ? 'is-invalid' : '' ?>"
                                 placeholder="MM/YY"
                                 maxlength="5"
+                                pattern="^\d{2}/\d{2}$"
                                 value="<?= e(old_input('expiry')) ?>"
                                 autocomplete="cc-exp"
                                 aria-describedby="<?= !empty($field_errors['expiry']) ? 'expiry_error' : '' ?>"
@@ -302,6 +302,7 @@ unset($_SESSION['field_errors']);
                                 class="form-control <?= !empty($field_errors['cvv']) ? 'is-invalid' : '' ?>"
                                 inputmode="numeric"
                                 maxlength="3"
+                                pattern="^\d{3}$"
                                 placeholder="123"
                                 autocomplete="cc-csc"
                                 aria-describedby="<?= !empty($field_errors['cvv']) ? 'cvv_error' : '' ?>"

@@ -16,10 +16,7 @@ require_login();
 // -------------------------------------------------------------
 // CSRF token
 // -------------------------------------------------------------
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrf = $_SESSION['csrf_token'];
+$csrf = csrf_token();
 
 // -------------------------------------------------------------
 // Get cart from session
@@ -210,6 +207,22 @@ $total = cart_total();
     </div>
 </section>
 
+<<<<<<< Updated upstream
+=======
+<div class="ld-modal-backdrop" id="ld-cart-confirm" hidden>
+    <div class="ld-modal-card" role="dialog" aria-modal="true" aria-labelledby="ld-cart-confirm-title" aria-describedby="ld-cart-confirm-text" tabindex="-1">
+        <h3 id="ld-cart-confirm-title" class="ld-modal-title">Remove item</h3>
+        <p id="ld-cart-confirm-text" class="ld-modal-text">Are you sure you want to remove this item from your cart?</p>
+        <div class="ld-modal-actions">
+            <button type="button" class="ld-btn-outline" id="ld-cart-confirm-cancel">Cancel</button>
+            <button type="button" class="ld-btn-danger" id="ld-cart-confirm-ok">
+                <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Remove
+            </button>
+        </div>
+    </div>
+</div>
+
+>>>>>>> Stashed changes
 <!-- ============================================================
      PAGE CSS
      ============================================================ -->
@@ -376,6 +389,123 @@ $total = cart_total();
         }, 20);
     }
 
+<<<<<<< Updated upstream
+=======
+    // Fallback to normal form post if AJAX path fails.
+    function submitFormNormally(form) {
+        form.submit();
+    }
+
+    // ---------------------------------------------------------
+    // Custom remove confirmation modal
+    // ---------------------------------------------------------
+    const confirmModal = document.getElementById('ld-cart-confirm');
+    const confirmText = document.getElementById('ld-cart-confirm-text');
+    const confirmOk = document.getElementById('ld-cart-confirm-ok');
+    const confirmCancel = document.getElementById('ld-cart-confirm-cancel');
+    let confirmResolver = null;
+    let confirmLastActiveElement = null;
+    let confirmPreviousBodyOverflow = '';
+
+    function setPageRegionsHidden(hidden) {
+        const regions = document.querySelectorAll('header, main, footer');
+        regions.forEach(function (region) {
+            if (!confirmModal || confirmModal.contains(region)) return;
+            if (hidden) {
+                region.setAttribute('aria-hidden', 'true');
+            } else {
+                region.removeAttribute('aria-hidden');
+            }
+        });
+    }
+
+    function getModalFocusableElements() {
+        if (!confirmModal) return [];
+        return Array.from(confirmModal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+            .filter(function (el) {
+                return !el.hasAttribute('disabled') && !el.getAttribute('aria-hidden');
+            });
+    }
+
+    function closeConfirmModal(result) {
+        if (confirmModal) {
+            confirmModal.hidden = true;
+        }
+        document.body.style.overflow = confirmPreviousBodyOverflow;
+        setPageRegionsHidden(false);
+        if (confirmLastActiveElement && typeof confirmLastActiveElement.focus === 'function' && document.contains(confirmLastActiveElement)) {
+            confirmLastActiveElement.focus();
+        }
+        confirmLastActiveElement = null;
+        if (confirmResolver) {
+            confirmResolver(result);
+            confirmResolver = null;
+        }
+    }
+
+    function openConfirmModal(message) {
+        return new Promise(function (resolve) {
+            confirmResolver = resolve;
+            confirmLastActiveElement = document.activeElement;
+            confirmPreviousBodyOverflow = document.body.style.overflow;
+            if (confirmText) confirmText.textContent = message;
+            if (confirmModal) {
+                confirmModal.hidden = false;
+                setPageRegionsHidden(true);
+                document.body.style.overflow = 'hidden';
+            }
+
+            const focusables = getModalFocusableElements();
+            if (focusables.length > 0) {
+                (confirmCancel || focusables[0]).focus();
+            } else if (confirmModal) {
+                confirmModal.focus();
+            }
+        });
+    }
+
+    if (confirmCancel) {
+        confirmCancel.addEventListener('click', function () {
+            closeConfirmModal(false);
+        });
+    }
+    if (confirmOk) {
+        confirmOk.addEventListener('click', function () {
+            closeConfirmModal(true);
+        });
+    }
+    if (confirmModal) {
+        confirmModal.addEventListener('click', function (e) {
+            if (e.target === confirmModal) {
+                closeConfirmModal(false);
+            }
+        });
+
+        confirmModal.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            const focusables = getModalFocusableElements();
+            if (focusables.length === 0) return;
+
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            const active = document.activeElement;
+
+            if (e.shiftKey && active === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && active === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        });
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && confirmModal && !confirmModal.hidden) {
+            closeConfirmModal(false);
+        }
+    });
+
+>>>>>>> Stashed changes
     // ---------------------------------------------------------
     // Handle quantity UPDATE forms
     // ---------------------------------------------------------

@@ -181,7 +181,7 @@ CREATE TABLE contact_messages (
 -- =============================================================
 
 -- --- Admin account -------------------------------------------
--- Password: Admin@123!  (bcrypt hash — change after first login)
+-- Seeded with a bcrypt password hash. Replace credentials after first login.
 INSERT INTO users (full_name, email, password_hash, role, points, is_active)
 VALUES (
     'LazyDrip Admin',
@@ -193,7 +193,7 @@ VALUES (
 );
 
 -- --- Demo customer -------------------------------------------
--- Password: customer1  (bcrypt hash)
+-- Seeded with a bcrypt password hash for local testing only.
 INSERT INTO users (full_name, email, password_hash, phone, role, points, is_active)
 VALUES (
     'Jane Tan',

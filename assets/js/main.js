@@ -53,8 +53,9 @@ document.querySelectorAll('.qty-decrease').forEach(function (btn) {
     btn.addEventListener('click', function () {
         const input = this.closest('.qty-wrapper')?.querySelector('.qty-input');
         if (input) {
-            const min = parseInt(input.min) || 1;
-            if (parseInt(input.value) > min) input.value = parseInt(input.value) - 1;
+            const min = Number.parseInt(input.min, 10) || 1;
+            const current = Number.parseInt(input.value, 10) || min;
+            if (current > min) input.value = current - 1;
         }
     });
 });
@@ -62,8 +63,9 @@ document.querySelectorAll('.qty-increase').forEach(function (btn) {
     btn.addEventListener('click', function () {
         const input = this.closest('.qty-wrapper')?.querySelector('.qty-input');
         if (input) {
-            const max = parseInt(input.max) || 99;
-            if (parseInt(input.value) < max) input.value = parseInt(input.value) + 1;
+            const max = Number.parseInt(input.max, 10) || 99;
+            const current = Number.parseInt(input.value, 10) || 1;
+            if (current < max) input.value = current + 1;
         }
     });
 });
@@ -75,6 +77,7 @@ document.querySelectorAll('.qty-increase').forEach(function (btn) {
     const alerts = document.querySelectorAll('#flash-container .alert');
     alerts.forEach(function (alert) {
         setTimeout(function () {
+            if (!alert.isConnected) return;
             const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
             bsAlert.close();
         }, 5000);
