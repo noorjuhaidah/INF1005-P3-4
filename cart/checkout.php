@@ -14,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
 require_login();
 
 $cart = get_cart();
-$userId = (int)$_SESSION['user_id'];
+$userId = (int) $_SESSION['user_id'];
 
 $currentPoints = 0;
 try {
@@ -22,7 +22,7 @@ try {
     $stmt->execute([$userId]);
     $row = $stmt->fetch();
     if ($row) {
-        $currentPoints = (int)$row['points'];
+        $currentPoints = (int) $row['points'];
     }
 } catch (PDOException $e) {
     $currentPoints = 0;
@@ -86,8 +86,8 @@ require_once __DIR__ . '/../includes/header.php';
                     if (is_string($rawPrice)) {
                         $rawPrice = preg_replace('/[^0-9.\-]/', '', $rawPrice);
                     }
-                    $price = is_numeric($rawPrice) ? (float)$rawPrice : 0.0;
-                    $qty = is_numeric($item['qty'] ?? 0) ? (int)$item['qty'] : 0;
+                    $price = is_numeric($rawPrice) ? (float) $rawPrice : 0.0;
+                    $qty = is_numeric($item['qty'] ?? 0) ? (int) $item['qty'] : 0;
                     ?>
                     <div class="d-flex justify-content-between mb-2">
                         <span><?= e($item['name']) ?> x <?= $qty ?></span>
@@ -102,7 +102,8 @@ require_once __DIR__ . '/../includes/header.php';
                 </div>
 
                 <?php if ($canRedeem): ?>
-                    <div class="d-flex justify-content-between text-success small mt-1" id="discount-row" style="display:none!important;">
+                    <div class="d-flex justify-content-between text-success small mt-1" id="discount-row"
+                        style="display:none!important;">
                         <span>Rewards discount (<?= POINTS_REDEEM_AMOUNT ?> pts)</span>
                         <span>-<?= format_price(POINTS_REDEEM_VALUE) ?></span>
                     </div>
@@ -118,35 +119,37 @@ require_once __DIR__ . '/../includes/header.php';
             <form method="POST" action="<?= APP_URL ?>/cart/checkout.php" id="checkout-form">
                 <?php csrf_field(); ?>
 
-            <?php if ($canRedeem): ?>
-                <fieldset class="card ld-card p-4 mb-3" style="border-left: 4px solid var(--ld-blue-dark);">
-                    <div class="flex-grow-1">
-                        <legend class="h6 fw-semibold mb-1">Apply rewards points</legend>
-                        <p class="small fw-semibold mb-1">You have <?= number_format($currentPoints) ?> points</p>
-                        <p class="text-muted small mb-2">
-                            Redeem <?= POINTS_REDEEM_AMOUNT ?> points for <?= format_price(POINTS_REDEEM_VALUE) ?> off.
-                            Your total would become <?= format_price($previewTotal) ?>.
-                        </p>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="redeem_toggle" name="redeem_points" value="1">
-                            <label class="form-check-label fw-semibold small" for="redeem_toggle">
-                                Use my <?= POINTS_REDEEM_AMOUNT ?> points
-                            </label>
+                    <?php if ($canRedeem): ?>
+                    <fieldset class="card ld-card p-4 mb-3" style="border-left: 4px solid var(--ld-blue-dark);">
+                        <div class="flex-grow-1">
+                            <legend class="h6 fw-semibold mb-1">Apply rewards points</legend>
+                            <p class="small fw-semibold mb-1">You have <?= number_format($currentPoints) ?> points</p>
+                            <p class="text-muted small mb-2">
+                                Redeem <?= POINTS_REDEEM_AMOUNT ?> points for <?= format_price(POINTS_REDEEM_VALUE) ?> off.
+                                Your total would become <?= format_price($previewTotal) ?>.
+                            </p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="redeem_toggle" name="redeem_points"
+                                    value="1">
+                                <label class="form-check-label fw-semibold small" for="redeem_toggle">
+                                    Use my <?= POINTS_REDEEM_AMOUNT ?> points
+                                </label>
+                            </div>
                         </div>
+                    </fieldset>
+                    <?php else: ?>
+                    <div class="card p-4 mb-3"
+                        style="background: var(--ld-blue-light); border: none; border-radius: var(--ld-radius);">
+                        <p class="mb-1 small fw-semibold">
+                            <i class="bi bi-star me-1" aria-hidden="true"></i>
+                            You have <?= number_format($currentPoints) ?> points
+                        </p>
+                        <p class="text-muted small mb-0">
+                            Earn <?= number_format(POINTS_REDEEM_AMOUNT - $currentPoints) ?> more points to unlock a
+                                <?= format_price(POINTS_REDEEM_VALUE) ?> reward.
+                        </p>
                     </div>
-                </fieldset>
-            <?php else: ?>
-                <div class="card p-4 mb-3" style="background: var(--ld-blue-light); border: none; border-radius: var(--ld-radius);">
-                    <p class="mb-1 small fw-semibold">
-                        <i class="bi bi-star me-1" aria-hidden="true"></i>
-                        You have <?= number_format($currentPoints) ?> points
-                    </p>
-                    <p class="text-muted small mb-0">
-                        Earn <?= number_format(POINTS_REDEEM_AMOUNT - $currentPoints) ?> more points to unlock a
-                        <?= format_price(POINTS_REDEEM_VALUE) ?> reward.
-                    </p>
-                </div>
-            <?php endif; ?>
+                    <?php endif; ?>
 
                 <div class="d-flex gap-2 flex-wrap">
                     <button type="submit" class="ld-btn-primary">
@@ -161,28 +164,28 @@ require_once __DIR__ . '/../includes/header.php';
 </section>
 
 <?php if ($canRedeem): ?>
-<script>
-(function () {
-    const toggle = document.getElementById('redeem_toggle');
-    const totalEl = document.getElementById('total-display');
-    const discRow = document.getElementById('discount-row');
-    const subtotal = <?= json_encode($cartSubtotal) ?>;
-    const discount = <?= json_encode((float)POINTS_REDEEM_VALUE) ?>;
-    const fmt = v => '$' + v.toFixed(2);
+    <script>
+        (function () {
+            const toggle = document.getElementById('redeem_toggle');
+            const totalEl = document.getElementById('total-display');
+            const discRow = document.getElementById('discount-row');
+            const subtotal = <?= json_encode($cartSubtotal, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+            const discount = <?= json_encode((float) POINTS_REDEEM_VALUE, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+            const fmt = v => '$' + v.toFixed(2);
 
-    if (!toggle) return;
+            if (!toggle) return;
 
-    toggle.addEventListener('change', function () {
-        if (this.checked) {
-            totalEl.textContent = fmt(Math.max(0, subtotal - discount));
-            discRow.style.removeProperty('display');
-        } else {
-            totalEl.textContent = fmt(subtotal);
-            discRow.style.display = 'none';
-        }
-    });
-})();
-</script>
+            toggle.addEventListener('change', function () {
+                if (this.checked) {
+                    totalEl.textContent = fmt(Math.max(0, subtotal - discount));
+                    discRow.style.removeProperty('display');
+                } else {
+                    totalEl.textContent = fmt(subtotal);
+                    discRow.style.display = 'none';
+                }
+            });
+        })();
+    </script>
 <?php endif; ?>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

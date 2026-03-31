@@ -1,9 +1,11 @@
 <?php
-// About page for LazyDrip.
-// Shares the brand story, pickup model,
-// and the main value points.
+// =============================================================
+// about.php — About LazyDrip
+// Static informational page describing the brand, pickup model,
+// and value propositions.
+// =============================================================
 
-$page_title   = 'About Us';
+$page_title = 'About Us';
 $current_page = 'about';
 require_once __DIR__ . '/includes/header.php';
 ?>
@@ -23,7 +25,7 @@ require_once __DIR__ . '/includes/header.php';
                     coffee without the wait. Order ahead, pick up on Grab, and
                     get on with your day — or slow it right down.
                 </p>
-                <div class="d-flex gap-3 mt-4">
+                <div class="d-flex gap-3 mt-4 flex-wrap">
                     <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary">Browse our menu</a>
                     <a href="<?= APP_URL ?>/contact.php" class="ld-btn-outline">Get in touch</a>
                 </div>
@@ -55,7 +57,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="row justify-content-center">
             <div class="col-lg-8 text-center">
                 <h2 class="ld-section-title">What is LazyDrip?</h2>
-                <p class="ld-section-subtitle mx-auto" style="max-width: 560px;">
+                <p class="ld-section-subtitle mx-auto" style="width: min(100%, 35rem);">
                     We are a small-batch, self-pickup café based in Singapore.
                     No queues at the counter, no table service — just honest
                     coffee and thoughtfully sourced tea, ready when you arrive.
@@ -68,10 +70,10 @@ require_once __DIR__ . '/includes/header.php';
             <div class="col-md-4">
                 <div class="card ld-card h-100 p-4 text-center">
                     <div class="fs-1 mb-3" aria-hidden="true">🛵</div>
-                    <h3 class="h5">Grab self-pickup</h3>
+                    <h3 class="h5">Self Pickup</h3>
                     <p class="text-muted small mb-0">
-                        Order on LazyDrip, and self-collect!No delivery fees,
-                        no surprise charges. Just walk in and grab your drink.
+                        Order through LazyDrip and collect your drink when it’s ready.
+                        Enjoy a seamless experience with no delivery or hidden charge
                     </p>
                 </div>
             </div>
@@ -109,20 +111,19 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
 
-        <ol class="row gy-4 justify-content-center list-unstyled mb-0" aria-label="How LazyDrip pickup works in four steps">
-            <!-- First step -->
+        <ol class="row gy-4 justify-content-center list-unstyled mb-0"
+            aria-label="How LazyDrip pickup works in four steps">
+            <!-- Step 1 -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">1</div>
+                         " aria-hidden="true">1</div>
                     <h3 class="h6 fw-semibold">Create an account</h3>
                     <p class="text-muted small mb-0">
                         Sign up in under a minute and get
@@ -133,16 +134,14 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Second step -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">2</div>
+                         " aria-hidden="true">2</div>
                     <h3 class="h6 fw-semibold">Pick your drinks</h3>
                     <p class="text-muted small mb-0">
                         Browse our menu, add to cart, and place your order.
@@ -153,19 +152,17 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Third step -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">3</div>
-                    <h3 class="h6 fw-semibold">Collect via Grab</h3>
+                         " aria-hidden="true">3</div>
+                    <h3 class="h6 fw-semibold">Self Pickup</h3>
                     <p class="text-muted small mb-0">
-                        We prepare your order; you collect it on Grab.
+                        We prepare your order; just drop by and collect.
                         No queue, no fuss.
                     </p>
                 </div>
@@ -173,16 +170,14 @@ require_once __DIR__ . '/includes/header.php';
             <!-- Fourth step -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
-                         style="
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="
                              width: 56px; height: 56px;
                              background: var(--ld-blue-dark);
                              color: #fff;
                              font-family: var(--font-head);
                              font-weight: 700;
                              font-size: 1.2rem;
-                         "
-                         aria-hidden="true">4</div>
+                         " aria-hidden="true">4</div>
                     <h3 class="h6 fw-semibold">Earn &amp; redeem</h3>
                     <p class="text-muted small mb-0">
                         Every dollar you spend earns <?= POINTS_PER_DOLLAR ?> point.

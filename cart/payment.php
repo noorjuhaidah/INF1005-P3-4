@@ -14,19 +14,19 @@ if (session_status() === PHP_SESSION_NONE) {
 require_login();
 
 $pending = $_SESSION['pending_checkout'] ?? null;
-if (!$pending || empty($pending['cart']) || (int)($pending['user_id'] ?? 0) !== (int)$_SESSION['user_id']) {
+if (!$pending || empty($pending['cart']) || (int) ($pending['user_id'] ?? 0) !== (int) $_SESSION['user_id']) {
     set_flash('warning', 'No pending checkout found. Please review your cart again.');
     redirect(APP_URL . '/cart/checkout.php');
 }
 
-$userId = (int)$pending['user_id'];
+$userId = (int) $pending['user_id'];
 $cart = $pending['cart'];
-$subtotal = (float)$pending['subtotal'];
-$pointsBefore = (int)$pending['points_before'];
+$subtotal = (float) $pending['subtotal'];
+$pointsBefore = (int) $pending['points_before'];
 $applyRedeem = !empty($pending['redeem_points']);
-$pointsRedeemed = (int)$pending['points_redeemed'];
-$discountApplied = (float)$pending['discount_applied'];
-$finalTotal = (float)$pending['final_total'];
+$pointsRedeemed = (int) $pending['points_redeemed'];
+$discountApplied = (float) $pending['discount_applied'];
+$finalTotal = (float) $pending['final_total'];
 
 $orderItemColumns = [];
 try {
@@ -62,8 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['field_errors']['expiry'] = 'Enter expiry in MM/YY format.';
     } else {
         [$expMonth, $expYearShort] = array_map('intval', explode('/', $expiry));
-        $currentYearShort = (int)date('y');
-        $currentMonth = (int)date('m');
+        $currentYearShort = (int) date('y');
+        $currentMonth = (int) date('m');
 
         if ($expMonth < 1 || $expMonth > 12) {
             $_SESSION['field_errors']['expiry'] = 'Expiry month must be between 01 and 12.';
@@ -112,16 +112,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $finalTotal,
             null,
         ]);
-        $orderId = (int)$pdo->lastInsertId();
+        $orderId = (int) $pdo->lastInsertId();
 
         $itemFieldMap = [
-            'order_id'   => null,
-            'item_id'    => null,
-            'item_name'  => null,
+            'order_id' => null,
+            'item_id' => null,
+            'item_name' => null,
             'unit_price' => null,
-            'quantity'   => null,
-            'qty'        => null,
-            'subtotal'   => null,
+            'quantity' => null,
+            'qty' => null,
+            'subtotal' => null,
         ];
 
         $itemInsertColumns = [];
@@ -146,21 +146,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (is_string($rawPrice)) {
                 $rawPrice = preg_replace('/[^0-9.\-]/', '', $rawPrice);
             }
-            $unitPrice = is_numeric($rawPrice) ? (float)$rawPrice : 0.0;
-            $qty = is_numeric($item['qty'] ?? 0) ? (int)$item['qty'] : 0;
+            $unitPrice = is_numeric($rawPrice) ? (float) $rawPrice : 0.0;
+            $qty = is_numeric($item['qty'] ?? 0) ? (int) $item['qty'] : 0;
 
             if ($qty <= 0) {
                 continue;
             }
 
             $rowData = [
-                'order_id'   => $orderId,
-                'item_id'    => (int)$itemId,
-                'item_name'  => $item['name'] ?? 'Item',
+                'order_id' => $orderId,
+                'item_id' => (int) $itemId,
+                'item_name' => $item['name'] ?? 'Item',
                 'unit_price' => $unitPrice,
-                'quantity'   => $qty,
-                'qty'        => $qty,
-                'subtotal'   => round($unitPrice * $qty, 2),
+                'quantity' => $qty,
+                'qty' => $qty,
+                'subtotal' => round($unitPrice * $qty, 2),
             ];
 
             $itemValues = [];
@@ -187,16 +187,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
         $stmt->execute([$userId]);
         $freshPoints = $stmt->fetchColumn();
-        $_SESSION['points'] = $freshPoints !== false ? (int)$freshPoints : 0;
- 
+        $_SESSION['points'] = $freshPoints !== false ? (int) $freshPoints : 0;
+
 
         $_SESSION['cart'] = [];
         unset($_SESSION['pending_checkout']);
-    unset($_SESSION['field_errors']);
+        unset($_SESSION['field_errors']);
         clear_old_input();
 
         $maskedCard = '**** **** **** ' . substr($cardNumber, -4);
-        $earned = (int)floor($finalTotal * POINTS_PER_DOLLAR);
+        $earned = (int) floor($finalTotal * POINTS_PER_DOLLAR);
         $successMsg = 'Payment successful on ' . $maskedCard . '. Order #' . $orderId . ' placed successfully!';
         if ($applyRedeem) {
             $successMsg .= ' You redeemed ' . POINTS_REDEEM_AMOUNT . ' points for ' . format_price(POINTS_REDEEM_VALUE) . ' off.';
@@ -243,71 +243,54 @@ unset($_SESSION['field_errors']);
                         <?php csrf_field(); ?>
 
                         <div class="col-12">
-                            <label class="form-label" for="card_name">Cardholder name <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input
-                                type="text"
-                                id="card_name"
-                                name="card_name"
+                            <label class="form-label" for="card_name">Cardholder name <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <input type="text" id="card_name" name="card_name"
                                 class="form-control <?= !empty($field_errors['card_name']) ? 'is-invalid' : '' ?>"
-                                value="<?= e(old_input('card_name')) ?>"
-                                autocomplete="cc-name"
+                                value="<?= e(old_input('card_name')) ?>" autocomplete="cc-name"
                                 aria-describedby="<?= !empty($field_errors['card_name']) ? 'card_name_error' : '' ?>"
-                                required
-                            >
-                            <div id="card_name_error" class="invalid-feedback"><?= e($field_errors['card_name'] ?? 'Please enter the cardholder name.') ?></div>
+                                required>
+                            <div id="card_name_error" class="invalid-feedback">
+                                <?= e($field_errors['card_name'] ?? 'Please enter the cardholder name.') ?></div>
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label" for="card_number">Card number <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input
-                                type="text"
-                                id="card_number"
-                                name="card_number"
+                            <label class="form-label" for="card_number">Card number <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <input type="text" id="card_number" name="card_number"
                                 class="form-control <?= !empty($field_errors['card_number']) ? 'is-invalid' : '' ?>"
-                                inputmode="numeric"
-                                maxlength="19"
-                                placeholder="1234 5678 9012 3456"
-                                value="<?= e(old_input('card_number')) ?>"
-                                autocomplete="cc-number"
+                                inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456"
+                                value="<?= e(old_input('card_number')) ?>" autocomplete="cc-number"
                                 aria-describedby="card_number_help<?= !empty($field_errors['card_number']) ? ' card_number_error' : '' ?>"
-                                required
-                            >
-                            <div id="card_number_help" class="form-text">Enter 16 digits without letters or symbols.</div>
-                            <div id="card_number_error" class="invalid-feedback"><?= e($field_errors['card_number'] ?? 'Enter a valid 16-digit card number.') ?></div>
+                                required>
+                            <div id="card_number_help" class="form-text">Enter 16 digits without letters or symbols.
+                            </div>
+                            <div id="card_number_error" class="invalid-feedback">
+                                <?= e($field_errors['card_number'] ?? 'Enter a valid 16-digit card number.') ?></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="expiry">Expiry (MM/YY) <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input
-                                type="text"
-                                id="expiry"
-                                name="expiry"
+                            <label class="form-label" for="expiry">Expiry (MM/YY) <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <input type="text" id="expiry" name="expiry"
                                 class="form-control <?= !empty($field_errors['expiry']) ? 'is-invalid' : '' ?>"
-                                placeholder="MM/YY"
-                                maxlength="5"
-                                value="<?= e(old_input('expiry')) ?>"
+                                placeholder="MM/YY" maxlength="5" value="<?= e(old_input('expiry')) ?>"
                                 autocomplete="cc-exp"
                                 aria-describedby="<?= !empty($field_errors['expiry']) ? 'expiry_error' : '' ?>"
-                                required
-                            >
-                            <div id="expiry_error" class="invalid-feedback"><?= e($field_errors['expiry'] ?? 'Enter expiry in MM/YY format.') ?></div>
+                                required>
+                            <div id="expiry_error" class="invalid-feedback">
+                                <?= e($field_errors['expiry'] ?? 'Enter expiry in MM/YY format.') ?></div>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="cvv">CVV <span class="text-danger" aria-hidden="true">*</span></label>
-                            <input
-                                type="password"
-                                id="cvv"
-                                name="cvv"
+                            <label class="form-label" for="cvv">CVV <span class="text-danger"
+                                    aria-hidden="true">*</span></label>
+                            <input type="password" id="cvv" name="cvv"
                                 class="form-control <?= !empty($field_errors['cvv']) ? 'is-invalid' : '' ?>"
-                                inputmode="numeric"
-                                maxlength="3"
-                                placeholder="123"
-                                autocomplete="cc-csc"
-                                aria-describedby="<?= !empty($field_errors['cvv']) ? 'cvv_error' : '' ?>"
-                                required
-                            >
-                            <div id="cvv_error" class="invalid-feedback"><?= e($field_errors['cvv'] ?? 'Enter a valid 3-digit CVV.') ?></div>
+                                inputmode="numeric" maxlength="3" placeholder="123" autocomplete="cc-csc"
+                                aria-describedby="<?= !empty($field_errors['cvv']) ? 'cvv_error' : '' ?>" required>
+                            <div id="cvv_error" class="invalid-feedback">
+                                <?= e($field_errors['cvv'] ?? 'Enter a valid 3-digit CVV.') ?></div>
                         </div>
 
                         <div class="col-12 d-flex gap-2 flex-wrap mt-3">
@@ -331,8 +314,8 @@ unset($_SESSION['field_errors']);
                         if (is_string($rawPrice)) {
                             $rawPrice = preg_replace('/[^0-9.\-]/', '', $rawPrice);
                         }
-                        $price = is_numeric($rawPrice) ? (float)$rawPrice : 0.0;
-                        $qty = is_numeric($item['qty'] ?? 0) ? (int)$item['qty'] : 0;
+                        $price = is_numeric($rawPrice) ? (float) $rawPrice : 0.0;
+                        $qty = is_numeric($item['qty'] ?? 0) ? (int) $item['qty'] : 0;
                         ?>
                         <div class="d-flex justify-content-between mb-2">
                             <span><?= e($item['name']) ?> x <?= $qty ?></span>

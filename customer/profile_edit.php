@@ -1,7 +1,5 @@
 <?php
-// =============================================================
-// customer/profile_edit.php — User profile editing form.
-// =============================================================
+// customer/profile_edit.php — User profile editing form
 
 $page_title   = 'Edit Profile';
 $current_page = 'profile';
@@ -20,7 +18,8 @@ if (empty($_SESSION['csrf_token'])) {
 $csrf = $_SESSION['csrf_token'];
 
 // Helper to fetch current user data
-function fetchUserData(PDO $pdo, int $userId): array {
+function fetchUserData(PDO $pdo, int $userId): array
+{
     $stmt = $pdo->prepare("SELECT email, phone, full_name FROM users WHERE user_id = ? LIMIT 1");
     $stmt->execute([$userId]);
     return (array)$stmt->fetch();
@@ -32,7 +31,7 @@ $email     = old_input('email', $userData['email'] ?? '');
 $phone     = old_input('phone', $userData['phone'] ?? '');
 $fullName  = old_input('full_name', $userData['full_name'] ?? '');
 
-// Handle form submission
+// Form submission - handle POST request to update profile
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $submittedToken = $_POST['csrf_token'] ?? '';
     if (!hash_equals($_SESSION['csrf_token'] ?? '', $submittedToken)) {
@@ -50,8 +49,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['field_errors']['full_name'] = 'Please enter your full name.';
     }
 
+    if (mb_strlen($fullName) > 120) {
+        $_SESSION['field_errors']['full_name'] = 'Full name must be 120 characters or fewer.';
+    }
+
     if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['field_errors']['email'] = 'Please provide a valid email address.';
+    }
+
+    if ($phone !== '' && !preg_match('/^\+?[0-9\s\-()]{8,20}$/', $phone)) {
+        $_SESSION['field_errors']['phone'] = 'Please enter a valid phone number.';
     }
 
     if (!empty($_SESSION['field_errors'])) {
@@ -101,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="row">
             <div class="col-md-8">
-                <form method="POST" action="<?= APP_URL ?>/customer/profile_edit.php" class="ld-form">
+                <form method="POST" action="<?= APP_URL ?>/customer/profile_edit.php" class="ld-form needs-validation" data-inline-validate="true" novalidate>
                     <input type="hidden" name="csrf_token" value="<?= e($csrf) ?>">
 
                     <div class="mb-3">
@@ -114,10 +121,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?= e($fullName) ?>"
                             autocomplete="name"
                             aria-describedby="<?= !empty($field_errors['full_name']) ? 'full_name_error' : '' ?>"
-                            required
-                        >
+                            required>
                         <?php if (!empty($field_errors['full_name'])): ?>
-                        <div id="full_name_error" class="invalid-feedback"><?= e($field_errors['full_name']) ?></div>
+                            <div id="full_name_error" class="invalid-feedback"><?= e($field_errors['full_name']) ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -131,10 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             value="<?= e($email) ?>"
                             autocomplete="email"
                             aria-describedby="<?= !empty($field_errors['email']) ? 'email_error' : '' ?>"
-                            required
-                        >
+                            required>
                         <?php if (!empty($field_errors['email'])): ?>
-                        <div id="email_error" class="invalid-feedback"><?= e($field_errors['email']) ?></div>
+                            <div id="email_error" class="invalid-feedback"><?= e($field_errors['email']) ?></div>
                         <?php endif; ?>
                     </div>
 
@@ -144,10 +149,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             id="phone"
                             name="phone"
                             type="tel"
-                            class="form-control"
+                            class="form-control <?= !empty($field_errors['phone']) ? 'is-invalid' : '' ?>"
                             value="<?= e($phone) ?>"
                             autocomplete="tel"
-                        >
+                            pattern="^\+?[0-9\s\-()]{8,20}$"
+                            aria-describedby="<?= !empty($field_errors['phone']) ? 'phone_error' : 'phone_help' ?>">
+                        <div id="phone_help" class="form-text">Use 8-20 characters. Digits, spaces, +, -, and parentheses are allowed.</div>
+                        <?php if (!empty($field_errors['phone'])): ?>
+                            <div id="phone_error" class="invalid-feedback d-block"><?= e($field_errors['phone']) ?></div>
+                        <?php endif; ?>
                     </div>
 
                     <button type="submit" class="ld-btn-primary">Save changes</button>

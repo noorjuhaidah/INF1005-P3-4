@@ -1,11 +1,12 @@
 <?php
-// =============================================================
 // index.php - LazyDrip Home / Landing Page
-// =============================================================
 
 $page_title = 'Home';
 $current_page = 'home';
 require_once __DIR__ . '/includes/header.php';
+
+$heroVideoFile = __DIR__ . '/assets/videos/lazydrip.mp4';
+$heroVideoVersion = time() . '-' . (file_exists($heroVideoFile) ? substr(hash_file('sha1', $heroVideoFile), 0, 12) : 'missing');
 ?>
 
 <style>
@@ -42,7 +43,7 @@ require_once __DIR__ . '/includes/header.php';
     }
 
     .ld-video-panel {
-        max-width: 520px;
+        width: min(100%, 32.5rem);
         padding: 1.85rem 1.9rem;
         border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 28px;
@@ -75,6 +76,28 @@ require_once __DIR__ . '/includes/header.php';
         letter-spacing: 0.01em;
     }
 
+    .ld-video-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 44px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        background: rgba(10, 18, 26, 0.55);
+        color: #fff;
+        font-size: 0.9rem;
+        font-weight: 600;
+        padding: 0.45rem 0.9rem;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+
+    .ld-video-toggle:hover,
+    .ld-video-toggle:focus-visible {
+        background: rgba(10, 18, 26, 0.78);
+        border-color: rgba(255, 255, 255, 0.7);
+    }
+
     @media (max-width: 991.98px) {
         .ld-video-hero {
             min-height: 78vh;
@@ -92,19 +115,11 @@ require_once __DIR__ . '/includes/header.php';
         }
     }
 
-    @media (prefers-reduced-motion: reduce) {
-        .ld-video-hero video {
-            display: none;
-        }
-        .ld-video-hero {
-            background: url('<?= APP_URL ?>/assets/images/placeholder.png') center/cover no-repeat;
-        }
-    }
 </style>
 
 <section class="ld-video-hero">
-    <video autoplay muted loop playsinline aria-hidden="true">
-        <source src="<?= APP_URL ?>/assets/videos/lazydrip.mp4" type="video/mp4">
+    <video id="heroVideo" autoplay muted loop playsinline aria-hidden="true">
+        <source src="<?= APP_URL ?>/assets/videos/lazydrip.mp4?v=<?= $heroVideoVersion ?>" type="video/mp4">
         <!-- Fallback for when video doesn't load -->
         <img src="<?= APP_URL ?>/assets/images/placeholder.png" alt="Coffee shop interior with warm lighting and minimalist decor">
     </video>
@@ -126,16 +141,75 @@ require_once __DIR__ . '/includes/header.php';
                             Browse Menu
                         </a>
                         <?php if (!is_logged_in()): ?>
-                        <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-outline">
+                        <a href="<?= APP_URL ?>/auth/register.php" class="ld-btn-primary">
                             Join for Free
                         </a>
                         <?php endif; ?>
                     </div>
+                    <button type="button" id="heroVideoToggle" class="ld-video-toggle mt-3"
+                            aria-controls="heroVideo" aria-pressed="false">
+                        Pause background video
+                    </button>
                     <p class="ld-video-note">Slow pours, soft light, and your next cup already waiting.</p>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+
+    
+(function () {
+    const video = document.getElementById('heroVideo');
+    const toggle = document.getElementById('heroVideoToggle');
+    if (!video || !toggle) return;
+
+    function autoplayVideo() {
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.then === 'function') {
+            playPromise.then(finishAutoplayAttempt).catch(finishAutoplayAttempt);
+        } else {
+            finishAutoplayAttempt();
+        }
+    }
+
+    function setButtonState() {
+        const isPaused = video.paused;
+        toggle.setAttribute('aria-pressed', String(isPaused));
+        toggle.textContent = isPaused ? 'Play background video' : 'Pause background video';
+    }
+
+    function finishAutoplayAttempt() {
+        setButtonState();
+    }
+
+    // Wait for video metadata to load before attempting autoplay
+    if (video.readyState >= 1) {
+        // Metadata is already loaded
+        autoplayVideo();
+    } else {
+        // Wait for metadata to load
+        video.addEventListener('loadedmetadata', autoplayVideo, { once: true });
+    }
+
+    toggle.addEventListener('click', function () {
+        if (video.paused) {
+            const playPromise = video.play();
+            if (playPromise && typeof playPromise.then === 'function') {
+                playPromise.catch(setButtonState);
+            } else {
+                setButtonState();
+            }
+        } else {
+            video.pause();
+            setButtonState();
+        }
+    });
+
+    video.addEventListener('play', setButtonState);
+    video.addEventListener('pause', setButtonState);
+})();
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

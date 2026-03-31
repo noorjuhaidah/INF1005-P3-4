@@ -1,19 +1,15 @@
 <?php
-// =============================================================
 // customer/dashboard.php — Customer Dashboard
-// Shows a quick summary of loyalty points + recent orders.
-// =============================================================
+// shows a quick summary of loyalty points and their recent orders
 
 $page_title   = 'Dashboard';
 $current_page = 'dashboard';
 require_once __DIR__ . '/../includes/header.php';
 
-// Guest users are redirected to login.
+// Guest users are redirected to login page
 require_login();
 
-// -------------------------------------------------------------
-// Loyalty points 
-// -------------------------------------------------------------
+// Loyalty points (fetch from users table)
 $points = 0;
 try {
     $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
@@ -27,9 +23,7 @@ try {
     $points = 0;
 }
 
-// -------------------------------------------------------------
-// Recent orders (latest 3)
-// -------------------------------------------------------------
+// Recent orders (shows latest 3)
 $recentOrders = [];
 try {
     $stmt = $pdo->prepare(
@@ -42,12 +36,13 @@ try {
     $stmt->execute([$_SESSION['user_id']]);
     $recentOrders = $stmt->fetchAll();
 } catch (PDOException $e) {
-    // If orders table doesn't exist or query fails, show nothing
+    // if orders table does not exist or query fails, show nothing
     $recentOrders = [];
 }
 
 // Helper to pick the first available key from a record
-function pickField(array $row, array $keys) {
+function pickField(array $row, array $keys)
+{
     foreach ($keys as $key) {
         if (!empty($row[$key])) {
             return $row[$key];
@@ -60,8 +55,8 @@ function pickField(array $row, array $keys) {
 
 <section class="ld-section">
     <div class="container">
-         <?php show_flash(); ?>
-         
+        <?php show_flash(); ?>
+
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-4">
 
             <div class="card w-100" style="max-width: 28rem;">
@@ -100,22 +95,21 @@ function pickField(array $row, array $keys) {
                                 $status = pickField($order, ['status', 'order_status', 'status_label']) ?? 'Unknown';
                                 $statusSlug = strtolower(str_replace(' ', '_', $status));
                             ?>
-                            <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold"><?= e($orderDate) ?></div>
-                                        <div class="text-muted small">Total: <?= $total ?></div>
-                                        <a
-                                            href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
-                                            class="small"
-                                            aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($orderDate) ?>"
-                                        >
-                                            View order
-                                        </a>
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="fw-semibold"><?= e($orderDate) ?></div>
+                                            <div class="text-muted small">Total: <?= $total ?></div>
+                                            <a
+                                                href="<?= APP_URL ?>/customer/order_history.php<?= $rowAnchor !== null ? ('#' . e($rowAnchor)) : '' ?>"
+                                                class="small"
+                                                aria-label="View summary for <?= $orderId !== null ? ('order ' . (int)$orderId . ' ') : '' ?>dated <?= e($orderDate) ?>">
+                                                View order
+                                            </a>
+                                        </div>
+                                        <span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span>
                                     </div>
-                                    <span class="ld-chip status-<?= e($statusSlug) ?>"><?= e(ucfirst($status)) ?></span>
                                 </div>
-                            </div>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>

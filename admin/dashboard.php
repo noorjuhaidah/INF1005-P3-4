@@ -4,8 +4,10 @@ $current_page = 'admin';
 
 require_once __DIR__ . '/../includes/header.php';
 
+//Ensure the user is an admin before proceeding
 require_admin();
 
+// Initialise dashboard metrics
 $totalProducts = 0;
 $totalOrders = 0;
 $totalRevenue = 0;
@@ -15,6 +17,7 @@ $orderStatusLabels = [];
 $orderStatusCounts = [];
 
 try {
+    // Fetch total products, orders, and revenue
     $stmt = $pdo->query("SELECT COUNT(*) FROM menu_items");
     $totalProducts = (int) $stmt->fetchColumn();
 
@@ -25,6 +28,7 @@ try {
     $totalRevenue = (float) $stmt->fetchColumn();
 
     try {
+        // Fetch total and unread messages
         $stmt = $pdo->query("SELECT COUNT(*) FROM contact_messages");
         $totalMessages = (int) $stmt->fetchColumn();
 
@@ -45,6 +49,7 @@ try {
         $unreadMessages = 0;
     }
 
+    // Fetch order counts by status for the chart
     $stmt = $pdo->query("
         SELECT status, COUNT(*) AS total
         FROM orders
@@ -70,13 +75,16 @@ try {
 
 <section class="ld-section">
     <div class="container">
+        <!-- Admin dashboard header -->
         <h1 class="ld-section-title">
             <i class="fa-solid fa-chart-line me-2"></i>Admin Dashboard
         </h1>
         <p class="ld-section-subtitle">Manage products and orders.</p>
 
+        <!-- Display any flash messages (success/error) from previous actions -->
         <?php show_flash(); ?>
 
+        <!-- Summary cards -->
         <div class="row g-4 mb-4">
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
@@ -85,6 +93,7 @@ try {
                 </div>
             </div>
 
+            <!-- Total orders and revenue cards -->
             <div class="col-md-4">
                 <div class="card ld-card p-4 text-center">
                     <h2 class="h5"><i class="fa-solid fa-receipt me-2"></i>Total Orders</h2>
@@ -100,6 +109,7 @@ try {
             </div>
         </div>
 
+        <!-- Order status chart -->
         <div class="card ld-card p-4 mb-4">
             <h2 class="h4 mb-3">
                 <i class="fa-solid fa-chart-pie me-2"></i>Orders by Status
@@ -112,6 +122,7 @@ try {
             </div>
         </div>
 
+        <!-- Management sections -->
         <div class="row g-4">
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
@@ -130,6 +141,7 @@ try {
                 </div>
             </div>
 
+            <!-- Order management section -->
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
                     <h2 class="h4 mb-3">
@@ -144,6 +156,7 @@ try {
                 </div>
             </div>
 
+            <!-- Review management section -->
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
                     <h2 class="h4 mb-3">
@@ -158,6 +171,7 @@ try {
                 </div>
             </div>
 
+            <!-- Customer inquiries section -->
             <div class="col-md-6">
                 <div class="card ld-card p-4 h-100">
                     <h2 class="h4 mb-3">
@@ -181,26 +195,27 @@ try {
     </div>
 </section>
 
+<!-- Load Chart.js library -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const statusChartCtx = document.getElementById('ordersStatusChart');
+    const statusChartCtx = document.getElementById('ordersStatusChart');
 
-if (statusChartCtx) {
-    new Chart(statusChartCtx, {
-        type: 'doughnut',
-        data: {
-            labels: <?= json_encode($orderStatusLabels) ?>,
-            datasets: [{
-                label: 'Orders by Status',
-                data: <?= json_encode($orderStatusCounts) ?>
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-}
+    if (statusChartCtx) {
+        new Chart(statusChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: <?= json_encode($orderStatusLabels, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+                datasets: [{
+                    label: 'Orders by Status',
+                    data: <?= json_encode($orderStatusCounts, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

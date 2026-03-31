@@ -15,13 +15,29 @@ require_once __DIR__ . '/functions.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+header("X-Content-Type-Options: nosniff");
+header("X-Frame-Options: SAMEORIGIN");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+header(
+    "Content-Security-Policy: "
+    . "default-src 'self'; "
+    . "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com https://cdnjs.cloudflare.com; "
+    . "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+    . "img-src 'self' data:; "
+    . "connect-src 'self'; "
+    . "object-src 'none'; "
+    . "base-uri 'self'; "
+    . "frame-ancestors 'self'"
+);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= isset($page_title) ? e($page_title) . ' — ' . APP_NAME : APP_NAME ?></title>
 
     <!-- Bootstrap 5 CSS -->
@@ -70,11 +86,11 @@ if (session_status() === PHP_SESSION_NONE) {
             <!-- Left links -->
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link <?= (($current_page ?? '') === 'home')    ? 'active' : '' ?>"
+                    <a class="nav-link <?= (($current_page ?? '') === 'home') ? 'active' : '' ?>"
                        href="<?= APP_URL ?>/index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= (($current_page ?? '') === 'menu')    ? 'active' : '' ?>"
+                    <a class="nav-link <?= (($current_page ?? '') === 'menu') ? 'active' : '' ?>"
                        href="<?= APP_URL ?>/menu.php">Menu</a>
                 </li>
                 <li class="nav-item">
@@ -86,7 +102,7 @@ if (session_status() === PHP_SESSION_NONE) {
                        href="<?= APP_URL ?>/reviews.php">Reviews</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= (($current_page ?? '') === 'about')   ? 'active' : '' ?>"
+                    <a class="nav-link <?= (($current_page ?? '') === 'about') ? 'active' : '' ?>"
                        href="<?= APP_URL ?>/about.php">About</a>
                 </li>
                 <li class="nav-item">

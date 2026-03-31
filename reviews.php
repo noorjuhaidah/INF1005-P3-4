@@ -5,7 +5,7 @@
 // Uses the shared CSRF helpers from includes/functions.php.
 // =============================================================
 
-$page_title   = 'Reviews';
+$page_title = 'Reviews';
 $current_page = 'reviews';
 
 // Load DB + helpers BEFORE header so POST/redirect logic can run safely.
@@ -33,6 +33,13 @@ $reviewNameColumn = in_array('name', $reviewColumns, true) ? 'name' : '';
 $reviewRatingColumn = in_array('rating', $reviewColumns, true) ? 'rating' : '';
 $reviewUserIdColumn = in_array('user_id', $reviewColumns, true) ? 'user_id' : '';
 
+$quoteIdent = static function (string $identifier): string {
+    if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+        throw new RuntimeException('Unsafe SQL identifier: ' . $identifier);
+    }
+    return '`' . $identifier . '`';
+};
+
 // Handle new review submission BEFORE header output (so redirects work)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
@@ -41,11 +48,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
     $reviewText = clean_input($_POST['review'] ?? '');
     $rating = filter_input(INPUT_POST, 'rating', FILTER_VALIDATE_INT);
-    $reviewerName = trim($_SESSION['full_name'] ?? 'Customer');
+    $reviewerName = clean_input((string) ($_SESSION['full_name'] ?? 'Customer'));
 
     if (empty($reviewText)) {
         set_flash('warning', 'Please enter a review before submitting.');
         redirect(APP_URL . '/reviews.php');
+    }
+
+    if (mb_strlen($reviewText) > 1000) {
+        set_flash('warning', 'Review must be 1000 characters or fewer.');
+        redirect(APP_URL . '/reviews.php');
+    }
+
+    if (mb_strlen($reviewerName) > 120) {
+        $reviewerName = mb_substr($reviewerName, 0, 120);
     }
 
     if (!$rating || $rating < 1 || $rating > 5) {
@@ -73,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
         if ($reviewUserIdColumn !== '') {
             $insertColumns[] = $reviewUserIdColumn;
             $insertValues[] = '?';
-            $insertParams[] = (int)$_SESSION['user_id'];
+            $insertParams[] = (int) $_SESSION['user_id'];
         }
 
         if ($reviewTextColumn === '') {
@@ -89,9 +105,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
             $insertValues[] = 'NOW()';
         }
 
+        $safeInsertColumns = array_map($quoteIdent, $insertColumns);
         $stmt = $pdo->prepare(
-            "INSERT INTO reviews (" . implode(', ', $insertColumns) . ")
-                    VALUES (" . implode(', ', $insertValues) . ")"
+            "INSERT INTO reviews (" . implode(', ', $safeInsertColumns) . ")
+                VALUES (" . implode(', ', $insertValues) . ")"
         );
         $stmt->execute($insertParams);
 
@@ -111,29 +128,29 @@ require_once __DIR__ . '/includes/header.php';
 $reviews = [];
 try {
     $selectParts = [];
-    $selectParts[] = $reviewTextColumn !== '' ? "r.{$reviewTextColumn} AS review_text" : "'' AS review_text";
-    $selectParts[] = in_array('created_at', $reviewColumns, true) ? "r.created_at" : "NULL AS created_at";
+    $selectParts[] = $reviewTextColumn !== '' ? "r." . $quoteIdent($reviewTextColumn) . " AS review_text" : "'' AS review_text";
+    $selectParts[] = in_array('created_at', $reviewColumns, true) ? "r.`created_at`" : "NULL AS created_at";
 
     if ($reviewNameColumn !== '') {
-        $selectParts[] = "r.{$reviewNameColumn} AS full_name";
+        $selectParts[] = "r." . $quoteIdent($reviewNameColumn) . " AS full_name";
     } elseif ($reviewUserIdColumn !== '') {
-        $selectParts[] = "u.full_name AS full_name";
+        $selectParts[] = "u.`full_name` AS full_name";
     } else {
         $selectParts[] = "'Anonymous' AS full_name";
     }
 
     if ($reviewRatingColumn !== '') {
-        $selectParts[] = "r.{$reviewRatingColumn} AS rating";
+        $selectParts[] = "r." . $quoteIdent($reviewRatingColumn) . " AS rating";
     } else {
         $selectParts[] = "NULL AS rating";
     }
 
     $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
-        $sql .= " LEFT JOIN users u ON u.user_id = r.{$reviewUserIdColumn}";
+        $sql .= " LEFT JOIN users u ON u.`user_id` = r." . $quoteIdent($reviewUserIdColumn);
     }
     if (in_array('created_at', $reviewColumns, true)) {
-        $sql .= " ORDER BY r.created_at DESC";
+        $sql .= " ORDER BY r.`created_at` DESC";
     }
 
     $stmt = $pdo->query($sql);
@@ -155,7 +172,8 @@ try {
                     <div class="card mb-4">
                         <div class="card-body">
                             <h2 class="h5 mb-3">Leave a review</h2>
-                            <form method="POST" action="<?= APP_URL ?>/reviews.php">
+                            <form method="POST" action="<?= APP_URL ?>/reviews.php" class="needs-validation"
+                                data-inline-validate="true" novalidate>
                                 <?php csrf_field(); ?>
                                 <div class="mb-3">
                                     <label class="form-label" for="rating">Rating</label>
@@ -170,7 +188,8 @@ try {
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label" for="review">Your review</label>
-                                    <textarea id="review" name="review" class="form-control" rows="4" required></textarea>
+                                    <textarea id="review" name="review" class="form-control" rows="4" maxlength="1000"
+                                        required></textarea>
                                 </div>
                                 <button type="submit" class="ld-btn-primary">Submit review</button>
                             </form>
@@ -192,9 +211,9 @@ try {
                     <div class="list-group">
                         <?php foreach ($reviews as $review):
                             $author = $review['full_name'] ?? 'Anonymous';
-                            $date   = $review['created_at'] ?? null;
-                            $date   = $date ? format_date($date) : '';
-                        ?>
+                            $date = $review['created_at'] ?? null;
+                            $date = $date ? format_date($date) : '';
+                            ?>
                             <article class="list-group-item" aria-label="Customer review by <?= e($author) ?>">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
@@ -204,7 +223,7 @@ try {
                                         <?php endif; ?>
                                     </div>
                                     <?php if (!empty($review['rating'])): ?>
-                                        <span class="ld-chip"><?= (int)$review['rating'] ?>/5</span>
+                                        <span class="ld-chip"><?= (int) $review['rating'] ?>/5</span>
                                     <?php endif; ?>
                                 </div>
                                 <p class="mt-2 mb-0"><?= nl2br(e($review['review_text'] ?? '')) ?></p>

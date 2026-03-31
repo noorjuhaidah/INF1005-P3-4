@@ -1,4 +1,5 @@
 <?php
+
 // =============================================================
 // includes/db.php
 // Creates a PDO connection object: $pdo
@@ -11,7 +12,9 @@ require_once __DIR__ . '/config.php';
 
 $dsn = sprintf(
     'mysql:host=%s;dbname=%s;charset=%s',
-    DB_HOST, DB_NAME, DB_CHARSET
+    DB_HOST,
+    DB_NAME,
+    DB_CHARSET
 );
 
 $pdoOptions = [

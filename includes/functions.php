@@ -1,4 +1,5 @@
 <?php
+
 // =============================================================
 // includes/functions.php
 // Reusable helper functions for LazyDrip.
@@ -10,7 +11,8 @@
 // Always use this before echoing any user-supplied value.
 // Prevents XSS (Cross-Site Scripting) attacks.
 // -------------------------------------------------------------
-function e(string $value): string {
+function e(string $value): string
+{
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
@@ -20,11 +22,13 @@ function e(string $value): string {
 // Usage (show):   show_flash();   <- call inside the page body
 // Messages are stored in $_SESSION and shown once, then cleared.
 // -------------------------------------------------------------
-function set_flash(string $type, string $message): void {
+function set_flash(string $type, string $message): void
+{
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
-function show_flash(): void {
+function show_flash(): void
+{
     if (!empty($_SESSION['flash'])) {
         $type = $_SESSION['flash']['type'];   // 'success' | 'danger' | 'warning' | 'info'
         $msg  = e($_SESSION['flash']['message']);
@@ -36,15 +40,18 @@ function show_flash(): void {
     }
 }
 
-function set_old_input(array $data): void {
+function set_old_input(array $data): void
+{
     $_SESSION['old_input'] = $data;
 }
 
-function old_input(string $key, string $default = ''): string {
+function old_input(string $key, string $default = ''): string
+{
     return $_SESSION['old_input'][$key] ?? $default;
 }
 
-function clear_old_input(): void {
+function clear_old_input(): void
+{
     unset($_SESSION['old_input']);
 }
 
@@ -53,7 +60,8 @@ function clear_old_input(): void {
 // Usage: redirect('/lazydrip/auth/login.php');
 // Stops script execution after redirecting.
 // -------------------------------------------------------------
-function redirect(string $url): void {
+function redirect(string $url): void
+{
     header('Location: ' . $url);
     exit;
 }
@@ -62,29 +70,34 @@ function redirect(string $url): void {
 // AUTH CHECKS
 // Use these at the top of any page that requires login.
 // -------------------------------------------------------------
-function require_login(): void {
+function require_login(): void
+{
     if (empty($_SESSION['user_id'])) {
         set_flash('warning', 'Please log in to continue.');
         redirect(APP_URL . '/auth/login.php');
     }
 }
 
-function require_admin(): void {
+function require_admin(): void
+{
     if (empty($_SESSION['user_id']) || (($_SESSION['role'] ?? '') !== 'admin')) {
         set_flash('danger', 'Access denied.');
         redirect(APP_URL . '/auth/login.php');
     }
 }
 
-function is_logged_in(): bool {
+function is_logged_in(): bool
+{
     return !empty($_SESSION['user_id']);
 }
 
-function is_admin(): bool {
+function is_admin(): bool
+{
     return !empty($_SESSION['role']) && $_SESSION['role'] === 'admin';
 }
 
-function redirect_if_logged_in(): void {
+function redirect_if_logged_in(): void
+{
     if (is_logged_in()) {
         if (is_admin()) {
             redirect(APP_URL . '/admin/dashboard.php');
@@ -98,11 +111,13 @@ function redirect_if_logged_in(): void {
 // Cart structure in $_SESSION['cart']:
 //   [ item_id => ['name'=>.., 'price'=>.., 'qty'=>..], ... ]
 // -------------------------------------------------------------
-function get_cart(): array {
+function get_cart(): array
+{
     return $_SESSION['cart'] ?? [];
 }
 
-function cart_total(): float {
+function cart_total(): float
+{
     $total = 0.0;
 
     foreach (get_cart() as $item) {
@@ -124,7 +139,8 @@ function cart_total(): float {
     return $total;
 }
 
-function cart_count(): int {
+function cart_count(): int
+{
     $count = 0;
 
     foreach (get_cart() as $item) {
@@ -146,15 +162,17 @@ function cart_count(): int {
  * Formats a price for currency display.
  * IMPORTANT: Use only in visual contexts with labels.
  * Do NOT use in alt text or form field values without context.
- * 
+ *
  * @param  float  $amount  The price to format
  * @return string  Formatted as "$XX.XX"
  */
-function format_price(float $amount): string {
+function format_price(float $amount): string
+{
     return '$' . number_format($amount, 2);
 }
 
-function format_date(string $datetime): string {
+function format_date(string $datetime): string
+{
     return date('d M Y, h:i A', strtotime($datetime));
 }
 
@@ -162,8 +180,61 @@ function format_date(string $datetime): string {
 // INPUT SANITIZATION
 // Trims and strips tags from a submitted string.
 // -------------------------------------------------------------
-function clean_input(string $value): string {
+function clean_input(string $value): string
+{
     return strip_tags(trim($value));
+}
+
+// =============================================================
+// TRANSPORT SECURITY HELPERS
+// =============================================================
+
+/**
+ * Returns true when the current request is served over HTTPS.
+ */
+function request_is_https(): bool
+{
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        return true;
+    }
+
+    if (isset($_SERVER['SERVER_PORT']) && (string)$_SERVER['SERVER_PORT'] === '443') {
+        return true;
+    }
+
+    if (isset($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+        $proto = strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']);
+        if ($proto === 'https') {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * Forces HTTPS in web requests, with optional localhost allowance.
+ */
+function enforce_https(bool $allowLocal = true): void
+{
+    if (!defined('FORCE_HTTPS') || FORCE_HTTPS !== true) {
+        return;
+    }
+
+    if (PHP_SAPI === 'cli' || request_is_https()) {
+        return;
+    }
+
+    $remoteAddr = $_SERVER['REMOTE_ADDR'] ?? '';
+    if ($allowLocal && in_array($remoteAddr, ['127.0.0.1', '::1'], true)) {
+        return;
+    }
+
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+    $uri  = $_SERVER['REQUEST_URI'] ?? '/';
+
+    header('Location: https://' . $host . $uri, true, 302);
+    exit;
 }
 
 // =============================================================
@@ -174,7 +245,8 @@ function clean_input(string $value): string {
  * Returns the current session CSRF token, creating one if needed.
  * Usage:  $token = csrf_token();
  */
-function csrf_token(): string {
+function csrf_token(): string
+{
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -185,7 +257,8 @@ function csrf_token(): string {
  * Echoes a hidden <input> containing the CSRF token.
  * Drop  <?php csrf_field(); ?>  inside any POST <form>.
  */
-function csrf_field(): void {
+function csrf_field(): void
+{
     echo '<input type="hidden" name="csrf_token" value="' . e(csrf_token()) . '">';
 }
 
@@ -196,7 +269,8 @@ function csrf_field(): void {
  *
  * Usage: verify_csrf(APP_URL . '/contact.php');
  */
-function verify_csrf(string $fallback_url = ''): void {
+function verify_csrf(string $fallback_url = ''): void
+{
     $submitted = $_POST['csrf_token'] ?? '';
     if (!hash_equals(csrf_token(), $submitted)) {
         set_flash('danger', 'Invalid request. Please refresh the page and try again.');
@@ -226,7 +300,8 @@ function verify_csrf(string $fallback_url = ''): void {
  * @param int   $orderId     Newly created order ID
  * @param float $orderTotal  Post-discount amount paid
  */
-function award_points(PDO $pdo, int $userId, int $orderId, float $orderTotal): void {
+function award_points(PDO $pdo, int $userId, int $orderId, float $orderTotal): void
+{
     $earned = (int)floor($orderTotal * POINTS_PER_DOLLAR);
     if ($earned <= 0) {
         return; // Nothing to award (e.g. 100% discount edge case)
@@ -267,7 +342,8 @@ function award_points(PDO $pdo, int $userId, int $orderId, float $orderTotal): v
  *
  * @return bool  true on success, false if points were insufficient
  */
-function redeem_points(PDO $pdo, int $userId, int $orderId): bool {
+function redeem_points(PDO $pdo, int $userId, int $orderId): bool
+{
     $stmt = $pdo->prepare("
         UPDATE users
         SET    points = points - ?

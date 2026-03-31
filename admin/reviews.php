@@ -9,12 +9,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Restrict access to admins only
 require_admin();
 
+// Fetch reviews with dynamic column detection and user join if needed
 $reviewColumns = [];
 $reviews = [];
 $loadError = '';
 
+// Detect review table structure and load reviews accordingly
 try {
     $columnsStmt = $pdo->query("SHOW COLUMNS FROM reviews");
     foreach ($columnsStmt->fetchAll() as $column) {
@@ -23,6 +26,7 @@ try {
         }
     }
 
+    // Helper to pick first matching column name from candidates
     $pickColumn = static function (array $candidates, array $columns): string {
         foreach ($candidates as $candidate) {
             if (in_array($candidate, $columns, true)) {
@@ -32,6 +36,15 @@ try {
         return '';
     };
 
+    // Helper to quote column and table names
+    $quoteIdent = static function (string $identifier): string {
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $identifier)) {
+            throw new RuntimeException('Unsafe SQL identifier: ' . $identifier);
+        }
+        return '`' . $identifier . '`';
+    };
+
+    // Determine column names
     $reviewIdColumn = $pickColumn(['id', 'review_id'], $reviewColumns);
     $reviewTextColumn = $pickColumn(['comment', 'review_text', 'review', 'feedback'], $reviewColumns);
     $reviewNameColumn = $pickColumn(['name', 'reviewer_name', 'full_name'], $reviewColumns);
@@ -42,50 +55,57 @@ try {
 
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
         $userColumns = [];
+        // Get columns from users table to detect primary key
         $userColumnsStmt = $pdo->query("SHOW COLUMNS FROM users");
         foreach ($userColumnsStmt->fetchAll() as $column) {
             if (!empty($column['Field'])) {
                 $userColumns[] = $column['Field'];
             }
         }
+        // Detect user primary key column
         $userPrimaryKeyColumn = $pickColumn(['user_id', 'id'], $userColumns);
         if ($userPrimaryKeyColumn === '') {
             $userPrimaryKeyColumn = 'user_id';
         }
     }
 
+    // Ensure at least ID and text columns exists to proceed
     if ($reviewIdColumn === '' || $reviewTextColumn === '') {
         throw new RuntimeException('No supported review ID/text columns found in reviews table.');
     }
 
-    $selectParts = ["r.{$reviewIdColumn} AS review_id"];
-    $selectParts[] = "r.{$reviewTextColumn} AS review_text";
-    $selectParts[] = $reviewCreatedAtColumn !== '' ? "r.{$reviewCreatedAtColumn} AS created_at" : "NULL AS created_at";
+    $selectParts = ["r." . $quoteIdent($reviewIdColumn) . " AS review_id"];
+    $selectParts[] = "r." . $quoteIdent($reviewTextColumn) . " AS review_text";
+    $selectParts[] = $reviewCreatedAtColumn !== '' ? "r." . $quoteIdent($reviewCreatedAtColumn) . " AS created_at" : "NULL AS created_at";
 
+    // Join reviewer name from reviews or users table if available
     if ($reviewNameColumn !== '') {
-        $selectParts[] = "r.{$reviewNameColumn} AS reviewer_name";
+        $selectParts[] = "r." . $quoteIdent($reviewNameColumn) . " AS reviewer_name";
     } elseif ($reviewUserIdColumn !== '') {
-        $selectParts[] = "u.full_name AS reviewer_name";
+        $selectParts[] = "u.`full_name` AS reviewer_name";
     } else {
         $selectParts[] = "'Anonymous' AS reviewer_name";
     }
 
+    // Include rating if available
     if ($reviewRatingColumn !== '') {
-        $selectParts[] = "r.{$reviewRatingColumn} AS rating";
+        $selectParts[] = "r." . $quoteIdent($reviewRatingColumn) . " AS rating";
     } else {
         $selectParts[] = "NULL AS rating";
     }
 
+    // Build SQL query with dynamic joins and ordering
     $sql = "SELECT " . implode(', ', $selectParts) . " FROM reviews r";
     if ($reviewNameColumn === '' && $reviewUserIdColumn !== '') {
-        $sql .= " LEFT JOIN users u ON u.{$userPrimaryKeyColumn} = r.{$reviewUserIdColumn}";
+        $sql .= " LEFT JOIN users u ON u." . $quoteIdent($userPrimaryKeyColumn) . " = r." . $quoteIdent($reviewUserIdColumn);
     }
     if ($reviewCreatedAtColumn !== '') {
-        $sql .= " ORDER BY r.{$reviewCreatedAtColumn} DESC";
+        $sql .= " ORDER BY r." . $quoteIdent($reviewCreatedAtColumn) . " DESC";
     } else {
-        $sql .= " ORDER BY r.{$reviewIdColumn} DESC";
+        $sql .= " ORDER BY r." . $quoteIdent($reviewIdColumn) . " DESC";
     }
 
+    // Execute query to fetch reviews
     $reviewsStmt = $pdo->query($sql);
     $reviews = $reviewsStmt->fetchAll();
 } catch (Throwable $e) {
@@ -96,6 +116,7 @@ try {
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
+<!-- Admin review management page -->
 <section class="ld-section">
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -106,10 +127,12 @@ require_once __DIR__ . '/../includes/header.php';
             <a href="<?= APP_URL ?>/admin/dashboard.php" class="ld-btn-outline">Back to Dashboard</a>
         </div>
 
+        <!-- Show any loading errors encountered while fetching reviews -->
         <?php if ($loadError !== ''): ?>
             <div class="alert alert-danger"><?= e($loadError) ?></div>
         <?php endif; ?>
 
+        <!-- Reviews table with actions -->
         <div class="card ld-card p-4">
             <div class="table-responsive">
                 <table class="table align-middle">
@@ -125,6 +148,7 @@ require_once __DIR__ . '/../includes/header.php';
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- If no reviews found, show a message instead of empty table -->
                     <?php if (empty($reviews)): ?>
                         <tr>
                             <td colspan="6">No reviews found.</td>
@@ -138,6 +162,7 @@ require_once __DIR__ . '/../includes/header.php';
                             }
                             ?>
                             <tr>
+                                <!-- Use detected column names to display review data -->
                                 <th scope="row"><?= e((string) $review['review_id']) ?></th>
                                 <td><?= e((string) ($review['reviewer_name'] ?? 'Anonymous')) ?></td>
                                 <td><?= $review['rating'] !== null ? e((string) $review['rating']) . '/5' : '-' ?></td>
