@@ -1,16 +1,14 @@
 <?php
-// =============================================================
-// about.php — About LazyDrip
-// Static informational page describing the brand, pickup model,
-// and value propositions.
-// =============================================================
+// About page for LazyDrip.
+// Shares the brand story, pickup model,
+// and the main value points.
 
 $page_title   = 'About Us';
 $current_page = 'about';
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<!-- Hero banner -->
+<!-- Hero section -->
 <section class="ld-hero">
     <div class="container">
         <div class="row align-items-center gy-4">
@@ -31,7 +29,7 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
             <div class="col-lg-5 text-center">
-                <!-- Decorative blob / illustration placeholder -->
+                <!-- Simple illustration block that can be swapped for an image later -->
                 <div style="
                     width: 100%;
                     max-width: 340px;
@@ -51,7 +49,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<!-- What we are -->
+<!-- Quick introduction -->
 <section class="ld-section">
     <div class="container">
         <div class="row justify-content-center">
@@ -65,14 +63,14 @@ require_once __DIR__ . '/includes/header.php';
             </div>
         </div>
 
-        <!-- 3-column value props -->
+        <!-- Three key benefits -->
         <div class="row gy-4 mt-2">
             <div class="col-md-4">
                 <div class="card ld-card h-100 p-4 text-center">
                     <div class="fs-1 mb-3" aria-hidden="true">🛵</div>
                     <h3 class="h5">Grab self-pickup</h3>
                     <p class="text-muted small mb-0">
-                        Order on LazyDrip, collect via Grab — no delivery fees,
+                        Order on LazyDrip, and self-collect!No delivery fees,
                         no surprise charges. Just walk in and grab your drink.
                     </p>
                 </div>
@@ -83,7 +81,7 @@ require_once __DIR__ . '/includes/header.php';
                     <h3 class="h5">Order ahead, skip the wait</h3>
                     <p class="text-muted small mb-0">
                         Browse and pay online before you leave home. Your order
-                        is ready when you arrive — zero time spent standing in line.
+                        is ready when you arrive! Zero time spent standing in line.
                     </p>
                 </div>
             </div>
@@ -101,7 +99,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<!-- How pickup works -->
+<!-- Pickup flow -->
 <section class="ld-section" style="background: var(--ld-blue-light);">
     <div class="container">
         <div class="row justify-content-center mb-5">
@@ -112,7 +110,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <ol class="row gy-4 justify-content-center list-unstyled mb-0" aria-label="How LazyDrip pickup works in four steps">
-            <!-- Step 1 -->
+            <!-- First step -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
@@ -132,7 +130,7 @@ require_once __DIR__ . '/includes/header.php';
                     </p>
                 </div>
             </li>
-            <!-- Step 2 -->
+            <!-- Second step -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
@@ -152,7 +150,7 @@ require_once __DIR__ . '/includes/header.php';
                     </p>
                 </div>
             </li>
-            <!-- Step 3 -->
+            <!-- Third step -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
@@ -172,7 +170,7 @@ require_once __DIR__ . '/includes/header.php';
                     </p>
                 </div>
             </li>
-            <!-- Step 4 -->
+            <!-- Fourth step -->
             <li class="col-sm-6 col-lg-3">
                 <div class="d-flex flex-column align-items-center text-center">
                     <div class="rounded-circle d-flex align-items-center justify-content-center mb-3"
@@ -196,7 +194,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
 </section>
 
-<!-- Values / philosophy -->
+<!-- Brand values -->
 <section class="ld-section">
     <div class="container">
         <div class="row align-items-center gy-4">

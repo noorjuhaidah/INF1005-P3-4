@@ -1,15 +1,13 @@
 <?php
-// =============================================================
-// rewards.php — LazyDrip Loyalty Rewards Programme
-// Explains how points are earned, redeemed, and shows the
-// current logged-in user's balance.
-// =============================================================
+// Rewards page for the LazyDrip loyalty program.
+// Explains how points are earned and redeemed,
+// and shows the logged in user's current balance.
 
 $page_title   = 'Rewards';
 $current_page = 'rewards';
 require_once __DIR__ . '/includes/header.php';
 
-// Fetch current user's points fresh from DB (session may be stale)
+// Pull the latest points from the database in case the session is out of date.
 $userPoints = null;
 if (is_logged_in()) {
     try {
@@ -20,17 +18,17 @@ if (is_logged_in()) {
             $userPoints = (int)$row['points'];
         }
     } catch (PDOException $e) {
-        // Non-critical — just hide the balance widget
+        // If this lookup fails, hide the balance card and keep the page usable.
         $userPoints = null;
     }
 }
 
-// How many full redemptions the user can make right now
+// Number of full redemptions available right now.
 $redeemable = ($userPoints !== null && POINTS_REDEEM_AMOUNT > 0)
             ? intdiv($userPoints, POINTS_REDEEM_AMOUNT)
             : 0;
 
-// Points needed for the next redemption
+// Points still needed to reach the next redemption.
 $pointsToNext = ($userPoints !== null)
               ? max(0, POINTS_REDEEM_AMOUNT - ($userPoints % POINTS_REDEEM_AMOUNT))
               : POINTS_REDEEM_AMOUNT;
@@ -61,7 +59,7 @@ $pointsToNext = ($userPoints !== null)
     </div>
 </section>
 
-<!-- Points balance card (logged-in users only) -->
+<!-- Points balance card for signed in users -->
 <?php if ($userPoints !== null): ?>
 <section class="ld-section-sm">
     <div class="container">
@@ -98,12 +96,12 @@ $pointsToNext = ($userPoints !== null)
                     </div>
 
                     <?php if ($userPoints > 0): ?>
-                    <!-- Progress bar toward next redemption -->
+                    <!-- Progress bar showing how close the user is to the next reward -->
                     <?php
                         $progressPct = min(100, round(
                             (($userPoints % POINTS_REDEEM_AMOUNT) / POINTS_REDEEM_AMOUNT) * 100
                         ));
-                        // If evenly divisible and > 0, bar is full
+                        // If points divide evenly into a reward tier, show a full bar.
                         if ($userPoints % POINTS_REDEEM_AMOUNT === 0) {
                             $progressPct = 100;
                         }

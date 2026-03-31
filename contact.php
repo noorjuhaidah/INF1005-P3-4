@@ -1,156 +1,92 @@
 <?php
-// =============================================================
-// contact.php — Contact page
-// Shows a contact form with CSRF protection + server-side
-// validation. Submitted messages are stored in
-// contact_messages for admin reference.
-// =============================================================
+// Contact page.
+// Shows a contact form with CSRF protection and server side validation.
+// Submitted messages are stored in contact_messages for admin review.
 
 $page_title   = 'Contact Us';
 $current_page = 'contact';
-require_once __DIR__ . '/includes/db.php';
+
+// Load dependencies before rendering the header so form handling can run first.
+require_once __DIR__ . '/includes/config.php';
 require_once __DIR__ . '/includes/functions.php';
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-$contactMessageColumn = 'message';
-$contactColumns = [];
-try {
-    $colStmt = $pdo->query("SHOW COLUMNS FROM contact_messages");
-    $contactColumns = array_column($colStmt->fetchAll(), 'Field');
-    if (!in_array('message', $contactColumns, true) && in_array('message_text', $contactColumns, true)) {
-        $contactMessageColumn = 'message_text';
-    }
-} catch (PDOException $e) {
-    $contactColumns = [];
-    $contactMessageColumn = 'message';
-}
-
-// ------------------------------------------------------------------
-// Handle POST submission
-// ------------------------------------------------------------------
+// Handle form submission before header output so redirects still work.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    // 1. CSRF check (uses the helper from functions.php)
+    // First, verify the CSRF token.
     verify_csrf(APP_URL . '/contact.php');
 
-    // 2. Collect + sanitise inputs
+    // Collect and sanitize form inputs.
     $name    = clean_input($_POST['name']    ?? '');
     $email   = clean_input($_POST['email']   ?? '');
     $subject = clean_input($_POST['subject'] ?? '');
     $message = clean_input($_POST['message'] ?? '');
 
-    // 3. Validate
+    // Validate required fields and basic formatting.
     $errors = [];
-    $name_error = $email_error = $subject_error = $message_error = '';
 
     if ($name === '') {
-        $name_error = 'Your name is required.';
-        $errors[] = $name_error;
+        $errors[] = 'Your name is required.';
     }
 
-    if ($email === '') {
-        $email_error = 'Email address is required.';
-        $errors[] = $email_error;
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $email_error = 'Please enter a valid email address.';
-        $errors[] = $email_error;
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'A valid email address is required.';
     }
 
     if ($subject === '') {
-        $subject_error = 'A subject is required.';
-        $errors[] = $subject_error;
+        $errors[] = 'A subject is required.';
     }
 
     if ($message === '') {
-        $message_error = 'A message is required.';
-        $errors[] = $message_error;
-    } elseif (mb_strlen($message) < 10) {
-        $message_error = 'Your message is a bit short — please give us a little more detail.';
-        $errors[] = $message_error;
+        $errors[] = 'A message is required.';
+    } elseif (strlen($message) < 10) {
+        $errors[] = 'Your message is a bit short — please give us a little more detail.';
     }
 
-    // 4. If valid, store in DB and redirect with success flash
+    // If everything is valid, save the message and redirect with a success notice.
     if (empty($errors)) {
         try {
-            $insertColumns = [];
-            $insertValues = [];
-            $insertParams = [];
-
-            if (in_array('user_id', $contactColumns, true)) {
-                $insertColumns[] = 'user_id';
-                $insertValues[] = '?';
-                $insertParams[] = is_logged_in() ? (int)$_SESSION['user_id'] : null;
-            }
-
-            if (in_array('name', $contactColumns, true)) {
-                $insertColumns[] = 'name';
-                $insertValues[] = '?';
-                $insertParams[] = $name;
-            }
-
-            if (in_array('email', $contactColumns, true)) {
-                $insertColumns[] = 'email';
-                $insertValues[] = '?';
-                $insertParams[] = $email;
-            }
-
-            if (in_array('subject', $contactColumns, true)) {
-                $insertColumns[] = 'subject';
-                $insertValues[] = '?';
-                $insertParams[] = $subject;
-            }
-
-            $insertColumns[] = $contactMessageColumn;
-            $insertValues[] = '?';
-            $insertParams[] = $message;
-
-            if (in_array('created_at', $contactColumns, true)) {
-                $insertColumns[] = 'created_at';
-                $insertValues[] = 'NOW()';
-            }
+            $userId = is_logged_in() ? (int)$_SESSION['user_id'] : null;
 
             $stmt = $pdo->prepare("
                 INSERT INTO contact_messages
-                    (" . implode(', ', $insertColumns) . ")
-                VALUES (" . implode(', ', $insertValues) . ")
+                    (user_id, name, email, subject, message, created_at)
+                VALUES (?, ?, ?, ?, ?, NOW())
             ");
-            $stmt->execute($insertParams);
+            $stmt->execute([$userId, $name, $email, $subject, $message]);
 
             set_flash('success', 'Thanks for reaching out, ' . e($name) . '! We will get back to you within 1–2 business days.');
             redirect(APP_URL . '/contact.php');
 
         } catch (PDOException $e) {
             error_log('Contact form DB error: ' . $e->getMessage());
-            set_flash('danger', 'Contact form error: ' . $e->getMessage());
+            set_flash('danger', 'Something went wrong saving your message. Please try again later.');
             redirect(APP_URL . '/contact.php');
         }
     }
 
-    // If there are validation errors, fall through and re-render the
-    // form with the error list. We keep the user's input via variables
-    // already set above.
+    // If validation fails, fall through and re-render with errors.
+    // The values already assigned above are reused to refill the form.
 }
 
-// Prefill fields from logged-in user if this is a fresh GET
+// Prefill name and email for signed in users on a fresh GET request.
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_logged_in()) {
     $name  = $name  ?? e($_SESSION['full_name'] ?? '');
-    $email = $email ?? '';  // do not pre-fill email — let user type it
+    $email = $email ?? '';  // Leave email blank for privacy.
 }
 
-// Safe defaults for all form fields (in case of validation re-render)
+// Safe defaults for all fields when the form is shown for the first time.
 $name    = $name    ?? '';
 $email   = $email   ?? '';
 $subject = $subject ?? '';
 $message = $message ?? '';
 $errors  = $errors  ?? [];
 
+// Render the header after form handling is complete.
 require_once __DIR__ . '/includes/header.php';
 ?>
 
-<!-- Page header -->
+<!-- Contact page header -->
 <section class="ld-section-sm" style="background: var(--ld-blue-light);">
     <div class="container text-center py-4">
         <h1 class="ld-section-title">Get in touch</h1>
@@ -164,8 +100,19 @@ require_once __DIR__ . '/includes/header.php';
     <div class="container">
         <div class="row gy-5 justify-content-between">
 
-            <!-- ---- Contact form ---- -->
+            <!-- Contact form area -->
             <div class="col-lg-7">
+
+                <?php if (!empty($errors)): ?>
+                    <div class="alert alert-danger">
+                        <strong>Please fix the following:</strong>
+                        <ul class="mb-0 mt-1">
+                            <?php foreach ($errors as $err): ?>
+                                <li><?= e($err) ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
 
                 <form method="POST" action="<?= APP_URL ?>/contact.php" novalidate>
                     <?php csrf_field(); ?>
@@ -177,14 +124,10 @@ require_once __DIR__ . '/includes/header.php';
                             <input type="text"
                                    id="name"
                                    name="name"
-                                   class="form-control <?= $name_error ? 'is-invalid' : '' ?>"
+                                   class="form-control <?= !empty($errors) && $name === '' ? 'is-invalid' : '' ?>"
                                    value="<?= e($name) ?>"
                                    autocomplete="name"
-                                   required
-                                   aria-describedby="<?= $name_error ? 'name-error' : '' ?>">
-                            <?php if ($name_error): ?>
-                                <div id="name-error" class="invalid-feedback"><?= e($name_error) ?></div>
-                            <?php endif; ?>
+                                   required>
                         </div>
 
                         <div class="col-sm-6">
@@ -192,14 +135,10 @@ require_once __DIR__ . '/includes/header.php';
                             <input type="email"
                                    id="email"
                                    name="email"
-                                   class="form-control <?= $email_error ? 'is-invalid' : '' ?>"
+                                   class="form-control <?= !empty($errors) && !filter_var($email, FILTER_VALIDATE_EMAIL) ? 'is-invalid' : '' ?>"
                                    value="<?= e($email) ?>"
                                    autocomplete="email"
-                                   required
-                                   aria-describedby="<?= $email_error ? 'email-error' : '' ?>">
-                            <?php if ($email_error): ?>
-                                <div id="email-error" class="invalid-feedback"><?= e($email_error) ?></div>
-                            <?php endif; ?>
+                                   required>
                         </div>
 
                         <div class="col-12">
@@ -207,28 +146,20 @@ require_once __DIR__ . '/includes/header.php';
                             <input type="text"
                                    id="subject"
                                    name="subject"
-                                   class="form-control <?= $subject_error ? 'is-invalid' : '' ?>"
+                                   class="form-control <?= !empty($errors) && $subject === '' ? 'is-invalid' : '' ?>"
                                    value="<?= e($subject) ?>"
                                    placeholder="e.g. Question about my order"
-                                   required
-                                   aria-describedby="<?= $subject_error ? 'subject-error' : '' ?>">
-                            <?php if ($subject_error): ?>
-                                <div id="subject-error" class="invalid-feedback"><?= e($subject_error) ?></div>
-                            <?php endif; ?>
+                                   required>
                         </div>
 
                         <div class="col-12">
                             <label class="form-label" for="message">Message <span class="text-danger" aria-hidden="true">*</span></label>
                             <textarea id="message"
                                       name="message"
-                                      class="form-control <?= $message_error ? 'is-invalid' : '' ?>"
+                                      class="form-control <?= !empty($errors) && $message === '' ? 'is-invalid' : '' ?>"
                                       rows="6"
                                       placeholder="Tell us what is on your mind…"
-                                      required
-                                      aria-describedby="<?= $message_error ? 'message-error' : '' ?>"><?= e($message) ?></textarea>
-                            <?php if ($message_error): ?>
-                                <div id="message-error" class="invalid-feedback"><?= e($message_error) ?></div>
-                            <?php endif; ?>
+                                      required><?= e($message) ?></textarea>
                         </div>
 
                         <div class="col-12">
@@ -238,11 +169,11 @@ require_once __DIR__ . '/includes/header.php';
                             </button>
                         </div>
 
-                    </div><!-- /.row -->
+                    </div>
                 </form>
-            </div><!-- /.col -->
+            </div>
 
-            <!-- ---- Info sidebar ---- -->
+            <!-- Contact info and FAQ sidebar -->
             <div class="col-lg-4">
 
                 <div class="card ld-card p-4 mb-4">
@@ -250,7 +181,7 @@ require_once __DIR__ . '/includes/header.php';
                     <ul class="list-unstyled text-muted small mb-0">
                         <li class="mb-2">
                             <i class="bi bi-envelope me-2" aria-hidden="true"></i>
-                            <a class="ld-contact-email" href="mailto:hello@lazydrip.sg">hello@lazydrip.sg</a>
+                            <a href="mailto:hello@lazydrip.sg">hello@lazydrip.sg</a>
                         </li>
                         <li class="mb-2">
                             <i class="bi bi-geo-alt me-2" aria-hidden="true"></i>
@@ -330,13 +261,13 @@ require_once __DIR__ . '/includes/header.php';
                             </div>
                         </div>
 
-                    </div><!-- /#faqAccordion -->
+                    </div>
                 </div>
 
-            </div><!-- /.col sidebar -->
+            </div>
 
-        </div><!-- /.row -->
-    </div><!-- /.container -->
+        </div>
+    </div>
 </section>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
