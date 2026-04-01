@@ -236,15 +236,19 @@ unset($_SESSION['field_errors']);
         <div class="row g-4 align-items-start">
             <div class="col-lg-7">
                 <div class="card ld-card p-4">
-                    <h1 class="ld-section-title mb-3">Payment</h1>
+                    <h1 class="ld-section-title mb-3">
+                        <i class="fa-solid fa-credit-card me-2" aria-hidden="true"></i>Payment
+                    </h1>
                     <p class="text-muted mb-4">Mock payment page for project demo. No real payment is processed.</p>
 
                     <form method="POST" action="<?= APP_URL ?>/cart/payment.php" class="row g-3">
                         <?php csrf_field(); ?>
 
                         <div class="col-12">
-                            <label class="form-label" for="card_name">Cardholder name <span class="text-danger"
-                                    aria-hidden="true">*</span></label>
+                            <label class="form-label" for="card_name">
+                                <i class="fa-solid fa-user me-1" aria-hidden="true"></i>Cardholder name <span class="text-danger"
+                                    aria-hidden="true">*</span>
+                            </label>
                             <input type="text" id="card_name" name="card_name"
                                 class="form-control <?= !empty($field_errors['card_name']) ? 'is-invalid' : '' ?>"
                                 value="<?= e(old_input('card_name')) ?>" autocomplete="cc-name"
@@ -255,8 +259,10 @@ unset($_SESSION['field_errors']);
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label" for="card_number">Card number <span class="text-danger"
-                                    aria-hidden="true">*</span></label>
+                            <label class="form-label" for="card_number">
+                                <i class="fa-solid fa-credit-card me-1" aria-hidden="true"></i>Card number <span class="text-danger"
+                                    aria-hidden="true">*</span>
+                            </label>
                             <input type="text" id="card_number" name="card_number"
                                 class="form-control <?= !empty($field_errors['card_number']) ? 'is-invalid' : '' ?>"
                                 inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456"
@@ -270,8 +276,10 @@ unset($_SESSION['field_errors']);
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="expiry">Expiry (MM/YY) <span class="text-danger"
-                                    aria-hidden="true">*</span></label>
+                            <label class="form-label" for="expiry">
+                                <i class="fa-solid fa-calendar me-1" aria-hidden="true"></i>Expiry (MM/YY) <span class="text-danger"
+                                    aria-hidden="true">*</span>
+                            </label>
                             <input type="text" id="expiry" name="expiry"
                                 class="form-control <?= !empty($field_errors['expiry']) ? 'is-invalid' : '' ?>"
                                 placeholder="MM/YY" maxlength="5" value="<?= e(old_input('expiry')) ?>"
@@ -283,8 +291,10 @@ unset($_SESSION['field_errors']);
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label" for="cvv">CVV <span class="text-danger"
-                                    aria-hidden="true">*</span></label>
+                            <label class="form-label" for="cvv">
+                                <i class="fa-solid fa-lock me-1" aria-hidden="true"></i>CVV <span class="text-danger"
+                                    aria-hidden="true">*</span>
+                            </label>
                             <input type="password" id="cvv" name="cvv"
                                 class="form-control <?= !empty($field_errors['cvv']) ? 'is-invalid' : '' ?>"
                                 inputmode="numeric" maxlength="3" placeholder="123" autocomplete="cc-csc"
@@ -295,10 +305,12 @@ unset($_SESSION['field_errors']);
 
                         <div class="col-12 d-flex gap-2 flex-wrap mt-3">
                             <button type="submit" class="ld-btn-primary">
-                                <i class="bi bi-lock-fill me-1" aria-hidden="true"></i>
+                                <i class="fa-solid fa-lock me-1" aria-hidden="true"></i>
                                 Pay <?= format_price($finalTotal) ?>
                             </button>
-                            <a href="<?= APP_URL ?>/cart/checkout.php" class="ld-btn-outline">Back to checkout</a>
+                            <a href="<?= APP_URL ?>/cart/checkout.php" class="ld-btn-outline">
+                                <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Back to checkout
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -306,7 +318,9 @@ unset($_SESSION['field_errors']);
 
             <div class="col-lg-5">
                 <div class="card ld-card p-4">
-                    <h2 class="h5 mb-3">Payment summary</h2>
+                    <h2 class="h5 mb-3">
+                        <i class="fa-solid fa-receipt me-2" aria-hidden="true"></i>Payment summary
+                    </h2>
 
                     <?php foreach ($cart as $item): ?>
                         <?php

@@ -165,18 +165,24 @@ try {
     <div class="container">
         <div class="row gy-4">
             <div class="col-lg-8">
-                <h1 class="ld-section-title mb-3">Reviews</h1>
+                <h1 class="ld-section-title mb-3">
+                    <i class="fa-solid fa-star me-2" aria-hidden="true"></i>Reviews
+                </h1>
                 <p class="text-muted mb-4">See what other customers are saying and share your own experience.</p>
 
                 <?php if (is_logged_in()): ?>
                     <div class="card mb-4">
                         <div class="card-body">
-                            <h2 class="h5 mb-3">Leave a review</h2>
+                            <h2 class="h5 mb-3">
+                                <i class="fa-solid fa-pen-to-square me-2" aria-hidden="true"></i>Leave a review
+                            </h2>
                             <form method="POST" action="<?= APP_URL ?>/reviews.php" class="needs-validation"
                                 data-inline-validate="true" novalidate>
                                 <?php csrf_field(); ?>
                                 <div class="mb-3">
-                                    <label class="form-label" for="rating">Rating</label>
+                                    <label class="form-label" for="rating">
+                                        <i class="fa-solid fa-star me-1" aria-hidden="true"></i>Rating
+                                    </label>
                                     <select id="rating" name="rating" class="form-select" required>
                                         <option value="">Select a rating</option>
                                         <option value="5">5 - Excellent</option>
@@ -187,23 +193,28 @@ try {
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label class="form-label" for="review">Your review</label>
+                                    <label class="form-label" for="review">
+                                        <i class="fa-solid fa-comment me-1" aria-hidden="true"></i>Your review
+                                    </label>
                                     <textarea id="review" name="review" class="form-control" rows="4" maxlength="1000"
                                         required></textarea>
                                 </div>
-                                <button type="submit" class="ld-btn-primary">Submit review</button>
+                                <button type="submit" class="ld-btn-primary">
+                                    <i class="fa-solid fa-paper-plane me-1" aria-hidden="true"></i>Submit review
+                                </button>
                             </form>
                         </div>
                     </div>
                 <?php else: ?>
                     <div class="alert alert-info">
+                        <i class="fa-solid fa-circle-info me-1" aria-hidden="true"></i>
                         Please <a href="<?= APP_URL ?>/auth/login.php">log in</a> to leave a review.
                     </div>
                 <?php endif; ?>
 
                 <?php if (empty($reviews)): ?>
                     <div class="text-center py-5">
-                        <i class="bi bi-chat-dots fs-1 text-muted" aria-hidden="true"></i>
+                        <i class="fa-regular fa-comment-dots fs-1 text-muted" aria-hidden="true"></i>
                         <h2 class="h5 mt-3">No reviews yet</h2>
                         <p class="text-muted">Be the first to share your experience!</p>
                     </div>
@@ -217,13 +228,17 @@ try {
                             <article class="list-group-item" aria-label="Customer review by <?= e($author) ?>">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div>
-                                        <strong><?= e($author) ?></strong>
+                                        <strong>
+                                            <i class="fa-solid fa-user me-1" aria-hidden="true"></i><?= e($author) ?>
+                                        </strong>
                                         <?php if ($date): ?>
-                                            <span class="text-muted small">&middot; <?= e($date) ?></span>
+                                            <span class="text-muted small">&middot; <i class="fa-regular fa-calendar me-1" aria-hidden="true"></i><?= e($date) ?></span>
                                         <?php endif; ?>
                                     </div>
                                     <?php if (!empty($review['rating'])): ?>
-                                        <span class="ld-chip"><?= (int) $review['rating'] ?>/5</span>
+                                        <span class="ld-chip">
+                                            <i class="fa-solid fa-star me-1" aria-hidden="true"></i><?= (int) $review['rating'] ?>/5
+                                        </span>
                                     <?php endif; ?>
                                 </div>
                                 <p class="mt-2 mb-0"><?= nl2br(e($review['review_text'] ?? '')) ?></p>
