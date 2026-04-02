@@ -134,7 +134,7 @@ unset($_SESSION['field_errors']); // Clear errors after use
 
                     <div class="input-group">
                         <input type="password" id="confirm_password" name="confirm_password"
-                            required autocomplete="new-password"
+                            required minlength="8" autocomplete="new-password"
                             placeholder="Repeat your password"
                             aria-describedby="<?= !empty($field_errors['confirm_password']) ? 'confirm_password_error' : '' ?>"
                             class="form-control <?= !empty($field_errors['confirm_password']) ? 'is-invalid' : '' ?>">
@@ -168,37 +168,6 @@ unset($_SESSION['field_errors']); // Clear errors after use
         </div>
     </div>
 </section>
-
-<script>
-    // Toggle password visibility for better usability
-    const toggleBtn = document.getElementById('togglePassword');
-    const passwordInput = document.getElementById('password');
-    const confirmPasswordInput = document.getElementById('confirm_password');
-    const toggleIcon = document.getElementById('toggleIcon');
-
-    const toggleConfirmBtn = document.getElementById('toggleConfirmPassword');
-    const toggleConfirmIcon = document.getElementById('toggleConfirmIcon');
-
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', function () {
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            toggleIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
-            this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-            this.setAttribute('aria-pressed', !isPassword);
-        });
-    }
-
-    if (toggleConfirmBtn) {
-        toggleConfirmBtn.addEventListener('click', function () {
-            const isPassword = confirmPasswordInput.type === 'password';
-            confirmPasswordInput.type = isPassword ? 'text' : 'password';
-            toggleConfirmIcon.className = isPassword ? 'bi bi-eye-slash' : 'bi bi-eye';
-            this.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
-            this.setAttribute('aria-pressed', !isPassword);
-        });
-    }
-</script>
 
 <?php 
 clear_old_input(); 
