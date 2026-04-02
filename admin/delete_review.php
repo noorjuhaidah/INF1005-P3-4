@@ -1,5 +1,16 @@
 <?php
-require_once __DIR__ . '/../includes/admin_bootstrap.php';
+
+$page_title = 'Delete Review';
+$current_page = 'admin';
+
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+require_admin();
 
 $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
