@@ -98,7 +98,7 @@
 <!-- Bootstrap 5 JS (bundle includes Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- LazyDrip custom scripts -->
-<script src="<?= APP_URL ?>/assets/js/main.js"></script>
+<script src="<?= APP_URL ?>/assets/js/main.js?v=<?= filemtime(__DIR__ . '/../assets/js/main.js') ?>"></script>
 </body>
 
 </html>

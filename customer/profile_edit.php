@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             class="form-control <?= !empty($field_errors['full_name']) ? 'is-invalid' : '' ?>"
                             value="<?= e($fullName) ?>"
                             autocomplete="name"
-                            aria-describedby="<?= !empty($field_errors['full_name']) ? 'full_name_error' : '' ?>"
+                            <?= !empty($field_errors['full_name']) ? 'aria-describedby="full_name_error"' : '' ?>
                             required>
                         <?php if (!empty($field_errors['full_name'])): ?>
                             <div id="full_name_error" class="invalid-feedback"><?= e($field_errors['full_name']) ?></div>
@@ -136,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             class="form-control <?= !empty($field_errors['email']) ? 'is-invalid' : '' ?>"
                             value="<?= e($email) ?>"
                             autocomplete="email"
-                            aria-describedby="<?= !empty($field_errors['email']) ? 'email_error' : '' ?>"
+                            <?= !empty($field_errors['email']) ? 'aria-describedby="email_error"' : '' ?>
                             required>
                         <?php if (!empty($field_errors['email'])): ?>
                             <div id="email_error" class="invalid-feedback"><?= e($field_errors['email']) ?></div>

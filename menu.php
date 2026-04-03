@@ -13,180 +13,7 @@
 
 $page_title = 'Menu';
 $current_page = 'menu';
-require_once __DIR__ . '/includes/header.php';
-
-// -------------------------------------------------------------
-// CSRF token — one per session, embedded in every cart form
-// -------------------------------------------------------------
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrf = $_SESSION['csrf_token'];
-
-// -------------------------------------------------------------
-// Fetch menu items joined with their category name
-// -------------------------------------------------------------
-try {
-    $stmt = $pdo->query(
-        "SELECT m.item_id,
-                m.item_name,
-                m.description,
-                m.price,
-                m.image_path,
-                m.is_available,
-                c.category_name
-           FROM menu_items m
-           JOIN categories c ON m.category_id = c.category_id
-          WHERE m.is_available = 1
-          ORDER BY c.category_name ASC, m.item_name ASC"
-    );
-    $all_items = $stmt->fetchAll();
-} catch (PDOException $e) {
-    error_log('Menu fetch error: ' . $e->getMessage());
-    $all_items = [];
-}
-
-// Build unique category list for filter tabs
-$categories = [];
-foreach ($all_items as $item) {
-    if (!in_array($item['category_name'], $categories)) {
-        $categories[] = $item['category_name'];
-    }
-}
-?>
-
-<!-- ============================================================
-     HERO BANNER
-     ============================================================ -->
-<section class="ld-menu-hero">
-    <div class="container text-center">
-        <p class="ld-chip mb-3">Fresh &amp; made to order ☕</p>
-        <h1 class="ld-hero-title mb-2">Our Menu</h1>
-        <p class="ld-hero-subtitle mx-auto">
-            Slow-crafted drinks for every mood. Order ahead, pick up with Grab.
-        </p>
-
-        <!-- Live search -->
-        <div class="ld-search-wrap mt-4 mx-auto">
-            <i class="bi bi-search ld-search-icon" aria-hidden="true"></i>
-            <input type="search" id="menuSearch" class="form-control ld-search-input" placeholder="Search drinks…"
-                aria-label="Search menu items" autocomplete="off">
-        </div>
-    </div>
-</section>
-
-<!-- ============================================================
-     CATEGORY TABS + MENU GRID
-     ============================================================ -->
-<section class="ld-section-sm">
-    <div class="container">
-
-        <?php if (empty($all_items)): ?>
-            <div class="text-center py-5">
-                <i class="bi bi-cup-hot fs-1 text-muted"></i>
-                <p class="mt-3 text-muted">Menu coming soon — check back shortly!</p>
-            </div>
-                
-        <?php else: ?>
-
-            <!-- Filter tabs -->
-            <div class="ld-filter-tabs mb-4" role="tablist" aria-label="Filter by category">
-                <button class="ld-filter-btn active" data-filter="all" role="tab" aria-selected="true">All</button>
-
-                <?php foreach ($categories as $cat): ?>
-                    <button class="ld-filter-btn" data-filter="<?= e(strtolower($cat)) ?>" role="tab"
-                        aria-selected="false"><?= e(ucfirst($cat)) ?></button>
-                <?php endforeach; ?>
-            </div>
-
-            <!-- No results message -->
-            <p id="noResults" class="text-center text-muted py-4 d-none" aria-live="polite">
-                No drinks match your search. Try something else?
-            </p>
-
-            <!-- Menu grid -->
-            <div class="row g-4" id="menuGrid">
-
-                <?php foreach ($all_items as $item):
-                    $imgSrc = !empty($item['image_path'])
-                        ? e(UPLOAD_URL . $item['image_path'])
-                        : DEFAULT_IMG;
-                    $catSlug = strtolower($item['category_name']);
-                    ?>
-                    <div class="col-12 col-sm-6 col-lg-4 col-xl-4 col-xxl-3 menu-item-col" data-category="<?= e($catSlug) ?>"
-                        data-name="<?= e(strtolower($item['item_name'])) ?>">
-                        <article class="ld-card h-100 d-flex flex-column" aria-label="<?= e($item['item_name']) ?>">
-
-                            <img src="<?= $imgSrc ?>" alt="<?= e($item['item_name']) ?>" class="card-img-top ld-menu-img"
-                                loading="lazy">
-
-                            <div class="card-body d-flex flex-column p-4">
-
-                                <span class="ld-chip mb-2" style="font-size:0.7rem;">
-                                    <?= e(ucfirst($item['category_name'])) ?>
-                                </span>
-
-                                <h2 class="ld-menu-item-name"><?= e($item['item_name']) ?></h2>
-                                <p class="text-muted small flex-grow-1">
-                                    <?= e($item['description']) ?>
-                                </p>
-
-                                <div class="ld-menu-actions mt-3">
-                                    <span class="ld-price">
-                                        <?= format_price((float) $item['price']) ?>
-                                    </span>
-
-                                    <?php if (is_logged_in()): ?>
-                                        <!-- Add to cart form -->
-                                        <form action="<?= APP_URL ?>/cart/add_to_cart.php" method="POST"
-                                            class="d-flex align-items-center gap-2 add-to-cart-form"
-                                            aria-label="Add <?= e($item['item_name']) ?> to cart">
-                                            <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
-                                            <input type="hidden" name="item_id" value="<?= (int) $item['item_id'] ?>">
-                                            <input type="hidden" name="item_name" value="<?= e($item['item_name']) ?>">
-                                            <input type="hidden" name="item_price" value="<?= (float) $item['price'] ?>">
-
-                                            <!-- Qty spinner -->
-                                            <div class="qty-wrapper d-flex align-items-center border rounded-pill px-2">
-                                                <button type="button" class="qty-decrease ld-qty-btn"
-                                                    aria-label="Decrease quantity">
-                                                    <i class="bi bi-dash" aria-hidden="true"></i>
-                                                </button>
-                                                <input type="number" name="qty" class="qty-input" value="1" min="1" max="10"
-                                                    aria-label="Quantity"
-                                                    style="width:2rem;text-align:center;border:none;background:transparent;font-weight:600;">
-                                                <button type="button" class="qty-increase ld-qty-btn"
-                                                    aria-label="Increase quantity">
-                                                    <i class="bi bi-plus" aria-hidden="true"></i>
-                                                </button>
-                                            </div>
-
-                                            <button type="submit" class="ld-btn-primary ld-add-btn">
-                                                <i class="bi bi-bag-plus me-1" aria-hidden="true"></i>Add
-                                            </button>
-                                        </form>
-
-                                    <?php else: ?>
-                                        <a href="<?= APP_URL ?>/auth/login.php" class="ld-btn-outline ld-add-btn">
-                                            Log in to order
-                                        </a>
-                                    <?php endif; ?>
-
-                                </div>
-                            </div>
-                        </article>
-                    </div>
-                <?php endforeach; ?>
-
-            </div><!-- /#menuGrid -->
-        <?php endif; ?>
-
-    </div>
-</section>
-
-<!-- ============================================================
-     PAGE CSS
-     ============================================================ -->
+$page_styles = <<<'CSS'
 <style>
     .ld-menu-hero {
         background: linear-gradient(135deg, var(--ld-blue-light) 0%, #fff 70%);
@@ -334,6 +161,179 @@ foreach ($all_items as $item) {
         }
     }
 </style>
+CSS;
+require_once __DIR__ . '/includes/header.php';
+
+// -------------------------------------------------------------
+// CSRF token — one per session, embedded in every cart form
+// -------------------------------------------------------------
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf = $_SESSION['csrf_token'];
+
+// -------------------------------------------------------------
+// Fetch menu items joined with their category name
+// -------------------------------------------------------------
+try {
+    $stmt = $pdo->query(
+        "SELECT m.item_id,
+                m.item_name,
+                m.description,
+                m.price,
+                m.image_path,
+                m.is_available,
+                c.category_name
+           FROM menu_items m
+           JOIN categories c ON m.category_id = c.category_id
+          WHERE m.is_available = 1
+          ORDER BY c.category_name ASC, m.item_name ASC"
+    );
+    $all_items = $stmt->fetchAll();
+} catch (PDOException $e) {
+    error_log('Menu fetch error: ' . $e->getMessage());
+    $all_items = [];
+}
+
+// Build unique category list for filter tabs
+$categories = [];
+foreach ($all_items as $item) {
+    if (!in_array($item['category_name'], $categories)) {
+        $categories[] = $item['category_name'];
+    }
+}
+?>
+
+<!-- ============================================================
+     HERO BANNER
+     ============================================================ -->
+<section class="ld-menu-hero">
+    <div class="container text-center">
+        <p class="ld-chip mb-3">Fresh &amp; made to order ☕</p>
+        <h1 class="ld-hero-title mb-2">Our Menu</h1>
+        <p class="ld-hero-subtitle mx-auto">
+            Slow-crafted drinks for every mood. Order ahead, pick up with Grab.
+        </p>
+
+        <!-- Live search -->
+        <div class="ld-search-wrap mt-4 mx-auto">
+            <i class="bi bi-search ld-search-icon" aria-hidden="true"></i>
+            <input type="search" id="menuSearch" class="form-control ld-search-input" placeholder="Search drinks…"
+                aria-label="Search menu items" autocomplete="off">
+        </div>
+    </div>
+</section>
+
+<!-- ============================================================
+     CATEGORY TABS + MENU GRID
+     ============================================================ -->
+<section class="ld-section-sm">
+    <div class="container">
+        <h2 class="visually-hidden">Browse menu items</h2>
+
+        <?php if (empty($all_items)): ?>
+            <div class="text-center py-5">
+                <i class="bi bi-cup-hot fs-1 text-muted"></i>
+                <p class="mt-3 text-muted">Menu coming soon — check back shortly!</p>
+            </div>
+                
+        <?php else: ?>
+
+            <!-- Filter tabs -->
+            <div class="ld-filter-tabs mb-4" role="group" aria-label="Filter by category">
+                <button class="ld-filter-btn active" data-filter="all" aria-pressed="true">All</button>
+
+                <?php foreach ($categories as $cat): ?>
+                    <button class="ld-filter-btn" data-filter="<?= e(strtolower($cat)) ?>"
+                        aria-pressed="false"><?= e(ucfirst($cat)) ?></button>
+                <?php endforeach; ?>
+            </div>
+
+            <!-- No results message -->
+            <p id="noResults" class="text-center text-muted py-4 d-none" aria-live="polite">
+                No drinks match your search. Try something else?
+            </p>
+
+            <!-- Menu grid -->
+            <div class="row g-4" id="menuGrid">
+
+                <?php foreach ($all_items as $item):
+                    $imgSrc = !empty($item['image_path'])
+                        ? e(UPLOAD_URL . $item['image_path'])
+                        : DEFAULT_IMG;
+                    $catSlug = strtolower($item['category_name']);
+                    ?>
+                    <div class="col-12 col-sm-6 col-lg-4 col-xl-4 col-xxl-3 menu-item-col" data-category="<?= e($catSlug) ?>"
+                        data-name="<?= e(strtolower($item['item_name'])) ?>">
+                        <article class="ld-card h-100 d-flex flex-column" aria-label="<?= e($item['item_name']) ?>">
+
+                            <img src="<?= $imgSrc ?>" alt="<?= e($item['item_name']) ?>" class="card-img-top ld-menu-img"
+                                loading="lazy">
+
+                            <div class="card-body d-flex flex-column p-4">
+
+                                <span class="ld-chip mb-2" style="font-size:0.7rem;">
+                                    <?= e(ucfirst($item['category_name'])) ?>
+                                </span>
+
+                                <h2 class="ld-menu-item-name"><?= e($item['item_name']) ?></h2>
+                                <p class="text-muted small flex-grow-1">
+                                    <?= e($item['description']) ?>
+                                </p>
+
+                                <div class="ld-menu-actions mt-3">
+                                    <span class="ld-price">
+                                        <?= format_price((float) $item['price']) ?>
+                                    </span>
+
+                                    <?php if (is_logged_in()): ?>
+                                        <!-- Add to cart form -->
+                                        <form action="<?= APP_URL ?>/cart/add_to_cart.php" method="POST"
+                                            class="d-flex align-items-center gap-2 add-to-cart-form"
+                                            aria-label="Add <?= e($item['item_name']) ?> to cart">
+                                            <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                                            <input type="hidden" name="item_id" value="<?= (int) $item['item_id'] ?>">
+                                            <input type="hidden" name="item_name" value="<?= e($item['item_name']) ?>">
+                                            <input type="hidden" name="item_price" value="<?= (float) $item['price'] ?>">
+
+                                            <!-- Qty spinner -->
+                                            <div class="qty-wrapper d-flex align-items-center border rounded-pill px-2">
+                                                <button type="button" class="qty-decrease ld-qty-btn"
+                                                    aria-label="Decrease quantity">
+                                                    <i class="bi bi-dash" aria-hidden="true"></i>
+                                                </button>
+                                                <input type="number" name="qty" class="qty-input" value="1" min="1" max="10"
+                                                    aria-label="Quantity"
+                                                    style="width:2rem;text-align:center;border:none;background:transparent;font-weight:600;">
+                                                <button type="button" class="qty-increase ld-qty-btn"
+                                                    aria-label="Increase quantity">
+                                                    <i class="bi bi-plus" aria-hidden="true"></i>
+                                                </button>
+                                            </div>
+
+                                            <button type="submit" class="ld-btn-primary ld-add-btn">
+                                                <i class="bi bi-bag-plus me-1" aria-hidden="true"></i>Add
+                                            </button>
+                                        </form>
+
+                                    <?php else: ?>
+                                        <a href="<?= APP_URL ?>/auth/login.php" class="ld-btn-outline ld-add-btn">
+                                            Log in to order
+                                        </a>
+                                    <?php endif; ?>
+
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                <?php endforeach; ?>
+
+            </div><!-- /#menuGrid -->
+        <?php endif; ?>
+
+    </div>
+</section>
+
 
 <!-- ============================================================
      PAGE JAVASCRIPT — filter + search + AJAX add-to-cart
@@ -371,10 +371,10 @@ foreach ($all_items as $item) {
             btn.addEventListener('click', function () {
                 filterBtns.forEach(function (b) {
                     b.classList.remove('active');
-                    b.setAttribute('aria-selected', 'false');
+                    b.setAttribute('aria-pressed', 'false');
                 });
                 this.classList.add('active');
-                this.setAttribute('aria-selected', 'true');
+                this.setAttribute('aria-pressed', 'true');
                 activeFilter = this.dataset.filter;
                 applyFilters();
             });

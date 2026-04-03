@@ -96,33 +96,6 @@ $pointsToNext = ($userPoints !== null)
                             </div>
                         </div>
 
-<<<<<<< HEAD
-                    <?php if ($userPoints > 0): ?>
-                    <!-- Progress bar showing how close the user is to the next reward -->
-                    <?php
-                        $progressPct = min(100, round(
-                            (($userPoints % POINTS_REDEEM_AMOUNT) / POINTS_REDEEM_AMOUNT) * 100
-                        ));
-                        // If points divide evenly into a reward tier, show a full bar.
-                        if ($userPoints % POINTS_REDEEM_AMOUNT === 0) {
-                            $progressPct = 100;
-                        }
-                    ?>
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between small text-muted mb-1">
-                            <span>Progress to next reward</span>
-                            <span><?= $progressPct ?>%</span>
-                        </div>
-                        <div class="progress" style="height: 8px;" role="progressbar"
-                             aria-valuenow="<?= $progressPct ?>"
-                             aria-valuemin="0" aria-valuemax="100"
-                             aria-label="Points progress toward next reward">
-                            <div class="progress-bar"
-                                 style="width: <?= $progressPct ?>%; background-color: var(--ld-blue-dark);"></div>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-=======
                         <?php if ($userPoints > 0): ?>
                             <!-- Progress bar toward next redemption -->
                             <?php
@@ -147,7 +120,6 @@ $pointsToNext = ($userPoints !== null)
                                 </div>
                             </div>
                         <?php endif; ?>
->>>>>>> 2f2abd23e06769bd9b9f415b2aebeedb574d9701
 
                     </div>
                 </div>

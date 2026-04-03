@@ -58,6 +58,10 @@ header(
 
     <!-- LazyDrip custom CSS -->
     <link rel="stylesheet" href="<?= APP_URL ?>/assets/css/style.css">
+
+    <?php if (!empty($page_styles)): ?>
+        <?= $page_styles ?>
+    <?php endif; ?>
 </head>
 <body>
 

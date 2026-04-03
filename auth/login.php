@@ -47,7 +47,7 @@ unset($_SESSION['field_errors']); // Clear after retrieving
                     <input type="email" id="email" name="email"
                         value="<?= e(old_input('email')) ?>"
                         autocomplete="email" required
-                        aria-describedby="<?= !empty($field_errors['email']) ? 'email_error' : '' ?>"
+                        <?= !empty($field_errors['email']) ? 'aria-describedby="email_error"' : '' ?>
                         class="form-control <?= !empty($field_errors['email']) ? 'is-invalid' : '' ?>">
 
                     <!-- Bootstrap validation feedback -->
@@ -65,7 +65,7 @@ unset($_SESSION['field_errors']); // Clear after retrieving
                         <!-- Password input with required validation -->
                         <input type="password" id="password" name="password"
                             autocomplete="current-password" required
-                            aria-describedby="<?= !empty($field_errors['password']) ? 'password_error' : '' ?>"
+                            <?= !empty($field_errors['password']) ? 'aria-describedby="password_error"' : '' ?>
                             class="form-control <?= !empty($field_errors['password']) ? 'is-invalid' : '' ?>">
 
                         <!-- Button to toggle password visibility -->

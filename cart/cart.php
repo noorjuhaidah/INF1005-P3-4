@@ -8,224 +8,7 @@
 
 $page_title = 'Your Cart';
 $current_page = 'cart';
-require_once __DIR__ . '/../includes/header.php';
-
-// Must be logged in to view cart
-require_login();
-
-// -------------------------------------------------------------
-// CSRF token
-// -------------------------------------------------------------
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-$csrf = $_SESSION['csrf_token'];
-
-// -------------------------------------------------------------
-// Get cart from session
-// -------------------------------------------------------------
-$cart = get_cart();
-$total = cart_total();
-?>
-
-<!-- ============================================================
-     PAGE HEADER
-     ============================================================ -->
-<section class="ld-cart-hero">
-    <div class="container">
-        <h1 class="ld-section-title mb-1">
-            <i class="bi bi-bag me-2" aria-hidden="true"></i>Your Cart
-        </h1>
-        <p class="text-muted">
-            <?= count($cart) ?> item type<?= count($cart) !== 1 ? 's' : '' ?> in your cart
-        </p>
-    </div>
-</section>
-
-<!-- ============================================================
-     CART CONTENT
-     ============================================================ -->
-<section class="ld-section-sm">
-    <div class="container">
-        <div id="cart-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
-
-        <?php if (empty($cart)): ?>
-            <!-- Empty cart state -->
-            <div class="text-center py-5">
-                <i class="bi bi-bag-x fs-1 text-muted" aria-hidden="true"></i>
-                <h2 class="mt-3 h5">Your cart is empty</h2>
-                <p class="text-muted">Looks like you haven't added anything yet.</p>
-                <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary mt-2">
-                    Browse Menu
-                </a>
-            </div>
-
-        <?php else: ?>
-            <div class="row g-4">
-
-                <!-- ------------------------------------------------
-                 LEFT: Cart items list
-                 ------------------------------------------------ -->
-                <div class="col-lg-8">
-                    <div class="ld-cart-card">
-
-                        <?php foreach ($cart as $item_id => $item): ?>
-                            <?php
-                            $item_key = (string) $item_id;
-                            $item_dom_suffix = md5($item_key);
-                            ?>
-                            <div class="ld-cart-row" id="cart-row-<?= $item_dom_suffix ?>">
-
-                                <!-- Item info -->
-                                <div class="ld-cart-info">
-                                    <div class="ld-cart-icon">
-                                        <i class="bi bi-cup-hot" aria-hidden="true"></i>
-                                    </div>
-                                    <div>
-                                        <p class="ld-cart-name"><?= e($item['name']) ?></p>
-                                        <p class="ld-cart-unit-price">
-                                            <?= format_price($item['price']) ?> each
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <!-- Qty update form -->
-                                <form action="update_cart.php" method="POST"
-                                    class="update-cart-form d-flex align-items-center gap-2"
-                                    aria-label="Update quantity for <?= e($item['name']) ?>">
-                                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
-                                    <input type="hidden" name="item_id" value="<?= (int) $item_id ?>">
-                                    <input type="hidden" name="cart_key" value="<?= e($item_key) ?>">
-                                    <input type="hidden" name="action" value="update">
-
-                                    <div class="qty-wrapper d-flex align-items-center border rounded-pill px-2">
-                                        <button type="button" class="qty-decrease ld-qty-btn"
-                                            aria-label="Decrease quantity for <?= e($item['name']) ?>">
-                                            <i class="bi bi-dash" aria-hidden="true"></i>
-                                        </button>
-                                        <?php $qty_input_id = 'qty-' . $item_dom_suffix; ?>
-                                        <label for="<?= $qty_input_id ?>" class="visually-hidden">
-                                            Quantity for <?= e($item['name']) ?>
-                                        </label>
-                                        <input type="number" id="<?= $qty_input_id ?>" name="qty" class="qty-input"
-                                            value="<?= (int) $item['qty'] ?>" min="1" max="10"
-                                            style="width:2.2rem;text-align:center;border:none;background:transparent;font-weight:600;">
-                                        <button type="button" class="qty-increase ld-qty-btn"
-                                            aria-label="Increase quantity for <?= e($item['name']) ?>">
-                                            <i class="bi bi-plus" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-
-                                    <button type="submit" class="ld-btn-outline ld-cart-update-btn"
-                                        aria-label="Update quantity for <?= e($item['name']) ?>">
-                                        Update
-                                    </button>
-                                </form>
-
-                                <!-- Item subtotal -->
-                                <p class="ld-cart-subtotal" id="subtotal-<?= $item_dom_suffix ?>">
-                                    <?= format_price($item['price'] * $item['qty']) ?>
-                                </p>
-
-                                <!-- Remove button -->
-                                <form action="update_cart.php" method="POST" class="remove-cart-form"
-                                    aria-label="Remove <?= e($item['name']) ?> from cart">
-                                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
-                                    <input type="hidden" name="item_id" value="<?= (int) $item_id ?>">
-                                    <input type="hidden" name="cart_key" value="<?= e($item_key) ?>">
-                                    <input type="hidden" name="action" value="remove">
-
-                                    <button type="submit" class="ld-remove-btn" aria-label="Remove <?= e($item['name']) ?>">
-                                        <i class="bi bi-trash3" aria-hidden="true"></i>
-                                    </button>
-                                </form>
-
-                            </div><!-- /.ld-cart-row -->
-
-                            <?php if (array_key_last($cart) !== $item_id): ?>
-                                <hr class="ld-cart-divider">
-                            <?php endif; ?>
-
-                        <?php endforeach; ?>
-
-                    </div><!-- /.ld-cart-card -->
-
-                    <!-- Continue shopping link -->
-                    <a href="<?= APP_URL ?>/menu.php" class="ld-back-link mt-3 d-inline-block">
-                        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Continue Shopping
-                    </a>
-                </div>
-
-                <!-- ------------------------------------------------
-                 RIGHT: Order summary
-                 ------------------------------------------------ -->
-                <div class="col-lg-4">
-                    <div class="ld-summary-card">
-                        <h2 class="ld-summary-title">Order Summary</h2>
-
-                        <div class="ld-summary-items" aria-label="Items in your cart">
-                            <?php foreach ($cart as $item): ?>
-                                <div class="ld-summary-item-row">
-                                    <span class="ld-summary-item-name"><?= e($item['name']) ?></span>
-                                    <span class="ld-summary-item-qty">x<?= (int) $item['qty'] ?></span>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-
-                        <hr>
-
-                        <div class="ld-summary-row">
-                            <span class="text-muted">Subtotal</span>
-                            <span id="cart-total"><?= format_price($total) ?></span>
-                        </div>
-
-                        <div class="ld-summary-row">
-                            <span class="text-muted">Pickup</span>
-                            <span class="text-success fw-semibold">Free</span>
-                        </div>
-
-                        <hr>
-
-                        <div class="ld-summary-row ld-summary-total">
-                            <span>Total</span>
-                            <span id="cart-total-final"><?= format_price($total) ?></span>
-                        </div>
-
-                        <a href="<?= APP_URL ?>/cart/checkout.php" class="ld-btn-primary w-100 text-center mt-4 d-block">
-                            Proceed to Checkout
-                            <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
-                        </a>
-
-                        <p class="text-muted text-center small mt-3">
-                            <i class="bi bi-shield-check me-1" aria-hidden="true"></i>
-                            Secure checkout
-                        </p>
-                    </div>
-                </div>
-
-            </div><!-- /.row -->
-        <?php endif; ?>
-
-    </div>
-</section>
-
-<div class="ld-modal-backdrop" id="ld-cart-confirm" hidden>
-    <div class="ld-modal-card" role="dialog" aria-modal="true" aria-labelledby="ld-cart-confirm-title"
-        aria-describedby="ld-cart-confirm-text">
-        <h3 id="ld-cart-confirm-title" class="ld-modal-title">Remove item</h3>
-        <p id="ld-cart-confirm-text" class="ld-modal-text">Are you sure you want to remove this item from your cart?</p>
-        <div class="ld-modal-actions">
-            <button type="button" class="ld-btn-outline" id="ld-cart-confirm-cancel">Cancel</button>
-            <button type="button" class="ld-btn-danger" id="ld-cart-confirm-ok">
-                <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Remove
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================
-     PAGE CSS
-     ============================================================ -->
+$page_styles = <<<'CSS'
 <style>
     .ld-cart-hero {
         background: linear-gradient(135deg, var(--ld-blue-light) 0%, #fff 70%);
@@ -490,6 +273,222 @@ $total = cart_total();
         }
     }
 </style>
+CSS;
+require_once __DIR__ . '/../includes/header.php';
+
+// Must be logged in to view cart
+require_login();
+
+// -------------------------------------------------------------
+// CSRF token
+// -------------------------------------------------------------
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+$csrf = $_SESSION['csrf_token'];
+
+// -------------------------------------------------------------
+// Get cart from session
+// -------------------------------------------------------------
+$cart = get_cart();
+$total = cart_total();
+?>
+
+<!-- ============================================================
+     PAGE HEADER
+     ============================================================ -->
+<section class="ld-cart-hero">
+    <div class="container">
+        <h1 class="ld-section-title mb-1">
+            <i class="bi bi-bag me-2" aria-hidden="true"></i>Your Cart
+        </h1>
+        <p class="text-muted">
+            <?= count($cart) ?> item type<?= count($cart) !== 1 ? 's' : '' ?> in your cart
+        </p>
+    </div>
+</section>
+
+<!-- ============================================================
+     CART CONTENT
+     ============================================================ -->
+<section class="ld-section-sm">
+    <div class="container">
+        <div id="cart-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
+        <?php if (empty($cart)): ?>
+            <!-- Empty cart state -->
+            <div class="text-center py-5">
+                <i class="bi bi-bag-x fs-1 text-muted" aria-hidden="true"></i>
+                <h2 class="mt-3 h5">Your cart is empty</h2>
+                <p class="text-muted">Looks like you haven't added anything yet.</p>
+                <a href="<?= APP_URL ?>/menu.php" class="ld-btn-primary mt-2">
+                    Browse Menu
+                </a>
+            </div>
+
+        <?php else: ?>
+            <div class="row g-4">
+
+                <!-- ------------------------------------------------
+                 LEFT: Cart items list
+                 ------------------------------------------------ -->
+                <div class="col-lg-8">
+                    <div class="ld-cart-card">
+
+                        <?php foreach ($cart as $item_id => $item): ?>
+                            <?php
+                            $item_key = (string) $item_id;
+                            $item_dom_suffix = md5($item_key);
+                            ?>
+                            <div class="ld-cart-row" id="cart-row-<?= $item_dom_suffix ?>">
+
+                                <!-- Item info -->
+                                <div class="ld-cart-info">
+                                    <div class="ld-cart-icon">
+                                        <i class="bi bi-cup-hot" aria-hidden="true"></i>
+                                    </div>
+                                    <div>
+                                        <p class="ld-cart-name"><?= e($item['name']) ?></p>
+                                        <p class="ld-cart-unit-price">
+                                            <?= format_price($item['price']) ?> each
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Qty update form -->
+                                <form action="update_cart.php" method="POST"
+                                    class="update-cart-form d-flex align-items-center gap-2"
+                                    aria-label="Update quantity for <?= e($item['name']) ?>">
+                                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                                    <input type="hidden" name="item_id" value="<?= (int) $item_id ?>">
+                                    <input type="hidden" name="cart_key" value="<?= e($item_key) ?>">
+                                    <input type="hidden" name="action" value="update">
+
+                                    <div class="qty-wrapper d-flex align-items-center border rounded-pill px-2">
+                                        <button type="button" class="qty-decrease ld-qty-btn"
+                                            aria-label="Decrease quantity for <?= e($item['name']) ?>">
+                                            <i class="bi bi-dash" aria-hidden="true"></i>
+                                        </button>
+                                        <?php $qty_input_id = 'qty-' . $item_dom_suffix; ?>
+                                        <label for="<?= $qty_input_id ?>" class="visually-hidden">
+                                            Quantity for <?= e($item['name']) ?>
+                                        </label>
+                                        <input type="number" id="<?= $qty_input_id ?>" name="qty" class="qty-input"
+                                            value="<?= (int) $item['qty'] ?>" min="1" max="10"
+                                            style="width:2.2rem;text-align:center;border:none;background:transparent;font-weight:600;">
+                                        <button type="button" class="qty-increase ld-qty-btn"
+                                            aria-label="Increase quantity for <?= e($item['name']) ?>">
+                                            <i class="bi bi-plus" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+
+                                    <button type="submit" class="ld-btn-outline ld-cart-update-btn"
+                                        aria-label="Update quantity for <?= e($item['name']) ?>">
+                                        Update
+                                    </button>
+                                </form>
+
+                                <!-- Item subtotal -->
+                                <p class="ld-cart-subtotal" id="subtotal-<?= $item_dom_suffix ?>">
+                                    <?= format_price($item['price'] * $item['qty']) ?>
+                                </p>
+
+                                <!-- Remove button -->
+                                <form action="update_cart.php" method="POST" class="remove-cart-form"
+                                    aria-label="Remove <?= e($item['name']) ?> from cart">
+                                    <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
+                                    <input type="hidden" name="item_id" value="<?= (int) $item_id ?>">
+                                    <input type="hidden" name="cart_key" value="<?= e($item_key) ?>">
+                                    <input type="hidden" name="action" value="remove">
+
+                                    <button type="submit" class="ld-remove-btn" aria-label="Remove <?= e($item['name']) ?>">
+                                        <i class="bi bi-trash3" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+
+                            </div><!-- /.ld-cart-row -->
+
+                            <?php if (array_key_last($cart) !== $item_id): ?>
+                                <hr class="ld-cart-divider">
+                            <?php endif; ?>
+
+                        <?php endforeach; ?>
+
+                    </div><!-- /.ld-cart-card -->
+
+                    <!-- Continue shopping link -->
+                    <a href="<?= APP_URL ?>/menu.php" class="ld-back-link mt-3 d-inline-block">
+                        <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Continue Shopping
+                    </a>
+                </div>
+
+                <!-- ------------------------------------------------
+                 RIGHT: Order summary
+                 ------------------------------------------------ -->
+                <div class="col-lg-4">
+                    <div class="ld-summary-card">
+                        <h2 class="ld-summary-title">Order Summary</h2>
+
+                        <div class="ld-summary-items" aria-label="Items in your cart">
+                            <?php foreach ($cart as $item): ?>
+                                <div class="ld-summary-item-row">
+                                    <span class="ld-summary-item-name"><?= e($item['name']) ?></span>
+                                    <span class="ld-summary-item-qty">x<?= (int) $item['qty'] ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <hr>
+
+                        <div class="ld-summary-row">
+                            <span class="text-muted">Subtotal</span>
+                            <span id="cart-total"><?= format_price($total) ?></span>
+                        </div>
+
+                        <div class="ld-summary-row">
+                            <span class="text-muted">Pickup</span>
+                            <span class="text-success fw-semibold">Free</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="ld-summary-row ld-summary-total">
+                            <span>Total</span>
+                            <span id="cart-total-final"><?= format_price($total) ?></span>
+                        </div>
+
+                        <a href="<?= APP_URL ?>/cart/checkout.php" class="ld-btn-primary w-100 text-center mt-4 d-block">
+                            Proceed to Checkout
+                            <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
+                        </a>
+
+                        <p class="text-muted text-center small mt-3">
+                            <i class="bi bi-shield-check me-1" aria-hidden="true"></i>
+                            Secure checkout
+                        </p>
+                    </div>
+                </div>
+
+            </div><!-- /.row -->
+        <?php endif; ?>
+
+    </div>
+</section>
+
+<div class="ld-modal-backdrop" id="ld-cart-confirm" hidden>
+    <div class="ld-modal-card" role="dialog" aria-modal="true" aria-labelledby="ld-cart-confirm-title"
+        aria-describedby="ld-cart-confirm-text">
+        <h3 id="ld-cart-confirm-title" class="ld-modal-title">Remove item</h3>
+        <p id="ld-cart-confirm-text" class="ld-modal-text">Are you sure you want to remove this item from your cart?</p>
+        <div class="ld-modal-actions">
+            <button type="button" class="ld-btn-outline" id="ld-cart-confirm-cancel">Cancel</button>
+            <button type="button" class="ld-btn-danger" id="ld-cart-confirm-ok">
+                <i class="bi bi-trash3 me-1" aria-hidden="true"></i>Remove
+            </button>
+        </div>
+    </div>
+</div>
+
 
 <!-- ============================================================
      PAGE JAVASCRIPT

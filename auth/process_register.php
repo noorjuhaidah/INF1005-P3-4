@@ -38,7 +38,7 @@ set_old_input([
 $_SESSION['field_errors'] = [];
 
 // Validate required fields
-if ($full_name === '' || $email === '' || $password === '') {
+if ($full_name === '' || $email === '' || $password === '' || $confirm_password === '') {
     if ($full_name === '') {
         $_SESSION['field_errors']['full_name'] = 'Please enter your full name.';
     }
@@ -48,7 +48,10 @@ if ($full_name === '' || $email === '' || $password === '') {
     if ($password === '') {
         $_SESSION['field_errors']['password'] = 'Please enter a password.';
     }
-    set_flash('danger', 'Name, email and password are required.');
+    if ($confirm_password === '') {
+        $_SESSION['field_errors']['confirm_password'] = 'Please confirm your password.';
+    }
+    set_flash('danger', 'Please complete all required fields.');
     redirect(APP_URL . '/auth/register.php');
 }
 

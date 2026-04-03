@@ -229,11 +229,9 @@ require_once __DIR__ . '/../includes/header.php';
                                         <?php if ($isRead === null): ?>
                                             <span class="text-muted">N/A</span>
                                         <?php elseif ($isRead): ?>
-                                            <span class="badge bg-success-subtle text-success-emphasis"
-                                                aria-label="Message status: Read">Read</span>
+                                            <span class="badge bg-success-subtle text-success-emphasis">Read</span>
                                         <?php else: ?>
-                                            <span class="badge bg-warning-subtle text-warning-emphasis"
-                                                aria-label="Message status: Unread">Unread</span>
+                                            <span class="badge bg-warning-subtle text-warning-emphasis">Unread</span>
                                         <?php endif; ?>
 
                                         <?php if ($messageReadColumn !== ''): ?>
