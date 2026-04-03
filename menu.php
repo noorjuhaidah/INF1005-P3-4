@@ -1,15 +1,6 @@
 <?php
-// =============================================================
-// menu.php — LazyDrip Menu Page
-// Displays all available menu items by category.
-// Supports live search + category filter tabs (JavaScript).
-// Add-to-cart posts to cart/add_to_cart.php.
-//
-// DB columns used:
-//   menu_items : item_id, item_name, description, price,
+// Shows the menu, category filters, and add-to-cart forms.
 //                category_id, image_path, is_available
-//   categories : id, name
-// =============================================================
 
 $page_title = 'Menu';
 $current_page = 'menu';
@@ -164,17 +155,13 @@ $page_styles = <<<'CSS'
 CSS;
 require_once __DIR__ . '/includes/header.php';
 
-// -------------------------------------------------------------
-// CSRF token — one per session, embedded in every cart form
-// -------------------------------------------------------------
+// Create a token for the add-to-cart forms.
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrf = $_SESSION['csrf_token'];
 
-// -------------------------------------------------------------
-// Fetch menu items joined with their category name
-// -------------------------------------------------------------
+// Load the available menu items and their categories.
 try {
     $stmt = $pdo->query(
         "SELECT m.item_id,
@@ -195,7 +182,7 @@ try {
     $all_items = [];
 }
 
-// Build unique category list for filter tabs
+// Build the category list for the filter buttons.
 $categories = [];
 foreach ($all_items as $item) {
     if (!in_array($item['category_name'], $categories)) {
@@ -204,9 +191,6 @@ foreach ($all_items as $item) {
 }
 ?>
 
-<!-- ============================================================
-     HERO BANNER
-     ============================================================ -->
 <section class="ld-menu-hero">
     <div class="container text-center">
         <p class="ld-chip mb-3">Fresh &amp; made to order ☕</p>
@@ -215,7 +199,7 @@ foreach ($all_items as $item) {
             Slow-crafted drinks for every mood. Order ahead, pick up with Grab.
         </p>
 
-        <!-- Live search -->
+        <!-- Search the menu by item name. -->
         <div class="ld-search-wrap mt-4 mx-auto">
             <i class="bi bi-search ld-search-icon" aria-hidden="true"></i>
             <input type="search" id="menuSearch" class="form-control ld-search-input" placeholder="Search drinks…"
@@ -224,9 +208,6 @@ foreach ($all_items as $item) {
     </div>
 </section>
 
-<!-- ============================================================
-     CATEGORY TABS + MENU GRID
-     ============================================================ -->
 <section class="ld-section-sm">
     <div class="container">
         <h2 class="visually-hidden">Browse menu items</h2>
@@ -239,7 +220,7 @@ foreach ($all_items as $item) {
                 
         <?php else: ?>
 
-            <!-- Filter tabs -->
+            <!-- Filter the menu by category. -->
             <div class="ld-filter-tabs mb-4" role="group" aria-label="Filter by category">
                 <button class="ld-filter-btn active" data-filter="all" aria-pressed="true">All</button>
 
@@ -249,12 +230,12 @@ foreach ($all_items as $item) {
                 <?php endforeach; ?>
             </div>
 
-            <!-- No results message -->
+            <!-- Show this when no items match the current search or filter. -->
             <p id="noResults" class="text-center text-muted py-4 d-none" aria-live="polite">
                 No drinks match your search. Try something else?
             </p>
 
-            <!-- Menu grid -->
+            <!-- Menu item cards -->
             <div class="row g-4" id="menuGrid">
 
                 <?php foreach ($all_items as $item):
@@ -287,7 +268,7 @@ foreach ($all_items as $item) {
                                     </span>
 
                                     <?php if (is_logged_in()): ?>
-                                        <!-- Add to cart form -->
+                                        <!-- Add this item to the cart. -->
                                         <form action="<?= APP_URL ?>/cart/add_to_cart.php" method="POST"
                                             class="d-flex align-items-center gap-2 add-to-cart-form"
                                             aria-label="Add <?= e($item['item_name']) ?> to cart">
@@ -296,7 +277,7 @@ foreach ($all_items as $item) {
                                             <input type="hidden" name="item_name" value="<?= e($item['item_name']) ?>">
                                             <input type="hidden" name="item_price" value="<?= (float) $item['price'] ?>">
 
-                                            <!-- Qty spinner -->
+                                            <!-- Let the user adjust the quantity before adding. -->
                                             <div class="qty-wrapper d-flex align-items-center border rounded-pill px-2">
                                                 <button type="button" class="qty-decrease ld-qty-btn"
                                                     aria-label="Decrease quantity">
@@ -335,9 +316,7 @@ foreach ($all_items as $item) {
 </section>
 
 
-<!-- ============================================================
-     PAGE JAVASCRIPT — filter + search + AJAX add-to-cart
-     ============================================================ -->
+<!-- Menu page JavaScript -->
 <script>
     (function () {
         'use strict';
@@ -347,7 +326,7 @@ foreach ($all_items as $item) {
         const filterBtns = document.querySelectorAll('.ld-filter-btn');
         let activeFilter = 'all';
 
-        // Apply category filter AND search query together
+        // Apply both the selected category and the search text.
         function applyFilters() {
             const query = searchBox ? searchBox.value.toLowerCase().trim() : '';
             let visible = 0;
@@ -389,7 +368,7 @@ foreach ($all_items as $item) {
             });
         }
 
-        // AJAX add-to-cart — updates cart badge without page reload
+        // Add items to the cart without reloading the page.
         document.querySelectorAll('.add-to-cart-form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
