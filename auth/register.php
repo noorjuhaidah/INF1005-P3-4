@@ -47,6 +47,8 @@ unset($_SESSION['field_errors']); // Clear errors after use
                     </label>
                     <input type="text" id="full_name" name="full_name" required autocomplete="name"
                         placeholder="Jane Tan"
+                        pattern="[A-Za-z\s'-]+"
+                        title="Name can only contain letters, spaces, hyphens (-) and apostrophes (')"
                         value="<?= e(old_input('full_name')) ?>"
                         aria-describedby="<?= !empty($field_errors['full_name']) ? 'full_name_error' : '' ?>"
                         class="form-control <?= !empty($field_errors['full_name']) ? 'is-invalid' : '' ?>">

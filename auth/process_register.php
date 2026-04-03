@@ -52,6 +52,13 @@ if ($full_name === '' || $email === '' || $password === '') {
     redirect(APP_URL . '/auth/register.php');
 }
 
+// Validate full name format (letters, spaces, hyphens, apostrophes)
+if (!preg_match("/^[A-Za-z]+([ '-][A-Za-z]+)*$/", $full_name)) {
+    $_SESSION['field_errors']['full_name'] = "Name can only contain letters, spaces, hyphens (-) and apostrophes (').";
+    set_flash('danger', 'Invalid name format.');
+    redirect(APP_URL . '/auth/register.php');
+}
+
 // Validate full name length
 if (mb_strlen($full_name) > 120) {
     $_SESSION['field_errors']['full_name'] = 'Full name must be 120 characters or fewer.';
