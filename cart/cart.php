@@ -263,24 +263,17 @@ require_once __DIR__ . '/../includes/header.php';
 // Must be logged in to view cart
 require_login();
 
-// -------------------------------------------------------------
-// CSRF token
-// -------------------------------------------------------------
+// Create a token for the cart forms if one does not exist yet.
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 $csrf = $_SESSION['csrf_token'];
 
-// -------------------------------------------------------------
-// Get cart from session
-// -------------------------------------------------------------
+// Load the current cart and total from the session.
 $cart = get_cart();
 $total = cart_total();
 ?>
 
-<!-- ============================================================
-     PAGE HEADER
-     ============================================================ -->
 <section class="ld-cart-hero">
     <div class="container">
         <h1 class="ld-section-title mb-1">
@@ -292,15 +285,12 @@ $total = cart_total();
     </div>
 </section>
 
-<!-- ============================================================
-     CART CONTENT
-     ============================================================ -->
 <section class="ld-section-sm">
     <div class="container">
         <div id="cart-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
         <?php if (empty($cart)): ?>
-            <!-- Empty cart state -->
+            <!-- Show a simple empty-cart message. -->
             <div class="text-center py-5">
                 <i class="bi bi-bag-x fs-1 text-muted" aria-hidden="true"></i>
                 <h2 class="mt-3 h5">Your cart is empty</h2>
@@ -313,9 +303,6 @@ $total = cart_total();
         <?php else: ?>
             <div class="row g-4">
 
-                <!-- ------------------------------------------------
-                 LEFT: Cart items list
-                 ------------------------------------------------ -->
                 <div class="col-lg-8">
                     <div class="ld-cart-card">
 
@@ -326,7 +313,7 @@ $total = cart_total();
                             ?>
                             <div class="ld-cart-row" id="cart-row-<?= $item_dom_suffix ?>">
 
-                                <!-- Item info -->
+                                <!-- Item details -->
                                 <div class="ld-cart-info">
                                     <div class="ld-cart-icon">
                                         <i class="bi bi-cup-hot" aria-hidden="true"></i>
@@ -339,7 +326,7 @@ $total = cart_total();
                                     </div>
                                 </div>
 
-                                <!-- Qty update form -->
+                                <!-- Quantity update form -->
                                 <form action="update_cart.php" method="POST"
                                     class="update-cart-form d-flex align-items-center gap-2"
                                     aria-label="Update quantity for <?= e($item['name']) ?>">
@@ -372,12 +359,12 @@ $total = cart_total();
                                     </button>
                                 </form>
 
-                                <!-- Item subtotal -->
+                                <!-- Price for this row -->
                                 <p class="ld-cart-subtotal" id="subtotal-<?= $item_dom_suffix ?>">
                                     <?= format_price($item['price'] * $item['qty']) ?>
                                 </p>
 
-                                <!-- Remove button -->
+                                <!-- Remove this item from the cart -->
                                 <form action="update_cart.php" method="POST" class="remove-cart-form"
                                     aria-label="Remove <?= e($item['name']) ?> from cart">
                                     <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
@@ -400,15 +387,12 @@ $total = cart_total();
 
                     </div><!-- /.ld-cart-card -->
 
-                    <!-- Continue shopping link -->
+                    <!-- Link back to the menu page. -->
                     <a href="<?= APP_URL ?>/menu.php" class="ld-back-link mt-3 d-inline-block">
                         <i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Continue Shopping
                     </a>
                 </div>
 
-                <!-- ------------------------------------------------
-                 RIGHT: Order summary
-                 ------------------------------------------------ -->
                 <div class="col-lg-4">
                     <div class="ld-summary-card">
                         <h2 class="ld-summary-title">Order Summary</h2>
