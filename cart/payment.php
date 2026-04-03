@@ -1,7 +1,6 @@
 <?php
-// =============================================================
-// cart/payment.php - Mock payment page and order placement
-// =============================================================
+
+// Collects mock payment details and places the order.
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
@@ -13,6 +12,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_login();
 
+// Read the checkout details saved in the previous step.
 $pending = $_SESSION['pending_checkout'] ?? null;
 if (!$pending || empty($pending['cart']) || (int) ($pending['user_id'] ?? 0) !== (int) $_SESSION['user_id']) {
     set_flash('warning', 'No pending checkout found. Please review your cart again.');
@@ -40,6 +40,7 @@ try {
     $orderItemColumns = [];
 }
 
+// Validate the mock payment form and create the order.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/cart/payment.php');
 
@@ -87,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
+        // Save the order and related records together.
         $pdo->beginTransaction();
 
         $stmt = $pdo->prepare("
@@ -114,6 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         $orderId = (int) $pdo->lastInsertId();
 
+        // Build the order_items insert from the columns available in the table.
         $itemFieldMap = [
             'order_id' => null,
             'item_id' => null,
@@ -171,6 +174,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $itemStmt->execute($itemValues);
         }
 
+        // Deduct points only after the order has been created.
         if ($applyRedeem) {
             $redeemed = redeem_points($pdo, $userId, $orderId);
             if (!$redeemed) {
@@ -182,13 +186,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $pdo->commit();
 
+        // Update the points balance after the order is confirmed.
         award_points($pdo, $userId, $orderId, $finalTotal);
 
         $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
         $stmt->execute([$userId]);
         $freshPoints = $stmt->fetchColumn();
         $_SESSION['points'] = $freshPoints !== false ? (int) $freshPoints : 0;
-
 
         $_SESSION['cart'] = [];
         unset($_SESSION['pending_checkout']);
@@ -260,32 +264,29 @@ unset($_SESSION['field_errors']);
 
                         <div class="col-12">
                             <label class="form-label" for="card_number">
-                                <i class="fa-solid fa-credit-card me-1" aria-hidden="true"></i>Card number <span class="text-danger"
+                                <i class="fa-regular fa-credit-card me-1" aria-hidden="true"></i>Card number <span class="text-danger"
                                     aria-hidden="true">*</span>
                             </label>
                             <input type="text" id="card_number" name="card_number"
                                 class="form-control <?= !empty($field_errors['card_number']) ? 'is-invalid' : '' ?>"
-                                inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456"
-                                value="<?= e(old_input('card_number')) ?>" autocomplete="cc-number"
-                                aria-describedby="card_number_help<?= !empty($field_errors['card_number']) ? ' card_number_error' : '' ?>"
+                                value="<?= e(old_input('card_number')) ?>" inputmode="numeric" autocomplete="cc-number"
+                                maxlength="19" placeholder="1234 5678 9012 3456"
+                                <?= !empty($field_errors['card_number']) ? 'aria-describedby="card_number_error"' : '' ?>
                                 required>
-                            <div id="card_number_help" class="form-text">Enter 16 digits without letters or symbols.
-                            </div>
                             <div id="card_number_error" class="invalid-feedback">
-                                <?= e($field_errors['card_number'] ?? 'Enter a valid 16-digit card number.') ?></div>
+                                <?= e($field_errors['card_number'] ?? 'Enter your 16-digit card number.') ?></div>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label" for="expiry">
-                                <i class="fa-solid fa-calendar me-1" aria-hidden="true"></i>Expiry (MM/YY) <span class="text-danger"
+                                <i class="fa-regular fa-calendar me-1" aria-hidden="true"></i>Expiry (MM/YY) <span class="text-danger"
                                     aria-hidden="true">*</span>
                             </label>
                             <input type="text" id="expiry" name="expiry"
                                 class="form-control <?= !empty($field_errors['expiry']) ? 'is-invalid' : '' ?>"
-                                placeholder="MM/YY" maxlength="5" value="<?= e(old_input('expiry')) ?>"
-                                autocomplete="cc-exp"
-                                <?= !empty($field_errors['expiry']) ? 'aria-describedby="expiry_error"' : '' ?>
-                                required>
+                                value="<?= e(old_input('expiry')) ?>" inputmode="numeric" autocomplete="cc-exp"
+                                maxlength="5" placeholder="12/28"
+                                <?= !empty($field_errors['expiry']) ? 'aria-describedby="expiry_error"' : '' ?> required>
                             <div id="expiry_error" class="invalid-feedback">
                                 <?= e($field_errors['expiry'] ?? 'Enter expiry in MM/YY format.') ?></div>
                         </div>
@@ -296,72 +297,83 @@ unset($_SESSION['field_errors']);
                                     aria-hidden="true">*</span>
                             </label>
                             <input type="password" id="cvv" name="cvv"
-                                class="form-control <?= !empty($field_errors['cvv']) ? 'is-invalid' : '' ?>"
-                                inputmode="numeric" maxlength="3" placeholder="123"
+                                class="form-control <?= !empty($field_errors['cvv']) ? 'is-invalid' : '' ?>" inputmode="numeric"
+                                autocomplete="cc-csc" maxlength="3" placeholder="123"
                                 <?= !empty($field_errors['cvv']) ? 'aria-describedby="cvv_error"' : '' ?> required>
                             <div id="cvv_error" class="invalid-feedback">
-                                <?= e($field_errors['cvv'] ?? 'Enter a valid 3-digit CVV.') ?></div>
+                                <?= e($field_errors['cvv'] ?? 'Enter your 3-digit CVV.') ?></div>
                         </div>
 
                         <div class="col-12 d-flex gap-2 flex-wrap mt-3">
                             <button type="submit" class="ld-btn-primary">
-                                <i class="fa-solid fa-lock me-1" aria-hidden="true"></i>
-                                Pay <?= format_price($finalTotal) ?>
+                                <i class="fa-solid fa-circle-check me-1" aria-hidden="true"></i>Pay and place order
                             </button>
-                            <a href="<?= APP_URL ?>/cart/checkout.php" class="ld-btn-outline">
-                                <i class="fa-solid fa-arrow-left me-1" aria-hidden="true"></i>Back to checkout
-                            </a>
+                            <a href="<?= APP_URL ?>/cart/checkout.php" class="ld-btn-outline">Back to checkout</a>
                         </div>
                     </form>
                 </div>
             </div>
 
+            <!-- Show the final amount again before payment is submitted. -->
             <div class="col-lg-5">
                 <div class="card ld-card p-4">
-                    <h2 class="h5 mb-3">
-                        <i class="fa-solid fa-receipt me-2" aria-hidden="true"></i>Payment summary
-                    </h2>
+                    <h2 class="h5 mb-3">Payment summary</h2>
 
-                    <?php foreach ($cart as $item): ?>
-                        <?php
-                        $rawPrice = $item['price'] ?? 0;
-                        if (is_string($rawPrice)) {
-                            $rawPrice = preg_replace('/[^0-9.\-]/', '', $rawPrice);
-                        }
-                        $price = is_numeric($rawPrice) ? (float) $rawPrice : 0.0;
-                        $qty = is_numeric($item['qty'] ?? 0) ? (int) $item['qty'] : 0;
-                        ?>
-                        <div class="d-flex justify-content-between mb-2">
-                            <span><?= e($item['name']) ?> x <?= $qty ?></span>
-                            <span><?= format_price($price * $qty) ?></span>
-                        </div>
-                    <?php endforeach; ?>
-
-                    <hr>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal</span>
                         <span><?= format_price($subtotal) ?></span>
                     </div>
 
                     <?php if ($applyRedeem): ?>
-                        <div class="d-flex justify-content-between mb-2 text-success">
+                        <div class="d-flex justify-content-between text-success mb-2">
                             <span>Rewards discount</span>
                             <span>-<?= format_price($discountApplied) ?></span>
                         </div>
+                        <div class="small text-muted mb-2">Using <?= number_format($pointsRedeemed) ?> points</div>
+                    <?php else: ?>
+                        <div class="small text-muted mb-2">
+                            You currently have <?= number_format($pointsBefore) ?> points.
+                        </div>
                     <?php endif; ?>
 
-                    <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                    <hr>
+
+                    <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
                         <span>Total to pay</span>
                         <span><?= format_price($finalTotal) ?></span>
                     </div>
 
-                    <p class="text-muted small mt-3 mb-0">
-                        After successful payment, your order will be marked as paid and submitted.
-                    </p>
+                    <div class="small text-muted">
+                        This order will earn you <?= number_format((int) floor($finalTotal * POINTS_PER_DOLLAR)) ?> point<?= ((int) floor($finalTotal * POINTS_PER_DOLLAR)) !== 1 ? 's' : '' ?>.
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+    (function () {
+        const cardNumber = document.getElementById('card_number');
+        const expiry = document.getElementById('expiry');
+
+        if (cardNumber) {
+            cardNumber.addEventListener('input', function () {
+                const digits = this.value.replace(/\D/g, '').slice(0, 16);
+                this.value = digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+            });
+        }
+
+        if (expiry) {
+            expiry.addEventListener('input', function () {
+                let digits = this.value.replace(/\D/g, '').slice(0, 4);
+                if (digits.length > 2) {
+                    digits = digits.slice(0, 2) + '/' + digits.slice(2);
+                }
+                this.value = digits;
+            });
+        }
+    })();
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

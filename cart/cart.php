@@ -1,10 +1,5 @@
 <?php
-// =============================================================
-// cart/cart.php — LazyDrip Shopping Cart
-// Shows all items in the session cart.
-// Allows quantity updates and item removal.
-// Links to checkout.php to place the order.
-// =============================================================
+// Shows the shopping cart and lets users update or remove items.
 
 $page_title = 'Your Cart';
 $current_page = 'cart';
@@ -15,7 +10,6 @@ $page_styles = <<<'CSS'
         padding: 3rem 0 1.5rem;
     }
 
-    /* Cart card */
     .ld-cart-card {
         background: #fff;
         border-radius: var(--ld-radius);
@@ -23,7 +17,6 @@ $page_styles = <<<'CSS'
         padding: 1.5rem;
     }
 
-    /* Each cart row */
     .ld-cart-row {
         display: flex;
         align-items: center;
@@ -37,7 +30,6 @@ $page_styles = <<<'CSS'
         opacity: 0.1;
     }
 
-    /* Item info */
     .ld-cart-info {
         display: flex;
         align-items: center;
@@ -71,7 +63,6 @@ $page_styles = <<<'CSS'
         margin: 0;
     }
 
-    /* Subtotal */
     .ld-cart-subtotal {
         font-weight: 700;
         font-size: 1rem;
@@ -80,7 +71,6 @@ $page_styles = <<<'CSS'
         margin: 0;
     }
 
-    /* Qty buttons */
     .ld-qty-btn {
         background: none;
         border: none;
@@ -98,14 +88,12 @@ $page_styles = <<<'CSS'
         color: var(--ld-blue-dark);
     }
 
-    /* Update button */
     .ld-cart-update-btn {
         font-size: 0.78rem;
         padding: 0.25rem 0.75rem;
         white-space: nowrap;
     }
 
-    /* Remove button */
     .ld-remove-btn {
         background: none;
         border: none;
@@ -122,7 +110,6 @@ $page_styles = <<<'CSS'
         color: #e74c3c;
     }
 
-    /* Back link */
     .ld-back-link {
         color: var(--ld-muted);
         font-size: 0.88rem;
@@ -132,7 +119,6 @@ $page_styles = <<<'CSS'
         color: var(--ld-blue-dark);
     }
 
-    /* Summary card */
     .ld-summary-card {
         background: #fff;
         border-radius: var(--ld-radius);
@@ -184,7 +170,6 @@ $page_styles = <<<'CSS'
         font-size: 1.1rem;
     }
 
-    /* Remove-confirm modal */
     .ld-modal-backdrop {
         position: fixed;
         inset: 0;
@@ -246,7 +231,6 @@ $page_styles = <<<'CSS'
         outline-offset: 2px;
     }
 
-    /* Fade out removed row */
     .ld-cart-row.removing {
         opacity: 0;
         transition: opacity 0.3s;
@@ -490,10 +474,7 @@ $total = cart_total();
 </div>
 
 
-<!-- ============================================================
-     PAGE JAVASCRIPT
-     AJAX quantity update + remove, live total update
-     ============================================================ -->
+<!-- Cart page JavaScript -->
 <script>
     (function () {
         'use strict';
@@ -503,9 +484,7 @@ $total = cart_total();
             btn.classList.add('d-none');
         });
 
-        // ---------------------------------------------------------
-        // AJAX helper — sends a form via fetch(), returns JSON
-        // ---------------------------------------------------------
+        // Send a cart form through AJAX and return the server response.
         function postForm(url, formData) {
             return fetch(url, {
                 method: 'POST',
@@ -526,9 +505,7 @@ $total = cart_total();
             });
         }
 
-        // ---------------------------------------------------------
-        // Update cart total display
-        // ---------------------------------------------------------
+        // Refresh the total shown on the page.
         function updateTotalDisplay(newTotal) {
             const formatted = '$' + parseFloat(newTotal).toFixed(2);
             const t1 = document.getElementById('cart-total');
@@ -537,9 +514,7 @@ $total = cart_total();
             if (t2) t2.textContent = formatted;
         }
 
-        // ---------------------------------------------------------
-        // Announce cart updates for assistive tech users
-        // ---------------------------------------------------------
+        // Announce cart updates for screen reader users.
         function announceCartStatus(message) {
             const live = document.getElementById('cart-status');
             if (!live) return;
@@ -554,9 +529,7 @@ $total = cart_total();
             form.submit();
         }
 
-        // ---------------------------------------------------------
-        // Custom remove confirmation modal
-        // ---------------------------------------------------------
+        // Show a confirmation modal before removing an item.
         const confirmModal = document.getElementById('ld-cart-confirm');
         const confirmText = document.getElementById('ld-cart-confirm-text');
         const confirmOk = document.getElementById('ld-cart-confirm-ok');
@@ -605,9 +578,7 @@ $total = cart_total();
             }
         });
 
-        // ---------------------------------------------------------
-        // Handle quantity UPDATE forms
-        // ---------------------------------------------------------
+        // Handle quantity updates without reloading the page.
         document.querySelectorAll('.update-cart-form').forEach(function (form) {
             let autoUpdateTimer = null;
 
@@ -674,9 +645,7 @@ $total = cart_total();
             });
         });
 
-        // ---------------------------------------------------------
-        // Handle REMOVE forms
-        // ---------------------------------------------------------
+        // Handle item removal without reloading the page.
         document.querySelectorAll('.remove-cart-form').forEach(function (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();

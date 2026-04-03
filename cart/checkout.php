@@ -1,7 +1,6 @@
 <?php
-// =============================================================
-// cart/checkout.php - Review order and proceed to payment
-// =============================================================
+
+// Lets the user review the order before payment.
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
@@ -13,24 +12,22 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_login();
 
+// Load the cart and current points before showing the page.
 $cart = get_cart();
 $userId = (int) $_SESSION['user_id'];
 
-$currentPoints = 0;
 try {
-    $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
-    $stmt->execute([$userId]);
-    $row = $stmt->fetch();
-    if ($row) {
-        $currentPoints = (int) $row['points'];
-    }
-} catch (PDOException $e) {
-    $currentPoints = 0;
+    $currentPoints = get_user_points($pdo, $userId);
+    $cartSubtotal = cart_total();
+} catch (Throwable $e) {
+    error_log('Checkout bootstrap error: ' . $e->getMessage());
+    set_flash('danger', 'Unable to prepare checkout. Please try again.');
+    redirect(APP_URL . '/cart/cart.php');
 }
 
 $canRedeem = $currentPoints >= POINTS_REDEEM_AMOUNT;
-$cartSubtotal = cart_total();
 
+// Save the checkout details and send the user to payment.
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     verify_csrf(APP_URL . '/cart/checkout.php');
 
@@ -39,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         redirect(APP_URL . '/cart/cart.php');
     }
 
+    // Save the current checkout details so payment can use the same values.
     $wantsRedeem = isset($_POST['redeem_points']) && $_POST['redeem_points'] === '1';
     $applyRedeem = $wantsRedeem && $canRedeem;
     $discount = $applyRedeem ? POINTS_REDEEM_VALUE : 0.0;
@@ -58,6 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     redirect(APP_URL . '/cart/payment.php');
 }
 
+// Show a preview total if the customer decides to use points.
 $previewTotal = $canRedeem
     ? max(0.0, $cartSubtotal - POINTS_REDEEM_VALUE)
     : $cartSubtotal;
@@ -118,6 +117,7 @@ require_once __DIR__ . '/../includes/header.php';
 
             <form method="POST" action="<?= APP_URL ?>/cart/checkout.php" id="checkout-form">
                 <?php csrf_field(); ?>
+                <!-- Keep the current checkout choices and continue to payment. -->
 
                     <?php if ($canRedeem): ?>
                     <fieldset class="card ld-card p-4 mb-3" style="border-left: 4px solid var(--ld-blue-dark);">
