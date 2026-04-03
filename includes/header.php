@@ -1,5 +1,4 @@
 <?php
-// =============================================================
 // includes/header.php
 // Shared page header: starts session, loads helpers,
 // outputs the HTML <head> and the Bootstrap navbar.
@@ -7,7 +6,6 @@
 // Usage in every page:
 //   $page_title = 'Menu';        // Set BEFORE the require
 //   require_once __DIR__ . '/../includes/header.php';
-// =============================================================
 
 require_once __DIR__ . '/db.php';        // Also loads config.php
 require_once __DIR__ . '/functions.php';

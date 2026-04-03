@@ -1,12 +1,10 @@
 <?php
-// =============================================================
 // includes/footer.php
 // Closes the <main> tag, renders the site footer,
 // and loads Bootstrap JS + custom scripts.
 //
 // Usage: require_once __DIR__ . '/../includes/footer.php';
 //        (at the very bottom of every page)
-// =============================================================
 ?>
 </main><!-- /#main closed -->
 

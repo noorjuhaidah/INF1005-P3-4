@@ -1,6 +1,6 @@
 <?php
 // Shows the menu, category filters, and add-to-cart forms.
-//                category_id, image_path, is_available
+// category_id, image_path, is_available
 
 $page_title = 'Menu';
 $current_page = 'menu';
