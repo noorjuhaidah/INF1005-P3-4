@@ -284,6 +284,18 @@ function verify_csrf(string $fallback_url = ''): void
 // =============================================================
 
 /**
+ * Get the current loyalty points balance for a user.
+ */
+function get_user_points(PDO $pdo, int $userId): int
+{
+    $stmt = $pdo->prepare("SELECT points FROM users WHERE user_id = ? LIMIT 1");
+    $stmt->execute([$userId]);
+    $row = $stmt->fetch();
+
+    return $row ? (int) $row['points'] : 0;
+}
+
+/**
  * Award earned points to a user after a successful order.
  *
  * Calculates floor(order_total * POINTS_PER_DOLLAR), adds it to
