@@ -1,13 +1,6 @@
 <?php
 
-// =============================================================
-// cart/add_to_cart.php — Add Item to Cart Handler
-// Accepts POST from menu.php add-to-cart forms.
-// Responds with JSON (AJAX) or redirects (plain POST fallback).
-//
-// DB columns used:
-//   menu_items : item_id, item_name, price, is_available
-// =============================================================
+// Handles add-to-cart requests from the menu page.
 
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
@@ -16,9 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// -------------------------------------------------------------
-// Helper: send JSON response (used by AJAX calls from menu.php)
-// -------------------------------------------------------------
+// Return a JSON response for AJAX requests.
 function json_response(bool $success, string $message, array $extra = []): void
 {
     header('Content-Type: application/json');
@@ -32,9 +23,6 @@ function json_response(bool $success, string $message, array $extra = []): void
 $is_ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH'])
     && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
-// -------------------------------------------------------------
-// Must be POST
-// -------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     if ($is_ajax) {
         json_response(false, 'Invalid request method.');
@@ -42,9 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     redirect(APP_URL . '/menu.php');
 }
 
-// -------------------------------------------------------------
-// Must be logged in
-// -------------------------------------------------------------
 if (!is_logged_in()) {
     if ($is_ajax) {
         json_response(false, 'Please log in to add items to your cart.');
@@ -53,9 +38,7 @@ if (!is_logged_in()) {
     redirect(APP_URL . '/auth/login.php');
 }
 
-// -------------------------------------------------------------
-// CSRF validation — prevents cross-site request forgery
-// -------------------------------------------------------------
+// Check the CSRF token before changing the cart.
 $submitted_token = $_POST['csrf_token'] ?? '';
 if (!hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
     if ($is_ajax) {
@@ -65,9 +48,7 @@ if (!hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
     redirect(APP_URL . '/menu.php');
 }
 
-// -------------------------------------------------------------
-// Sanitize & validate inputs
-// -------------------------------------------------------------
+// Validate the selected item and quantity.
 $item_id = filter_input(INPUT_POST, 'item_id', FILTER_VALIDATE_INT);
 $qty = filter_input(INPUT_POST, 'qty', FILTER_VALIDATE_INT);
 
@@ -79,10 +60,7 @@ if (!$item_id || !$qty || $qty < 1 || $qty > 10) {
     redirect(APP_URL . '/menu.php');
 }
 
-// -------------------------------------------------------------
-// Verify item exists in DB and re-fetch the real price.
-// NEVER trust the price posted from the form — always use DB.
-// -------------------------------------------------------------
+// Always fetch the item again so the cart uses the current database price.
 try {
     $stmt = $pdo->prepare(
         "SELECT item_id, item_name, price, is_available
@@ -109,15 +87,6 @@ if (!$db_item || !$db_item['is_available']) {
     redirect(APP_URL . '/menu.php');
 }
 
-// -------------------------------------------------------------
-// Add to session cart (or increase qty if already present).
-// Cart structure:
-//   $_SESSION['cart'][ item_id ] = [
-//       'name'  => string,
-//       'price' => float,
-//       'qty'   => int
-//   ]
-// -------------------------------------------------------------
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
 }
@@ -125,11 +94,10 @@ if (!isset($_SESSION['cart'])) {
 $id = (int) $db_item['item_id'];
 
 if (isset($_SESSION['cart'][$id])) {
-    // Already in cart — increase qty, capped at 10
+    // Keep the quantity within the menu limit.
     $new_qty = min($_SESSION['cart'][$id]['qty'] + $qty, 10);
     $_SESSION['cart'][$id]['qty'] = $new_qty;
 } else {
-    // New item — add to cart
     $_SESSION['cart'][$id] = [
         'name' => $db_item['item_name'],
         'price' => (float) $db_item['price'],
@@ -137,9 +105,6 @@ if (isset($_SESSION['cart'][$id])) {
     ];
 }
 
-// -------------------------------------------------------------
-// Respond
-// -------------------------------------------------------------
 $cart_count = cart_count();
 
 if ($is_ajax) {
@@ -148,6 +113,6 @@ if ($is_ajax) {
     ]);
 }
 
-// Non-JS fallback
+// Fallback for normal form submissions.
 set_flash('success', e($db_item['item_name']) . ' added to your cart!');
 redirect(APP_URL . '/menu.php');
