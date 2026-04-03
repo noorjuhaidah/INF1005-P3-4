@@ -48,7 +48,7 @@ unset($_SESSION['field_errors']); // Clear errors after use
                     <input type="text" id="full_name" name="full_name" required autocomplete="name"
                         placeholder="Jane Tan"
                         value="<?= e(old_input('full_name')) ?>"
-                        aria-describedby="<?= !empty($field_errors['full_name']) ? 'full_name_error' : '' ?>"
+                        <?= !empty($field_errors['full_name']) ? 'aria-describedby="full_name_error"' : '' ?>
                         class="form-control <?= !empty($field_errors['full_name']) ? 'is-invalid' : '' ?>">
 
                     <!-- Display validation feedback -->
@@ -65,7 +65,7 @@ unset($_SESSION['field_errors']); // Clear errors after use
                     <input type="email" id="email" name="email" required autocomplete="email"
                         placeholder="you@example.com"
                         value="<?= e(old_input('email')) ?>"
-                        aria-describedby="<?= !empty($field_errors['email']) ? 'email_error' : '' ?>"
+                        <?= !empty($field_errors['email']) ? 'aria-describedby="email_error"' : '' ?>
                         class="form-control <?= !empty($field_errors['email']) ? 'is-invalid' : '' ?>">
 
                     <!-- Display validation feedback -->
@@ -110,7 +110,7 @@ unset($_SESSION['field_errors']); // Clear errors after use
                             required minlength="8"
                             autocomplete="new-password"
                             placeholder="Minimum 8 characters"
-                            aria-describedby="<?= !empty($field_errors['password']) ? 'password_error' : '' ?>"
+                            <?= !empty($field_errors['password']) ? 'aria-describedby="password_error"' : '' ?>
                             class="form-control <?= !empty($field_errors['password']) ? 'is-invalid' : '' ?>">
 
                         <!-- Toggle password visibility -->
@@ -136,7 +136,7 @@ unset($_SESSION['field_errors']); // Clear errors after use
                         <input type="password" id="confirm_password" name="confirm_password"
                             required minlength="8" autocomplete="new-password"
                             placeholder="Repeat your password"
-                            aria-describedby="<?= !empty($field_errors['confirm_password']) ? 'confirm_password_error' : '' ?>"
+                            <?= !empty($field_errors['confirm_password']) ? 'aria-describedby="confirm_password_error"' : '' ?>
                             class="form-control <?= !empty($field_errors['confirm_password']) ? 'is-invalid' : '' ?>">
 
                         <!-- Toggle confirm password visibility -->

@@ -196,7 +196,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input id="name" type="text"
                         class="form-control <?= !empty($fieldErrors['name']) ? 'is-invalid' : '' ?>" name="name"
                         value="<?= e($name) ?>" aria-label="Product name"
-                        aria-describedby="<?= !empty($fieldErrors['name']) ? 'name_error' : '' ?>" required>
+                        <?= !empty($fieldErrors['name']) ? 'aria-describedby="name_error"' : '' ?> required>
                     <?php if (!empty($fieldErrors['name'])): ?>
                         <div id="name_error" class="invalid-feedback"><?= e($fieldErrors['name']) ?></div><?php endif; ?>
                 </div>
@@ -231,7 +231,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select id="category_id"
                         class="form-control <?= !empty($fieldErrors['category_id']) ? 'is-invalid' : '' ?>"
                         name="category_id" aria-label="Category"
-                        aria-describedby="<?= !empty($fieldErrors['category_id']) ? 'category_error' : '' ?>" required>
+                        <?= !empty($fieldErrors['category_id']) ? 'aria-describedby="category_error"' : '' ?> required>
 
                         <option value="">Select category</option>
 

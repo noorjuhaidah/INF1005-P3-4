@@ -3,12 +3,7 @@
 
 $page_title = 'Home';
 $current_page = 'home';
-require_once __DIR__ . '/includes/header.php';
-
-$heroVideoFile = __DIR__ . '/assets/videos/lazydrip.mp4';
-$heroVideoVersion = time() . '-' . (file_exists($heroVideoFile) ? substr(hash_file('sha1', $heroVideoFile), 0, 12) : 'missing');
-?>
-
+$page_styles = <<<'CSS'
 <style>
     .ld-video-hero {
         position: relative;
@@ -114,8 +109,13 @@ $heroVideoVersion = time() . '-' . (file_exists($heroVideoFile) ? substr(hash_fi
             margin-bottom: 1rem;
         }
     }
-
 </style>
+CSS;
+require_once __DIR__ . '/includes/header.php';
+
+$heroVideoFile = __DIR__ . '/assets/videos/lazydrip.mp4';
+$heroVideoVersion = time() . '-' . (file_exists($heroVideoFile) ? substr(hash_file('sha1', $heroVideoFile), 0, 12) : 'missing');
+?>
 
 <section class="ld-video-hero">
     <video id="heroVideo" autoplay muted loop playsinline aria-hidden="true">

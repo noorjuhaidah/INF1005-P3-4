@@ -252,7 +252,7 @@ unset($_SESSION['field_errors']);
                             <input type="text" id="card_name" name="card_name"
                                 class="form-control <?= !empty($field_errors['card_name']) ? 'is-invalid' : '' ?>"
                                 value="<?= e(old_input('card_name')) ?>" autocomplete="cc-name"
-                                aria-describedby="<?= !empty($field_errors['card_name']) ? 'card_name_error' : '' ?>"
+                                <?= !empty($field_errors['card_name']) ? 'aria-describedby="card_name_error"' : '' ?>
                                 required>
                             <div id="card_name_error" class="invalid-feedback">
                                 <?= e($field_errors['card_name'] ?? 'Please enter the cardholder name.') ?></div>
@@ -284,7 +284,7 @@ unset($_SESSION['field_errors']);
                                 class="form-control <?= !empty($field_errors['expiry']) ? 'is-invalid' : '' ?>"
                                 placeholder="MM/YY" maxlength="5" value="<?= e(old_input('expiry')) ?>"
                                 autocomplete="cc-exp"
-                                aria-describedby="<?= !empty($field_errors['expiry']) ? 'expiry_error' : '' ?>"
+                                <?= !empty($field_errors['expiry']) ? 'aria-describedby="expiry_error"' : '' ?>
                                 required>
                             <div id="expiry_error" class="invalid-feedback">
                                 <?= e($field_errors['expiry'] ?? 'Enter expiry in MM/YY format.') ?></div>
@@ -297,8 +297,8 @@ unset($_SESSION['field_errors']);
                             </label>
                             <input type="password" id="cvv" name="cvv"
                                 class="form-control <?= !empty($field_errors['cvv']) ? 'is-invalid' : '' ?>"
-                                inputmode="numeric" maxlength="3" placeholder="123" autocomplete="cc-csc"
-                                aria-describedby="<?= !empty($field_errors['cvv']) ? 'cvv_error' : '' ?>" required>
+                                inputmode="numeric" maxlength="3" placeholder="123"
+                                <?= !empty($field_errors['cvv']) ? 'aria-describedby="cvv_error"' : '' ?> required>
                             <div id="cvv_error" class="invalid-feedback">
                                 <?= e($field_errors['cvv'] ?? 'Enter a valid 3-digit CVV.') ?></div>
                         </div>
