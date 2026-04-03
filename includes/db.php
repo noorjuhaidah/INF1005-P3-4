@@ -1,12 +1,9 @@
 <?php
-
-// =============================================================
 // includes/db.php
 // Creates a PDO connection object: $pdo
 // Every page that touches the database starts with:
 //   require_once __DIR__ . '/../includes/db.php';
 // This file pulls in config.php automatically.
-// =============================================================
 
 require_once __DIR__ . '/config.php';
 

@@ -1,27 +1,23 @@
 <?php
 
-// =============================================================
 // includes/functions.php
 // Reusable helper functions for LazyDrip.
 // Included by header.php so it is available on every page.
-// =============================================================
 
-// -------------------------------------------------------------
 // OUTPUT SANITIZATION
 // Always use this before echoing any user-supplied value.
 // Prevents XSS (Cross-Site Scripting) attacks.
-// -------------------------------------------------------------
+
 function e(string $value): string
 {
     return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
 }
 
-// -------------------------------------------------------------
 // FLASH MESSAGES
 // Usage (set):    set_flash('success', 'Account created!');
 // Usage (show):   show_flash();   <- call inside the page body
 // Messages are stored in $_SESSION and shown once, then cleared.
-// -------------------------------------------------------------
+
 function set_flash(string $type, string $message): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
@@ -55,21 +51,17 @@ function clear_old_input(): void
     unset($_SESSION['old_input']);
 }
 
-// -------------------------------------------------------------
 // REDIRECT HELPER
 // Usage: redirect('/lazydrip/auth/login.php');
 // Stops script execution after redirecting.
-// -------------------------------------------------------------
 function redirect(string $url): void
 {
     header('Location: ' . $url);
     exit;
 }
 
-// -------------------------------------------------------------
 // AUTH CHECKS
 // Use these at the top of any page that requires login.
-// -------------------------------------------------------------
 function require_login(): void
 {
     if (empty($_SESSION['user_id'])) {
@@ -106,11 +98,9 @@ function redirect_if_logged_in(): void
     }
 }
 
-// -------------------------------------------------------------
 // CART HELPERS (session-based cart)
 // Cart structure in $_SESSION['cart']:
 //   [ item_id => ['name'=>.., 'price'=>.., 'qty'=>..], ... ]
-// -------------------------------------------------------------
 function get_cart(): array
 {
     return $_SESSION['cart'] ?? [];
@@ -155,9 +145,7 @@ function cart_count(): int
     return $count;
 }
 
-// -------------------------------------------------------------
 // FORMATTING HELPERS
-// -------------------------------------------------------------
 /**
  * Formats a price for currency display.
  * IMPORTANT: Use only in visual contexts with labels.
@@ -176,18 +164,14 @@ function format_date(string $datetime): string
     return date('d M Y, h:i A', strtotime($datetime));
 }
 
-// -------------------------------------------------------------
 // INPUT SANITIZATION
 // Trims and strips tags from a submitted string.
-// -------------------------------------------------------------
 function clean_input(string $value): string
 {
     return strip_tags(trim($value));
 }
 
-// =============================================================
 // TRANSPORT SECURITY HELPERS
-// =============================================================
 
 /**
  * Returns true when the current request is served over HTTPS.
@@ -237,9 +221,7 @@ function enforce_https(bool $allowLocal = true): void
     exit;
 }
 
-// =============================================================
 // CSRF PROTECTION HELPERS
-// =============================================================
 
 /**
  * Returns the current session CSRF token, creating one if needed.
@@ -279,9 +261,7 @@ function verify_csrf(string $fallback_url = ''): void
     }
 }
 
-// =============================================================
 // REWARDS / POINTS HELPERS
-// =============================================================
 
 /**
  * Get the current loyalty points balance for a user.

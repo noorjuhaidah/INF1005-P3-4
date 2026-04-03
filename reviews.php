@@ -1,14 +1,12 @@
 <?php
-// =============================================================
-// reviews.php — Public reviews page
+// reviews.php — for public reviews page
 // Allows logged-in users to leave a review, and shows existing reviews.
-// Uses the shared CSRF helpers from includes/functions.php.
-// =============================================================
+// Uses the shared CSRF helpers from includes/functions.php
 
 $page_title = 'Reviews';
 $current_page = 'reviews';
 
-// Load DB + helpers BEFORE header so POST/redirect logic can run safely.
+// load DB + helpers before header so POST/redirect logic can run safely.
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
 
@@ -40,10 +38,10 @@ $quoteIdent = static function (string $identifier): string {
     return '`' . $identifier . '`';
 };
 
-// Handle new review submission BEFORE header output (so redirects work)
+// handle new review submission before header output so redirects work
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
 
-    // Use the shared CSRF helper — falls back to reviews.php on failure
+    // uses shared CSRF helper — falls back to reviews.php if failed, so safe to call before header output
     verify_csrf(APP_URL . '/reviews.php');
 
     $reviewText = clean_input($_POST['review'] ?? '');
@@ -121,10 +119,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && is_logged_in()) {
     }
 }
 
-// Now include header after form processing
+// include header after form processing
 require_once __DIR__ . '/includes/header.php';
 
-// Fetch existing reviews
+// fetches existing reviews
 $reviews = [];
 try {
     $selectParts = [];

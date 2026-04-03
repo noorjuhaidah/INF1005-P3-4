@@ -1,9 +1,6 @@
 <?php
-// =============================================================
 // about.php — About LazyDrip
-// Static informational page describing the brand, pickup model,
-// and value propositions.
-// =============================================================
+// Static informational page describing the brand, pickup model, and value propositions.
 
 $page_title = 'About Us';
 $current_page = 'about';
